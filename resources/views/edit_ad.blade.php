@@ -1,9 +1,19 @@
 @extends('default')
 @section('content')
-    <h1>{{ Auth::user()->corporation_name }} Recruitment Ad</h1>
+    <h1>{{ $title }} Recruitment Ad</h1>
+    @if($title == 'Group')
+    <form method='POST' action="/group/ad/save" id="corpAdForm">
+    @else
     <form method='POST' action="/corp/ad/save" id="corpAdForm">
+    @endif
         <input type="hidden" value="{{ $ad->id }}" id="ad_id" name="ad_id" />
         <input type="hidden" id="_token" name="_token" value="{{ csrf_token() }}" />
+    @if($title == 'Group')
+        <div class="form-group">
+            <label for="name">Group Name</label>
+            <input type="text" class="form-control" id="name" name="name" placeholder="Name..." value="{{ $ad->group_name }}" />
+        </div>
+    @endif
         <div class="form-group">
             <label for="slug">Page Slug</label>
             <input type="text" class="form-control" id="slug" name="slug" placeholder="Slug..." value="{{ $ad->slug }}" />

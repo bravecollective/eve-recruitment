@@ -4,41 +4,60 @@ namespace App\Http\Controllers;
 
 use App\Models\FormQuestion;
 use App\Models\RecruitmentAd;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Http\Request;
 
-class CorpAdController extends Controller
+class GroupAdController extends Controller
 {
     /**
-     * View the corp ad edit page
+     * List group ads belonging to a user
      *
-     * Route: /corp/ad
-     *
-     * @param Request $r
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
      */
-    public function manageAd(Request $r)
+    public function listAds()
+    {
+        if (!Auth::user()->hasPermissionTo(Config::get('constants.permissions')['MANAGE_GROUP_AD']))
+            return redirect('/')->with('error', 'Unauthorized');
+
+        $ads = RecruitmentAd::where('created_by', Auth::user()->character_id)->where('corp_id', null)->get();
+
+        return view('group_ads', ['ads' => $ads]);
+    }
+
+    /**
+     * Create a new group ad
+     *
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
+     */
+    public function createAd()
+    {
+        return $this->manageAd(0);
+    }
+
+    /**
+     * View ad by ID
+     *
+     * @param $id
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
+     */
+    public function manageAd($id)
     {
         if (!Auth::user()->hasPermissionTo(Config::get('constants.permissions')['MANAGE_CORP_AD']))
             return redirect('/')->with('error', 'Unauthorized');
 
-        $ad = RecruitmentAd::where('corp_id', Auth::user()->corporation_id)->first();
+        $ad = RecruitmentAd::find($id);
+
+        if ($ad == null && $id > 0)
+            return redirect('/group/ads')->with('error', 'Invalid ad ID');
+
         $ad = ($ad == null) ? new RecruitmentAd() : $ad;
 
         $questions = FormQuestion::where('recruitment_id', $ad->id)->get();
 
-        return view('edit_ad', ['title' => Auth::user()->corporation_name, 'ad' => $ad, 'questions' => $questions]);
+        return view('edit_ad', ['title' => 'Group', 'ad' => $ad, 'questions' => $questions]);
     }
 
-    /**
-     * Save a corporation recruitment ad
-     *
-     * Route: /corp/ad/save
-     *
-     * @param Request $r
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function saveAd(Request $r)
     {
         if (!Auth::user()->hasPermissionTo(Config::get('constants.permissions')['MANAGE_CORP_AD']))
@@ -48,32 +67,29 @@ class CorpAdController extends Controller
         $text = $r->input('text');
         $ad_id = $r->input('ad_id');
         $questions = $r->input('questions');
+        $name = $r->input('name');
 
-        if (!$slug || !$text)
-            return redirect('/corp/ad')->with('error', 'Slug and text are both required');
+        if (!$slug || !$text || !$name)
+            return redirect('/group/ad/create')->with('error', 'Slug, text, and name are all required');
 
-        if (!$ad_id)
-        {
+        if (!$ad_id) {
             $ad = new RecruitmentAd();
             $ad->created_by = Auth::user()->character_id;
-        }
-        else
+        } else
             $ad = RecruitmentAd::find($ad_id);
 
         $ad->slug = $slug;
         $ad->text = $text;
-        $ad->corp_id = Auth::user()->corporation_id;
+        $ad->group_name = $name;
         $ad->save();
 
         if ($questions)
         {
             // Outer loop iterates through the different ID sets
             // Should be one of two: question ID, or 0 for new question
-            foreach ($questions as $id => $q)
-            {
+            foreach ($questions as $id => $q) {
                 // Inner loop iterates through questions in that ID set
-                foreach ($q as $question)
-                {
+                foreach ($q as $question) {
                     if ($id == 0)
                         $q = new FormQuestion();
                     else
@@ -86,6 +102,6 @@ class CorpAdController extends Controller
             }
         }
 
-        return redirect('/corp/ad')->with('info', 'Ad updated');
+        return redirect('/group/ad/' . $ad->id)->with('info', 'Ad updated');
     }
 }

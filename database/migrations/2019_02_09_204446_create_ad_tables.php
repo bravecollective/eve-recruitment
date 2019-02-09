@@ -15,9 +15,11 @@ class CreateAdTables extends Migration
     {
         Schema::create('recruitment_ad', function (Blueprint $table) {
             $table->increments('id');
-            $table->bigInteger('corp_id')->unique()->nullable()->default(null);
+            $table->bigInteger('corp_id')->nullable()->default(null);
             $table->string('slug');
             $table->longText('text');
+            $table->bigInteger('created_by');
+            $table->string('group_name')->nullable()->default(null);
             $table->timestamps();
         });
 
@@ -31,10 +33,12 @@ class CreateAdTables extends Migration
         });
 
         Schema::create('form_response', function (Blueprint $table) {
-            $table->increments('id');
+            $table->unsignedInteger('account_id');
             $table->unsignedInteger('question_id');
             $table->integer('application_id');
             $table->timestamps();
+
+            $table->primary(['account_id', 'question_id', 'application_id']);
 
             // TODO: Application FK
             $table->foreign('question_id')->references('id')->on('form')->onDelete('cascade');

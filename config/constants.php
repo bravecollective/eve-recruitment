@@ -6,7 +6,7 @@ return [
         'VIEW_CORP_MEMBERS'         => 'view corp members',
         'MANAGE_CORP_AD'            => 'manage corp recruitment ad',
         'MANAGE_CORP_PERMISSIONS'   => 'manage corp permissions',
-        'CREATE_GROUP_AD'           => 'create group recruitment ad',
+        'MANAGE_GROUP_AD'           => 'create group recruitment ad',
         'MANAGE_GROUP_PERMISSIONS'  => 'manage group recruitment permissions',
         'MANAGE_GLOBAL_PERMISSIONS' => 'manage global permissions',
         'MANAGE_ALL_ADS'            => 'manage global recruitment ads'
@@ -22,7 +22,7 @@ return [
             'VIEW_CORP_MEMBERS',
             'MANAGE_CORP_AD',
             'MANAGE_CORP_PERMISSIONS',
-            'CREATE_GROUP_AD',
+            'MANAGE_GROUP_AD',
             'MANAGE_GROUP_PERMISSIONS'
         ],
         'admin' => [
@@ -30,7 +30,7 @@ return [
             'VIEW_CORP_MEMBERS',
             'MANAGE_CORP_AD',
             'MANAGE_CORP_PERMISSIONS',
-            'CREATE_GROUP_AD',
+            'MANAGE_GROUP_AD',
             'MANAGE_GROUP_PERMISSIONS',
             'MANAGE_GLOBAL_PERMISSIONS',
             'MANAGE_ALL_ADS'

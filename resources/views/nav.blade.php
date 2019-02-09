@@ -35,7 +35,7 @@
                 <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                     <a class="dropdown-item" href="/corp/ad">Corp Ad</a>
                     <a class="dropdown-item" href="/corp/permissions">Corp Permissions</a>
-                    <a class="dropdown-item" href="/group/ad">Group Ad</a>
+                    <a class="dropdown-item" href="/group/ads">My Group Ads</a>
                     <a class="dropdown-item" href="/group/permissions">Group Permissions</a>
                 </div>
             </li>
@@ -48,6 +48,7 @@
                 <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink1">
                     <a class="dropdown-item" href="/admin/ads">Global Ad Management</a>
                     <a class="dropdown-item" href="/admin/permissions">Global Permissions</a>
+                    <a class="dropdown-item" href="/group/ads/orphaned">Orphaned Group Ads</a>
                     <a class="dropdown-item" href="/admin/system">System Configuration</a>
                 </div>
             </li>
