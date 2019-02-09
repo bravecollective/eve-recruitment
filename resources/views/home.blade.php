@@ -1,6 +1,5 @@
 @extends('default')
 @section('content')
-<div class="jumbotron text-white">
     <h1 class="display-4">{{ env('APP_NAME') }}</h1>
     <hr class="my-4">
 @auth
@@ -27,5 +26,4 @@
     <p>Once you have created an account and have added all of your alts, use the link below to login.</p>
     <a href="/login"><img src="/img/EVE_SSO_Login_Buttons_Large_Black.png" alt="Login with EVE Online"></a>
 @endauth
-</div>
 @endsection

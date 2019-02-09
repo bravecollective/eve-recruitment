@@ -18,3 +18,10 @@ body {
 .card {
     margin-bottom: 1em;
 }
+
+.divider-vertical {
+    border-left: 1px solid gray;     /* right or left is the same */
+    float: left;                     /* so BS grid doesn't break */
+    opacity: 0.5;                    /* optional */
+    margin: 0 15px;                  /* optional */
+}

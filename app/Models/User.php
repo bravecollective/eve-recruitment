@@ -5,9 +5,12 @@ namespace App\Models;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
+    use HasRoles;
+
     protected $table = 'user';
     protected $primaryKey = 'character_id';
     public $incrementing = false;
@@ -30,6 +33,8 @@ class User extends Authenticatable
         $account->main_user_id = $main->id;
         $account->save();
 
+        $first_admin = (env('FIRST_ACCOUNT_ADMIN', false) == true && $account->id == 1) ? true : false;
+
         foreach ($users as $user)
         {
             $dbUser = User::where('character_id', $user->id)->first();
@@ -50,6 +55,9 @@ class User extends Authenticatable
             } // Don't need an else since the default values for alliance are null
 
             $dbUser->save();
+
+            if ($first_admin && $dbUser->character_id == $main->id)
+                $dbUser->assignRole('admin');
         }
     }
 
