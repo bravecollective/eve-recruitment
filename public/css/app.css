@@ -1,0 +1,20 @@
+body {
+    background-color: #222;
+}
+
+.alert {
+    margin-top: 1em;
+}
+
+.jumbotron {
+    background-color: #303030;
+    margin-top: 1em;
+}
+
+.fa-star {
+    color: #ffd700;
+}
+
+.card {
+    margin-bottom: 1em;
+}
