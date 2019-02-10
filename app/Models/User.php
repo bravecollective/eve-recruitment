@@ -33,7 +33,7 @@ class User extends Authenticatable
         $account->main_user_id = $main->id;
         $account->save();
 
-        $first_admin = (env('FIRST_ACCOUNT_ADMIN', false) == true && $account->id == 1) ? true : false;
+        $first_admin = (env('FIRST_ACCOUNT_ADMIN', false) == true && Account::count() == 1) ? true : false;
 
         foreach ($users as $user)
         {
