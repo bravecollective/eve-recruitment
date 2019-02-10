@@ -3,6 +3,9 @@
 // Base home route
 Route::get('/', 'HomeController@home')->name('home');
 
+// Corp members routes
+Route::get('/corp/members', 'CorpMembersController@viewCorpMembers');
+
 // Corp ad routes
 Route::get('corp/ad', 'CorpAdController@manageAd');
 Route::post('corp/ad/save', 'CorpAdController@saveAd');

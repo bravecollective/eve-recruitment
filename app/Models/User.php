@@ -87,6 +87,16 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the members of a corporation given the corporation's ID
+     * @param $corpId int Corp ID to get members of
+     * @return User[]|null Corporation members
+     */
+    public static function getCorpMembers($corpId)
+    {
+        return User::where('corporation_id', $corpId)->get();
+    }
+
+    /**
      * Entity relationship
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
