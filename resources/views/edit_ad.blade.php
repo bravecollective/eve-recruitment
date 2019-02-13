@@ -38,13 +38,15 @@
     </form>
 @endsection
 @section('scripts')
-    let counter = 1;
+    <script type="text/javascript">
+        let counter = 1;
 
-    function addQuestion() {
-        let toAppend = "<div class='form-group'> \
-            <input type='text' class='form-control' placeholder='Question " + counter + "' name='questions[0][]' id='questions[0][]'> \
-        </div>";
-        $(".questions").append(toAppend);
-        counter++;
-    }
+        function addQuestion() {
+            let toAppend = "<div class='form-group'> \
+                <input type='text' class='form-control' placeholder='Question " + counter + "' name='questions[0][]' id='questions[0][]'> \
+            </div>";
+            $(".questions").append(toAppend);
+            counter++;
+        }
+    </script>
 @endsection

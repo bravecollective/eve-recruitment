@@ -1,6 +1,5 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <a class="navbar-brand" href="/">{{ env('APP_NAME') }}</a>
-
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item">
@@ -17,17 +16,15 @@
         </ul>
         <ul class="nav navbar-nav navbar-right">
         @auth
-            @can(Config::get('constants.permissions')['VIEW_CORP_APPS'])
+            @role('recruiter')
             <li class="nav-item">
                 <a class="nav-link" href="/applications">Applications</a>
             </li>
-            @endcan
-            @can(Config::get('constants.permissions')['VIEW_CORP_MEMBERS'])
             <li class="nav-item">
                 <a class="nav-link" href="/corp/members">Corp Members</a>
             </li>
-            @endcan
-            @role('director|admin')
+            @endrole
+            @role('director')
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Management
@@ -47,17 +44,17 @@
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink1">
                     <a class="dropdown-item" href="/admin/ads">Global Ad Management</a>
-                    <a class="dropdown-item" href="/admin/permissions">Global Permissions</a>
+                    <a class="dropdown-item" href="/admin/roles">Global Roles</a>
                     <a class="dropdown-item" href="/group/ads/orphaned">Orphaned Group Ads</a>
                     <a class="dropdown-item" href="/admin/system">System Configuration</a>
                 </div>
             </li>
-            <li class="divider-vertical"></li>
             @endrole
+            <li class="divider-vertical"></li>
             <li class="nav-item">
                 <span class="navbar-brand">
-                    <img src="https://image.eveonline.com/Character/{{ Auth::user()->character_id }}_32.jpg" />
-                    {{ Auth::user()->name }}
+                    <img src="https://image.eveonline.com/Character/{{ Auth::user()->main_user_id }}_32.jpg" />
+                    {{ Auth::user()->getMainUser()->name }}
                 </span>
             </li>
             <li class="nav-item">

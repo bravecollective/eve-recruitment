@@ -2,14 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Model;
 
-class User extends Authenticatable
+class User extends Model
 {
-    use HasRoles;
 
     protected $table = 'user';
     protected $primaryKey = 'character_id';
@@ -33,6 +29,7 @@ class User extends Authenticatable
         $account->main_user_id = $main->id;
         $account->save();
 
+        // TODO: Don't count the database every time
         $first_admin = (env('FIRST_ACCOUNT_ADMIN', false) == true && Account::count() == 1) ? true : false;
 
         foreach ($users as $user)
@@ -55,10 +52,10 @@ class User extends Authenticatable
             } // Don't need an else since the default values for alliance are null
 
             $dbUser->save();
-
-            if ($first_admin && $dbUser->character_id == $main->id)
-                $dbUser->assignRole('admin');
         }
+
+        if ($first_admin)
+            $account->giveAllRoles();
     }
 
     /**
@@ -107,22 +104,10 @@ class User extends Authenticatable
 
     /**
      * Entity relationship
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
     public function account()
     {
-        return $this->hasOne('App\Models\Account', 'id', 'account_id');
-    }
-
-    /**
-     * Overrides the method to ignore the remember token.
-     */
-    public function setAttribute($key, $value)
-    {
-        $isRememberTokenAttribute = $key == $this->getRememberTokenName();
-
-        if (!$isRememberTokenAttribute)
-            parent::setAttribute($key, $value);
+        return $this->belongsTo('App\Models\Account', 'account_id', 'id');
     }
 
 }

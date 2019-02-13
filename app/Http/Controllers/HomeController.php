@@ -13,7 +13,7 @@ class HomeController
         $characters = null;
 
         if (Auth::check())
-            $characters = User::getUsers(Auth::user()->account_id);
+            $characters = Auth::user()->characters()->get();
 
         return view('home', ['characters' => $characters]);
     }

@@ -20,7 +20,7 @@ class GroupAdController extends Controller
         if (!Auth::user()->hasPermissionTo(Config::get('constants.permissions')['MANAGE_GROUP_AD']))
             return redirect('/')->with('error', 'Unauthorized');
 
-        $ads = RecruitmentAd::where('created_by', Auth::user()->character_id)->where('corp_id', null)->get();
+        $ads = RecruitmentAd::where('created_by', Auth::user()->main_user_id)->where('corp_id', null)->get();
 
         return view('group_ads', ['ads' => $ads]);
     }
@@ -74,7 +74,7 @@ class GroupAdController extends Controller
 
         if (!$ad_id) {
             $ad = new RecruitmentAd();
-            $ad->created_by = Auth::user()->character_id;
+            $ad->created_by = Auth::user()->main_user_id;
         } else
             $ad = RecruitmentAd::find($ad_id);
 

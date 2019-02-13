@@ -25,3 +25,14 @@ body {
     opacity: 0.5;                    /* optional */
     margin: 0 15px;                  /* optional */
 }
+
+.search-result {
+    position: absolute;
+    max-height: 230px;
+    width: 95%;
+    overflow: auto;
+}
+
+.search-result-item {
+    cursor: pointer;
+}

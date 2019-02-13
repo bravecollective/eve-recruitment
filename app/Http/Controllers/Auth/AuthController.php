@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Connectors\CoreConnection;
 use App\Http\Controllers\Controller;
+use App\Models\Account;
 use App\Models\AccountGroup;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -55,8 +56,8 @@ class AuthController extends Controller
         AccountGroup::updateGroupsForUser($main->id);
 
         // Redirect the user
-        $dbUser = User::find($main->id);
-        Auth::login($dbUser);
+        $dbAccount = Account::where('main_user_id', $main->id)->first();
+        Auth::login($dbAccount);
 
         return redirect('/');
     }

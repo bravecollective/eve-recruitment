@@ -24,11 +24,19 @@
                     {{ session('info') }}
                 </div>
             @endif
+            <div class="alert alert-info" id="inline-info" style="display: none;"></div>
             <div class="jumbotron text-white">
             @yield('content')
             </div>
         </div>
         <script type="text/javascript">
+            function showInfo(msg)
+            {
+                let d = $("#inline-info");
+                d.text(msg);
+                d.show();
+            }
+
             (function($){
                 $.fn.serializeObject = function(){
 
@@ -97,7 +105,7 @@
                     return json;
                 };
             })(jQuery);
-            @yield('scripts')
         </script>
+        @yield('scripts')
     </body>
 </html>

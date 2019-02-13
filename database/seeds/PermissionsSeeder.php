@@ -1,11 +1,8 @@
 <?php
 
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
-use Spatie\Permission\PermissionRegistrar;
 use Illuminate\Support\Facades\Config;
 
 class PermissionsSeeder extends Seeder
@@ -14,26 +11,33 @@ class PermissionsSeeder extends Seeder
     public function run()
     {
         $permission_list = Config::get('constants.permissions');
-        $permissions = Config::get('constants.roles');
+        $roles = Config::get('constants.roles');
 
         Schema::disableForeignKeyConstraints();
-        DB::table('permissions')->truncate();
-        DB::table('roles')->truncate();
+        DB::table('permission')->truncate();
+        DB::table('role')->truncate();
         Schema::enableForeignKeyConstraints();
 
-        app(PermissionRegistrar::class)->forgetCachedPermissions();
-
-        // Reset cached roles and permissions
-        app()['cache']->forget('spatie.permission.cache');
-
         foreach ($permission_list as $permission)
-            Permission::create(['name' => $permission]);
-
-        foreach ($permissions as $group => $permissions_list)
         {
-            $role = Role::create(['name' => $group]);
-            foreach ($permissions_list as $perm)
-                $role->givePermissionTo($permission_list[$perm]);
+            $perm = new \App\Models\Permissions\Permission();
+            $perm->name = str_replace('-', ' ', $permission);
+            $perm->slug = $permission;
+            $perm->save();
+        }
+
+        foreach ($roles as $name => $permissions)
+        {
+            $role = new \App\Models\Permissions\Role();
+            $role->name = str_replace('-', ' ', $name);
+            $role->slug = $name;
+            $role->save();
+
+            foreach ($permissions as $permission)
+            {
+                $p = \App\Models\Permissions\Permission::where('slug', $permission_list[$permission])->first();
+                $role->permissions()->attach($p);
+            }
         }
     }
 }

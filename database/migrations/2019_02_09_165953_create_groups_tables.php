@@ -19,7 +19,7 @@ class CreateGroupsTables extends Migration
         });
 
         Schema::create('account_group', function (Blueprint $table) {
-            $table->integer('account_id');
+            $table->unsignedInteger('account_id');
             $table->integer('group_id');
 
             $table->primary(['account_id', 'group_id']);

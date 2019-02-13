@@ -16,6 +16,14 @@ Route::get('group/ad/create', 'GroupAdController@createAd');
 Route::get('group/ad/{id}', 'GroupAdController@manageAd');
 Route::post('group/ad/save', 'GroupAdController@saveAd');
 
+// Ajax routes
+Route::post('api/character/search', 'SearchController@characterSearch');
+Route::post('api/character/roles', 'PermissionsController@loadUserRoles');
+Route::post('api/character/roles/save', 'PermissionsController@saveUserRoles');
+
+// Global admin routes
+Route::get('admin/roles', 'PermissionsController@globalRoles');
+
 // Authentication routes
 Route::get('login', 'Auth\AuthController@redirectToProvider')->name('login');
 Route::get('login/callback', 'Auth\AuthController@handleProviderCallback')->name('loginCallback');

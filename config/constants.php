@@ -1,17 +1,17 @@
 <?php
 
 return [
+    // Don't change any of the defaults here. Only add to the list
     'permissions' => [
-        'VIEW_CORP_APPS'            => 'view corp applications',
-        'VIEW_CORP_MEMBERS'         => 'view corp members',
-        'MANAGE_CORP_AD'            => 'manage corp recruitment ad',
-        'MANAGE_CORP_PERMISSIONS'   => 'manage corp permissions',
-        'MANAGE_GROUP_AD'           => 'create group recruitment ad',
-        'MANAGE_GROUP_PERMISSIONS'  => 'manage group recruitment permissions',
-        'MANAGE_GLOBAL_PERMISSIONS' => 'manage global permissions',
-        'MANAGE_ALL_ADS'            => 'manage global recruitment ads'
+        'VIEW_CORP_APPS'            => 'view-corp-applications',
+        'VIEW_CORP_MEMBERS'         => 'view-corp-members',
+        'MANAGE_CORP_AD'            => 'manage-corp-recruitment-ad',
+        'MANAGE_CORP_PERMISSIONS'   => 'manage-corp-permissions',
+        'MANAGE_GROUP_AD'           => 'create-group-recruitment-ad',
+        'MANAGE_GROUP_PERMISSIONS'  => 'manage-group-recruitment-permissions',
+        'MANAGE_GLOBAL_PERMISSIONS' => 'manage-global-permissions',
+        'MANAGE_ALL_ADS'            => 'manage-global-recruitment-ads'
     ],
-    // Don't change the default role names
     'roles' => [
         'recruiter' => [
             'VIEW_CORP_APPS',

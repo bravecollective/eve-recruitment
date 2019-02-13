@@ -18,17 +18,17 @@ class CorpAdController extends Controller
      * @param Request $r
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
      */
-    public function manageAd(Request $r)
+    public function manageAd()
     {
         if (!Auth::user()->hasPermissionTo(Config::get('constants.permissions')['MANAGE_CORP_AD']))
             return redirect('/')->with('error', 'Unauthorized');
 
-        $ad = RecruitmentAd::where('corp_id', Auth::user()->corporation_id)->first();
+        $ad = RecruitmentAd::where('corp_id', Auth::user()->getMainUser()->corporation_id)->first();
         $ad = ($ad == null) ? new RecruitmentAd() : $ad;
 
         $questions = FormQuestion::where('recruitment_id', $ad->id)->get();
 
-        return view('edit_ad', ['title' => Auth::user()->corporation_name, 'ad' => $ad, 'questions' => $questions]);
+        return view('edit_ad', ['title' => Auth::user()->getMainUser()->corporation_name, 'ad' => $ad, 'questions' => $questions]);
     }
 
     /**
@@ -53,16 +53,14 @@ class CorpAdController extends Controller
             return redirect('/corp/ad')->with('error', 'Slug and text are both required');
 
         if (!$ad_id)
-        {
             $ad = new RecruitmentAd();
-            $ad->created_by = Auth::user()->character_id;
-        }
         else
             $ad = RecruitmentAd::find($ad_id);
 
+        $ad->created_by = Auth::user()->main_user_id;
         $ad->slug = $slug;
         $ad->text = $text;
-        $ad->corp_id = Auth::user()->corporation_id;
+        $ad->corp_id = Auth::user()->getMainUser()->corporation_id;
         $ad->save();
 
         if ($questions)
