@@ -13,8 +13,8 @@
             <input type="hidden" id="character_id" value="" />
         @foreach($roles as $role)
              <div class="form-check">
-                 <input type="checkbox" class="form-check-input role-checkbox" id="role_{{ $role->slug }}" />
-                 <label class="text-white form-check-label" for="role_{{ $role->slug }}">{{ $role->name }}</label>
+                 <input type="checkbox" class="form-check-input role-checkbox" id="{{ $role->id }}" />
+                 <label class="text-white form-check-label" for="{{ $role->id }}">{{ $role->name }}</label>
              </div>
         @endforeach
         </div>
@@ -51,7 +51,8 @@
 
         roles_checkboxes.each(function (e) {
             e = $(this)[0];
-            data.roles.push({ 'slug': e.id.split('_')[1], 'active': !!(e.checked)});
+            data.roles.push({ 'id': e.id, 'active': !!(e.checked)});
+            console.log(data);
         });
 
         $.post('/api/character/roles/save', data, function(e) {
@@ -82,7 +83,7 @@
                 return;
 
             e.message.forEach(function (e) {
-                let item = $('#role_' + e.slug);
+                let item = $("#" + e.id);
                 item.prop('checked', true);
             });
 
@@ -123,5 +124,7 @@
             }
         });
     }
+
+    clearCheckboxes();
 </script>
 @endsection

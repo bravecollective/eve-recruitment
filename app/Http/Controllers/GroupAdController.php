@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\FormQuestion;
+use App\Models\Permissions\Role;
 use App\Models\RecruitmentAd;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -67,6 +68,8 @@ class GroupAdController extends Controller
         $text = $r->input('text');
         $ad_id = $r->input('ad_id');
         $questions = $r->input('questions');
+
+        // TODO: No colons or underscores allowed in the name
         $name = $r->input('name');
 
         if (!$slug || !$text || !$name)
@@ -82,6 +85,8 @@ class GroupAdController extends Controller
         $ad->text = $text;
         $ad->group_name = $name;
         $ad->save();
+
+        Role::createRoleForAd($ad);
 
         if ($questions)
         {

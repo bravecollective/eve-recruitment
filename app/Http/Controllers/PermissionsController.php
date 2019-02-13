@@ -78,10 +78,11 @@ class PermissionsController extends Controller
 
         foreach ($roles as $role)
         {
-            if ($role['active'] == "true" && !$account->hasRole($role['slug']))
-                $account->giveRoles($role['slug']);
-            else if ($role['active'] == "false" && $account->hasRole($role['slug']))
-                $account->deleteRoles($role['slug']);
+            $dbRole = Role::find($role['id']);
+            if ($role['active'] == "true" && !$account->hasRole($dbRole->name))
+                $account->giveRoles($dbRole->name);
+            else if ($role['active'] == "false" && $account->hasRole($dbRole->name))
+                $account->deleteRoles($dbRole->name);
         }
 
         die(json_encode(['success' => true, 'message' => 'Permissions updated']));

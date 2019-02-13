@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\FormQuestion;
+use App\Models\Permissions\Role;
 use App\Models\RecruitmentAd;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -62,6 +63,8 @@ class CorpAdController extends Controller
         $ad->text = $text;
         $ad->corp_id = Auth::user()->getMainUser()->corporation_id;
         $ad->save();
+
+        Role::createRoleForAd($ad);
 
         if ($questions)
         {

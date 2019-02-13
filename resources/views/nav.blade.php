@@ -17,19 +17,33 @@
         <ul class="nav navbar-nav navbar-right">
         @auth
             @role('recruiter')
-            <li class="nav-item">
-                <a class="nav-link" href="/applications">Applications</a>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="applications" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Applications
+                </a>
+                <div class="dropdown-menu" aria-labelledby="applications">
+                @foreach($recruitment_ads as $ad)
+                    <a class="dropdown-item" href="/applications/{{ $ad->id }}">{{ $ad->corp_name === null ? $ad->group_name : $ad->corp_name }}</a>
+                @endforeach
+                </div>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/corp/members">Corp Members</a>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="corporations_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Corp Members
+                </a>
+                <div class="dropdown-menu" aria-labelledby="corporations_dropdown">
+                    @foreach($corporations as $corp)
+                        <a class="dropdown-item" href="/corporations/{{ $corp->corp_id }}">{{ $corp->corp_name }}</a>
+                    @endforeach
+                </div>
             </li>
             @endrole
             @role('director')
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <a class="nav-link dropdown-toggle" href="#" id="management_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Management
                 </a>
-                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                <div class="dropdown-menu" aria-labelledby="management_dropdown">
                     <a class="dropdown-item" href="/corp/ad">Corp Ad</a>
                     <a class="dropdown-item" href="/corp/permissions">Corp Permissions</a>
                     <a class="dropdown-item" href="/group/ads">My Group Ads</a>
@@ -39,10 +53,10 @@
             @endrole
             @role('admin')
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <a class="nav-link dropdown-toggle" href="#" id="admin_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Admin
                 </a>
-                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink1">
+                <div class="dropdown-menu" aria-labelledby="admin_dropdown">
                     <a class="dropdown-item" href="/admin/ads">Global Ad Management</a>
                     <a class="dropdown-item" href="/admin/roles">Global Roles</a>
                     <a class="dropdown-item" href="/group/ads/orphaned">Orphaned Group Ads</a>

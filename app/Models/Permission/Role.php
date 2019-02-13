@@ -2,11 +2,45 @@
 
 namespace App\Models\Permissions;
 
+use App\Models\RecruitmentAd;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
 class Role extends Model
 {
     protected $table = 'role';
+
+    /**
+     * Given a slug, return the role ID
+     *
+     * @param $slug
+     * @return |null
+     */
+    public static function getIdForSlug($slug)
+    {
+        $role = Role::where('slug', $slug)->first();
+
+        return ($role) ? $role->id : null;
+    }
+
+    /**
+     * Create the role for a recruitment ad
+     *
+     * @param RecruitmentAd $ad_id The ad to create a role for
+     */
+    public static function createRoleForAd($ad)
+    {
+        $role = Role::where('recruitment_id', $ad->id)->first();
+        if (!$role)
+            $role = new Role();
+
+        $name = ($ad->corp_id === null) ? $ad->group_name : User::where('corporation_id', $ad->corp_id)->first()->corporation_name;
+
+        $role->slug = 'recruiter';
+        $role->name = $name . ' recruiter';
+        $role->recruitment_id = $ad->id;
+        $role->save();
+    }
 
     /**
      * Permissions relation

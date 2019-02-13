@@ -27,7 +27,7 @@ trait HasPermissionTrait
      */
     public function giveAllRoles()
     {
-        return $this->giveRoles(...Role::all()->pluck('slug')->toArray());
+        return $this->giveRoles(...Role::all()->pluck('name')->toArray());
     }
 
     /**
@@ -38,7 +38,7 @@ trait HasPermissionTrait
      */
     public function getAllRoles(array $roles)
     {
-        return Role::whereIn('slug', $roles)->get();
+        return Role::whereIn('name', $roles)->get();
     }
 
     /**
@@ -49,7 +49,7 @@ trait HasPermissionTrait
      */
     public function hasRole($role)
     {
-        return  $this->roles->contains(Role::where('slug', $role)->first());
+        return $this->roles->contains(Role::where('name', $role)->first());
     }
 
     /**
@@ -67,7 +67,7 @@ trait HasPermissionTrait
 
         foreach ($roles as $role)
         {
-            if (!$this->hasRole($role->slug))
+            if (!$this->hasRole($role->name))
                 $this->roles()->attach($role);
         }
 
@@ -89,7 +89,7 @@ trait HasPermissionTrait
 
         foreach ($roles as $role)
         {
-            if ($this->hasRole($role->slug))
+            if ($this->hasRole($role->name))
                 $this->roles()->detach($role);
         }
 

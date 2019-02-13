@@ -24,6 +24,12 @@ class CreatePermissionsTables extends Migration
             $table->increments('id');
             $table->string('name');
             $table->string('slug');
+            $table->unsignedInteger('recruitment_id')->nullable();
+
+            $table->foreign('recruitment_id')->references('id')->on('recruitment_ad')->onDelete('cascade');
+
+            $table->unique(['name', 'slug', 'recruitment_id']);
+
             $table->timestamps();
         });
 
@@ -38,10 +44,8 @@ class CreatePermissionsTables extends Migration
         });
 
         Schema::create('account_role', function (Blueprint $table) {
-            $table->unsignedInteger('id')->autoIncrement(); // Needed to have a nullable recruitment_id
             $table->unsignedInteger('account_id');
             $table->unsignedInteger('role_id');
-            $table->integer('recruitment_id')->nullable();
             $table->timestamps();
 
             $table->foreign('account_id')->references('id')->on('account')->onDelete('cascade');
