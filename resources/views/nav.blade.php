@@ -39,13 +39,21 @@
             </li>
             @endrole
             @role('director')
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="corp_ads_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Corp Ads
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="corp_ads_dropdown">
+                    @foreach($corp_ad as $ad)
+                        <a class="dropdown-item" href="/corporations/{{ $ad->corp_id }}/ad">{{ $ad->corp_name }}</a>
+                    @endforeach
+                    </div>
+                </li>
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="management_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Management
+                    Group Ads
                 </a>
                 <div class="dropdown-menu" aria-labelledby="management_dropdown">
-                    <a class="dropdown-item" href="/corp/ad">Corp Ad</a>
-                    <a class="dropdown-item" href="/corp/permissions">Corp Permissions</a>
                     <a class="dropdown-item" href="/group/ads">My Group Ads</a>
                     <a class="dropdown-item" href="/group/permissions">Group Permissions</a>
                 </div>

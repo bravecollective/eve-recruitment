@@ -40,6 +40,41 @@ class AccountRole extends Model
     }
 
     /**
+     * Get the list of corp ads a user can manage
+     *
+     * @return |null
+     */
+    public static function getAdsUserCanManage()
+    {
+        $account_id = Auth::user()->id;
+        $director_role_ids = Role::where('slug', 'director')->get()->pluck('id')->toArray();
+
+        // 1. Get the recruitment IDs a user can view
+        $account_recruitments = AccountRole::whereIn('role_id', $director_role_ids)->where('account_id', $account_id)->get();
+
+        if (!$account_recruitments)
+            return null;
+
+        // 2. Get the ad IDs
+        $recruitment_ads = Role::whereIn('id', $account_recruitments->pluck('role_id')->toArray())->get();
+
+        if (!$recruitment_ads)
+            return null;
+
+        // 3. Get the ads
+        $ads = RecruitmentAd::whereIn('id', $recruitment_ads->pluck('recruitment_id')->toArray())->get();
+
+        if (!$ads)
+            return null;
+
+        // 4. Get corp names
+        foreach ($ads as $ad)
+            $ad->corp_name = User::where('corporation_id', $ad->corp_id)->first()->corporation_name;
+
+        return $ads;
+    }
+
+    /**
      * Get the ads that a user can view
      */
     public static function getAdsUserCanView()
@@ -108,6 +143,12 @@ class AccountRole extends Model
         return $ads;
     }
 
+    /**
+     * Determine if a user can view a corporation's member listing
+     *
+     * @param $corp_id
+     * @return bool
+     */
     public static function canViewCorpMembers($corp_id)
     {
         $recruitment_id = RecruitmentAd::where('corp_id', $corp_id)->first();

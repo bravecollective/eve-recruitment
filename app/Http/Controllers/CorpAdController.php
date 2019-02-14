@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\FormQuestion;
 use App\Models\Permissions\Role;
 use App\Models\RecruitmentAd;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Http\Request;
@@ -19,9 +20,9 @@ class CorpAdController extends Controller
      * @param Request $r
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
      */
-    public function manageAd()
+    public function manageAd($corp_id)
     {
-        if (!Auth::user()->hasPermissionTo(Config::get('constants.permissions')['MANAGE_CORP_AD']))
+        if (!Auth::user()->hasRole(User::where('corporation_id', $corp_id)->first()->corporation_name . " director"))
             return redirect('/')->with('error', 'Unauthorized');
 
         $ad = RecruitmentAd::where('corp_id', Auth::user()->getMainUser()->corporation_id)->first();
