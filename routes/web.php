@@ -4,7 +4,7 @@
 Route::get('/', 'HomeController@home')->name('home');
 
 // Corp members routes
-Route::get('/corp/members', 'CorpMembersController@viewCorpMembers');
+Route::get('/corporations/{corp_id}', 'CorpMembersController@viewCorpMembers');
 
 // Corp ad routes
 Route::get('corp/ad', 'CorpAdController@manageAd');

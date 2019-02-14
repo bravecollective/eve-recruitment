@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Permission\AccountRole;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -15,12 +16,12 @@ class CorpMembersController extends Model
      *
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
      */
-    public function viewCorpMembers()
+    public function viewCorpMembers($corp_id)
     {
-        if (!Auth::user()->hasPermissionTo(Config::get('constants.permissions')['VIEW_CORP_MEMBERS']))
+        if (!AccountRole::canViewCorpMembers($corp_id))
             return redirect('/')->with('error', 'Unauthorized');
 
-        $corpMembers = User::getCorpMembers(Auth::user()->getMainUser()->corporation_id);
+        $corpMembers = User::getCorpMembers($corp_id);
 
         return view('corp_members', ['corpMembers' => $corpMembers]);
     }
