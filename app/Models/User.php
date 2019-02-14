@@ -20,6 +20,7 @@ class User extends Model
     {
         // Find the account ID
         $account_id = Account::getAccountIdForUsers($users);
+        $new_user_ids = [];
 
         if ($account_id == null)
             $account = new Account();
@@ -52,10 +53,14 @@ class User extends Model
             } // Don't need an else since the default values for alliance are null
 
             $dbUser->save();
+            $new_user_ids[] = $dbUser->character_id;
         }
 
         if ($first_admin)
             $account->giveAllRoles();
+
+        // Delete old characters
+        User::where('account_id', $account_id)->whereNotIn('character_id', $new_user_ids)->delete();
     }
 
     /**
