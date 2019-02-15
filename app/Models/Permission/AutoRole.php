@@ -37,7 +37,7 @@ class AutoRole extends Model
     {
        $account_groups = AccountGroup::where('account_id', $account->id)->get()->pluck('group_id')->toArray();
        $auto_roles = AutoRole::whereIn('core_group_id', $account_groups)->get()->pluck('role_id')->toArray();
-       $roles_to_assign = Role::whereIn('id', $auto_roles)->get();
+       $roles_to_assign = Role::whereIn('id', $auto_roles)->get()->pluck('name')->toArray();
 
        $account->giveRoles(...$roles_to_assign);
     }
