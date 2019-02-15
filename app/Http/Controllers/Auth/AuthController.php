@@ -5,6 +5,7 @@ use App\Connectors\CoreConnection;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\AccountGroup;
+use App\Models\Permission\AutoRole;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Socialite;
@@ -57,6 +58,10 @@ class AuthController extends Controller
 
         // Redirect the user
         $dbAccount = Account::where('main_user_id', $main->id)->first();
+
+        // Assign auto roles
+        AutoRole::assignAutoRoles($dbAccount);
+
         Auth::login($dbAccount);
 
         return redirect('/');

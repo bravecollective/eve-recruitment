@@ -25,6 +25,7 @@
                 </div>
             @endif
             <div class="alert alert-info" id="inline-info" style="display: none;"></div>
+            <div class="alert alert-danger" id="inline-error" style="display: none;"></div>
             <div class="jumbotron text-white">
             @yield('content')
             </div>
@@ -34,6 +35,13 @@
             {
                 let d = $("#inline-info");
                 d.text(msg);
+                d.show();
+            }
+
+            function showError(msg)
+            {
+                let d = $("#inline-error");
+                d.text("ERROR: " + msg);
                 d.show();
             }
 

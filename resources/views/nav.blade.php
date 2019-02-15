@@ -67,6 +67,7 @@
                 <div class="dropdown-menu" aria-labelledby="admin_dropdown">
                     <a class="dropdown-item" href="/admin/ads">Global Ad Management</a>
                     <a class="dropdown-item" href="/admin/roles">Global Roles</a>
+                    <a class="dropdown-item" href="/admin/roles/auto">Auto Assigned Roles</a>
                     <a class="dropdown-item" href="/group/ads/orphaned">Orphaned Group Ads</a>
                     <a class="dropdown-item" href="/admin/system">System Configuration</a>
                 </div>

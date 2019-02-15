@@ -9,7 +9,6 @@ class Account extends Authenticatable
     use HasPermissionTrait;
 
     protected $table = 'account';
-
     /**
      * given an array of users, get the account ID
      *
