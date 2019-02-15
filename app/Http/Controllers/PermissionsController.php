@@ -13,6 +13,16 @@ use Illuminate\Support\Facades\Input;
 
 class PermissionsController extends Controller
 {
+    public function listCoreGroups()
+    {
+        if (!Auth::user()->hasRole('admin'))
+            return redirect('/')->with('error', 'Unauthorized');
+
+        $core_groups = CoreGroup::all();
+
+        return view('core_groups', ['groups' => $core_groups]);
+    }
+
     /**
      * Render the global permissions page
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View

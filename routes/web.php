@@ -25,6 +25,7 @@ Route::post('/api/admin/roles/auto/save', 'PermissionsController@saveAutoRoles')
 // Global admin routes
 Route::get('/admin/roles', 'PermissionsController@globalRoles');
 Route::get('/admin/roles/auto', 'PermissionsController@autoRoles');
+Route::get('/admin/coregroups', 'PermissionsController@listCoreGroups');
 
 // Authentication routes
 Route::get('/login', 'Auth\AuthController@redirectToProvider')->name('login');
