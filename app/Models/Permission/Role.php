@@ -35,7 +35,7 @@ class Role extends Model
 
         foreach ($characters as $character)
         {
-            if (!in_array($character->alliance_id, $alliace_whitelist))
+            if ($character->alliance_id === null || !in_array($character->alliance_id, $alliace_whitelist))
                 continue;
 
             $role = Role::where('name', $character->corporation_name . " director")->where('slug', 'director')->first();
