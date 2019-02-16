@@ -4,7 +4,8 @@
     @if($title == 'Group')
     <form method='POST' action="/group/ad/save" id="corpAdForm">
     @else
-    <form method='POST' action="/corporations/{{ $corp_id }}/ad/save" id="corpAdForm">
+    <form onsubmit="return saveAd(this);" id="corpAdForm">
+        <input type="hidden" id="corpId" value="{{ $corp_id }}" />
     @endif
         <input type="hidden" value="{{ $ad->id }}" id="ad_id" name="ad_id" />
         <input type="hidden" id="_token" name="_token" value="{{ csrf_token() }}" />
@@ -47,6 +48,26 @@
             </div>";
             $(".questions").append(toAppend);
             counter++;
+        }
+
+        function saveAd(f)
+        {
+           f = $(f).serializeObject();
+           let c = $("#corpId");
+
+           if (c)
+           {
+               $.post('/corporations/' + c.val() + '/ad/save', f, function(e) {
+                    e = JSON.parse(e);
+
+                    if (e.success === false)
+                        showError(e.message);
+                    else
+                        showInfo(e.message);
+               });
+           }
+
+            return false;
         }
     </script>
 @endsection

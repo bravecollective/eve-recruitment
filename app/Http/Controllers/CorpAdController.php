@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Input;
 
 class CorpAdController extends Controller
 {
@@ -36,8 +37,6 @@ class CorpAdController extends Controller
     /**
      * Save a corporation recruitment ad
      *
-     * Route: /corp/ad/save
-     *
      * @param Request $r
      * @return \Illuminate\Http\RedirectResponse
      */
@@ -52,7 +51,7 @@ class CorpAdController extends Controller
         $questions = $r->input('questions');
 
         if (!$slug || !$text)
-            return redirect('/corp/ad')->with('error', 'Slug and text are both required');
+            die(json_encode(['success' => false, 'message' => 'Slug and text are both required']));
 
         if (!$ad_id)
             $ad = new RecruitmentAd();
@@ -88,6 +87,6 @@ class CorpAdController extends Controller
             }
         }
 
-        return redirect('/corp/ad')->with('info', 'Ad updated');
+        die(json_encode(['success' => true, 'message' => 'Ad updated']));
     }
 }
