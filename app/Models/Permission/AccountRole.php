@@ -128,27 +128,10 @@ class AccountRole extends Model
      */
     public static function canViewCorpMembers($corp_id)
     {
-        $recruitment_id = RecruitmentAd::where('corp_id', $corp_id)->first();
+        $corp_name = User::where('corporation_id', $corp_id)->first()->corporation_name;
+        $role = $corp_name . " recruiter";
+        $dir_role = $corp_name . " director";
 
-        if (!$recruitment_id)
-            return false;
-
-        $recruitment_id = $recruitment_id->id;
-        $recruiter_role_ids = Role::where('slug', 'recruiter')->where('recruitment_id', $recruitment_id)->first();
-        return (bool) AccountRole::where('account_id', Auth::user()->id)->where('role_id', $recruiter_role_ids->id)->exists();
-    }
-
-    /**
-     * Check if a user can view applications
-     *
-     * @param $ad_id
-     * @return mixed
-     */
-    public static function canViewApplications($ad_id)
-    {
-        return AccountRole::where('role_id', Role::getIdForSlug('recruiter'))
-            ->where('account_id', Auth::user()->id)
-            ->where('recruitment_id', $ad_id)
-            ->exists();
+        return (Auth::user()->hasRole($role) || Auth::user()->hasRole($dir_role));
     }
 }

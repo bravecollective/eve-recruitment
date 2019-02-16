@@ -21,7 +21,7 @@ class GroupAdController extends Controller
         if (!Auth::user()->hasRole('director'))
             return redirect('/')->with('error', 'Unauthorized');
 
-        $ads = RecruitmentAd::where('created_by', Auth::user()->main_user_id)->where('corp_id', null)->get();
+        $ads = RecruitmentAd::where('created_by', Auth::user()->id)->where('corp_id', null)->get();
 
         return view('group_ads', ['ads' => $ads]);
     }
@@ -52,6 +52,9 @@ class GroupAdController extends Controller
         if ($ad == null && $id > 0)
             return redirect('/group/ads')->with('error', 'Invalid ad ID');
 
+        if ($ad != null && $ad->created_by !== Auth::user()->id)
+            return redirect('/')->with('error', 'Unauthorized');
+
         $ad = ($ad == null) ? new RecruitmentAd() : $ad;
 
         $questions = FormQuestion::where('recruitment_id', $ad->id)->get();
@@ -77,7 +80,7 @@ class GroupAdController extends Controller
 
         if (!$ad_id) {
             $ad = new RecruitmentAd();
-            $ad->created_by = Auth::user()->main_user_id;
+            $ad->created_by = Auth::user()->id;
         } else
             $ad = RecruitmentAd::find($ad_id);
 

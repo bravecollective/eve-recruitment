@@ -40,9 +40,9 @@ class CorpAdController extends Controller
      * @param Request $r
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function saveAd(Request $r)
+    public function saveAd($corp_id, Request $r)
     {
-        if (!Auth::user()->hasPermissionTo(Config::get('constants.permissions')['MANAGE_CORP_AD']))
+        if (!Auth::user()->hasRole(User::where('corporation_id', $corp_id)->first()->corporation_name . " director"))
             return redirect('/')->with('error', 'Unauthorized');
 
         $slug = $r->input('slug');
@@ -58,10 +58,10 @@ class CorpAdController extends Controller
         else
             $ad = RecruitmentAd::find($ad_id);
 
-        $ad->created_by = Auth::user()->main_user_id;
+        $ad->created_by = Auth::user()->id;
         $ad->slug = $slug;
         $ad->text = $text;
-        $ad->corp_id = Auth::user()->getMainUser()->corporation_id;
+        $ad->corp_id = $corp_id;
         $ad->save();
 
         Role::createRoleForAd($ad);
