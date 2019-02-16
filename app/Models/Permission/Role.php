@@ -24,6 +24,33 @@ class Role extends Model
     }
 
     /**
+     * Create director roles that aren't in the database already for the alliance whitelist
+     *
+     * @param $characters
+     */
+    public static function createDirectorRoles($account)
+    {
+        $alliace_whitelist = explode(',', env('ALLIANCE_WHITELIST'));
+        $characters = $account->characters;
+
+        foreach ($characters as $character)
+        {
+            if (!in_array($character->alliance_id, $alliace_whitelist))
+                continue;
+
+            $role = Role::where('name', $character->corporation_name . " director")->where('slug', 'director')->first();
+
+            if ($role)
+                continue;
+
+            $role = new Role();
+            $role->slug = 'director';
+            $role->name = $character->corporation_name . ' director';
+            $role->save();
+        }
+    }
+
+    /**
      * Create the role for a recruitment ad
      *
      * @param RecruitmentAd $ad_id The ad to create a role for

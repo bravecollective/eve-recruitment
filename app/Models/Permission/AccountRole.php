@@ -40,41 +40,6 @@ class AccountRole extends Model
     }
 
     /**
-     * Get the list of corp ads a user can manage
-     *
-     * @return |null
-     */
-    public static function getAdsUserCanManage()
-    {
-        $account_id = Auth::user()->id;
-        $director_role_ids = Role::where('slug', 'director')->get()->pluck('id')->toArray();
-
-        // 1. Get the recruitment IDs a user can view
-        $account_recruitments = AccountRole::whereIn('role_id', $director_role_ids)->where('account_id', $account_id)->get();
-
-        if (!$account_recruitments)
-            return null;
-
-        // 2. Get the ad IDs
-        $recruitment_ads = Role::whereIn('id', $account_recruitments->pluck('role_id')->toArray())->get();
-
-        if (!$recruitment_ads)
-            return null;
-
-        // 3. Get the ads
-        $ads = RecruitmentAd::whereIn('id', $recruitment_ads->pluck('recruitment_id')->toArray())->get();
-
-        if (!$ads)
-            return null;
-
-        // 4. Get corp names
-        foreach ($ads as $ad)
-            $ad->corp_name = User::where('corporation_id', $ad->corp_id)->first()->corporation_name;
-
-        return $ads;
-    }
-
-    /**
      * Get the ads that a user can view
      */
     public static function getAdsUserCanView()
@@ -108,37 +73,49 @@ class AccountRole extends Model
     }
 
     /**
-     * Get the corporations a user can view
-     * Used for the "Corp Members" dropdown
+     * Get either:
+     * 1. List of corp members a user can view
+     * 2. List of corp ads a user can manage
+     *
+     * @param bool $corps
+     * @return array|null
      */
-    public static function getCorpsUserCanView()
+    public static function getUserCorpMembersOrAdsListing($corps = false)
     {
         $account_id = Auth::user()->id;
-        $recruiter_role_ids = Role::where('slug', 'recruiter')->get()->pluck('id')->toArray();
 
-        // 1. Get the recruitment IDs a user can view
-        $account_recruitments = AccountRole::whereIn('role_id', $recruiter_role_ids)->where('account_id', $account_id)->get();
+        // Get role IDs. Either recruiter or director
+        $role_ids = Role::where('slug', 'director');
+
+        if ($corps === true)
+            $role_ids = $role_ids->orWhere('slug', 'recruiter');
+
+        $role_ids = $role_ids->get()->pluck('id')->toArray();
+
+        // Get the account roles
+        $account_recruitments = AccountRole::whereIn('role_id', $role_ids)->where('account_id', $account_id)->get();
 
         if (!$account_recruitments)
             return null;
 
-        // 2. Get the ad IDs
-        $recruitment_ads = Role::whereIn('id', $account_recruitments->pluck('role_id')->toArray())->get();
+        // Get the roles
+        $roles = Role::whereIn('id', $account_recruitments->pluck('role_id')->toArray())->get();
 
-        if (!$recruitment_ads)
+        if (!$roles)
             return null;
 
-        $recruitment_ads = $recruitment_ads->pluck('recruitment_id')->toArray();
+        // 3. Get the corporations
+        // TODO: Base this on ID instead of name.
+        $ads = [];
+        foreach ($roles as $role)
+        {
+            if ($role->name == "director" || $role->name == "recruiter")
+                continue; // No corp associated with this one
 
-        // 3. Get the ads
-        $ads = RecruitmentAd::whereIn('id', $recruitment_ads)->whereNotNull('corp_id')->get();
-
-        if (!$ads)
-            return null;
-
-        // 4. Get corp names
-        foreach ($ads as $ad)
-            $ad->corp_name = User::where('corporation_id', $ad->corp_id)->first()->corporation_name;
+            $corp = preg_split("/\s+(?=\S*+$)/", $role->name)[0]; // Split at last space. Everything before 'director' or 'recruiter'
+            $corp_id = User::where('corporation_name', $corp)->first()->corporation_id;
+            $ads[] = (object) [ 'corp_name' => $corp, 'corp_id' => $corp_id ];
+        }
 
         return $ads;
     }

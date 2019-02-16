@@ -30,7 +30,7 @@ class CorpAdController extends Controller
 
         $questions = FormQuestion::where('recruitment_id', $ad->id)->get();
 
-        return view('edit_ad', ['title' => Auth::user()->getMainUser()->corporation_name, 'ad' => $ad, 'questions' => $questions]);
+        return view('edit_ad', ['title' => Auth::user()->getMainUser()->corporation_name, 'ad' => $ad, 'questions' => $questions, 'corp_id' => $corp_id]);
     }
 
     /**

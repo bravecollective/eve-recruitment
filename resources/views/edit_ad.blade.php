@@ -4,7 +4,7 @@
     @if($title == 'Group')
     <form method='POST' action="/group/ad/save" id="corpAdForm">
     @else
-    <form method='POST' action="/corp/ad/save" id="corpAdForm">
+    <form method='POST' action="/corporations/{{ $corp_id }}/ad/save" id="corpAdForm">
     @endif
         <input type="hidden" value="{{ $ad->id }}" id="ad_id" name="ad_id" />
         <input type="hidden" id="_token" name="_token" value="{{ csrf_token() }}" />
