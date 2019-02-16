@@ -2,7 +2,7 @@
 @section('content')
     <h1>{{ $title }} Recruitment Ad</h1>
     @if($title == 'Group')
-    <form method='POST' action="/group/ad/save" id="corpAdForm">
+    <form onsubmit="return saveAd(this);" id="corpAdForm">
     @else
     <form onsubmit="return saveAd(this);" id="corpAdForm">
         <input type="hidden" id="corpId" value="{{ $corp_id }}" />
@@ -53,19 +53,17 @@
         function saveAd(f)
         {
            f = $(f).serializeObject();
-           let c = $("#corpId");
+           let c = $("#corpId").val();
+           let url = (c !== undefined) ? '/corporations/' + c + '/ad/save' : '/group/ad/save';
 
-           if (c)
-           {
-               $.post('/corporations/' + c.val() + '/ad/save', f, function(e) {
-                    e = JSON.parse(e);
+           $.post(url, f, function(e) {
+                e = JSON.parse(e);
 
-                    if (e.success === false)
-                        showError(e.message);
-                    else
-                        showInfo(e.message);
-               });
-           }
+                if (e.success === false)
+                    showError(e.message);
+                else
+                    showInfo(e.message);
+           });
 
             return false;
         }

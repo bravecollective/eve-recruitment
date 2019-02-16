@@ -18,7 +18,7 @@ class GroupAdController extends Controller
      */
     public function listAds()
     {
-        if (!Auth::user()->hasPermissionTo(Config::get('constants.permissions')['MANAGE_GROUP_AD']))
+        if (!Auth::user()->hasRole('director'))
             return redirect('/')->with('error', 'Unauthorized');
 
         $ads = RecruitmentAd::where('created_by', Auth::user()->main_user_id)->where('corp_id', null)->get();
@@ -44,7 +44,7 @@ class GroupAdController extends Controller
      */
     public function manageAd($id)
     {
-        if (!Auth::user()->hasPermissionTo(Config::get('constants.permissions')['MANAGE_CORP_AD']))
+        if (!Auth::user()->hasRole('director'))
             return redirect('/')->with('error', 'Unauthorized');
 
         $ad = RecruitmentAd::find($id);
@@ -61,7 +61,7 @@ class GroupAdController extends Controller
 
     public function saveAd(Request $r)
     {
-        if (!Auth::user()->hasPermissionTo(Config::get('constants.permissions')['MANAGE_CORP_AD']))
+        if (!Auth::user()->hasRole('director'))
             return redirect('/')->with('error', 'Unauthorized');
 
         $slug = $r->input('slug');
@@ -73,7 +73,7 @@ class GroupAdController extends Controller
         $name = $r->input('name');
 
         if (!$slug || !$text || !$name)
-            return redirect('/group/ad/create')->with('error', 'Slug, text, and name are all required');
+            die(json_encode(['success' => false, 'message' => 'Slug, text, and name are all required']));
 
         if (!$ad_id) {
             $ad = new RecruitmentAd();
@@ -107,6 +107,6 @@ class GroupAdController extends Controller
             }
         }
 
-        return redirect('/group/ad/' . $ad->id)->with('info', 'Ad updated');
+        die(json_encode(['success' => 'true', 'message' => 'Ad updated']));
     }
 }
