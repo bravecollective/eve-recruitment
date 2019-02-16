@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class User extends Model
 {
-
     protected $table = 'user';
     protected $primaryKey = 'character_id';
     public $incrementing = false;

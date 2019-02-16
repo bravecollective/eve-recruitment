@@ -13,12 +13,6 @@ class CreatePermissionsTables extends Migration
      */
     public function up()
     {
-        Schema::create('permission', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('name');
-            $table->string('slug');
-            $table->timestamps();
-        });
 
         Schema::create('role', function (Blueprint $table) {
             $table->increments('id');
@@ -26,21 +20,9 @@ class CreatePermissionsTables extends Migration
             $table->string('slug');
             $table->unsignedInteger('recruitment_id')->nullable();
 
-            $table->foreign('recruitment_id')->references('id')->on('recruitment_ad')->onDelete('cascade');
-
             $table->unique(['name', 'slug', 'recruitment_id']);
 
             $table->timestamps();
-        });
-
-        Schema::create('role_permissions', function (Blueprint $table) {
-            $table->integer('role_id')->unsigned();
-            $table->integer('permission_id')->unsigned();
-
-            $table->foreign('role_id')->references('id')->on('role')->onDelete('cascade');
-            $table->foreign('permission_id')->references('id')->on('permission')->onDelete('cascade');
-
-            $table->primary(['role_id', 'permission_id']);
         });
 
         Schema::create('account_role', function (Blueprint $table) {
@@ -58,8 +40,6 @@ class CreatePermissionsTables extends Migration
     public function down()
     {
         Schema::dropIfExists('account_role');
-        Schema::dropIfExists('role_permissions');
-        Schema::dropIfExists('permission');
         Schema::dropIfExists('role');
     }
 }

@@ -4,21 +4,9 @@ namespace App\Models;
 
 use App\Models\Permissions\Permission;
 use App\Models\Permissions\Role;
-use Illuminate\Support\Facades\Auth;
 
 trait HasPermissionTrait
 {
-
-    /**
-     * Check if a account has permission to do something, through roles or direct permissions
-     *
-     * @param $permission
-     * @return bool
-     */
-    public function hasPermissionTo($permission)
-    {
-        return $this->hasPermissionThroughRole($permission);
-    }
 
     /**
      * Get all roles, given a string array of slugs
@@ -95,64 +83,6 @@ trait HasPermissionTrait
 
         return $this;
     }
-
-    /**
-     * Check if a account is granted permission implicitly through a role
-     *
-     * @param $permission
-     * @return bool
-     **/
-    public function hasPermissionThroughRole($permission)
-    {
-        foreach (Auth::user()->roles as $role)
-            if ($role->permissions->contains(Permission::where('slug', $permission)->first()))
-                return true;
-
-        return false;
-    }
-
-    /**
-     * Check if a account has a permission through direct permissions
-     *
-     * @param $permission
-     * @return bool
-     *
-    protected function hasPermission($permission)
-    {
-        return (bool) Auth::user()->permissions->where('slug', $permission->slug)->count();
-    }*/
-
-    /**
-     * Give an accounts permissions
-     *
-     * @param mixed ...$permissions
-     * @return $this
-     *
-    public function givePermissionTo(...$permissions)
-    {
-        $permissions = $this->getAllPermissions($permissions);
-
-        if ($permissions === null)
-            return $this;
-
-        $this->permissions()->saveMany($permissions);
-
-        return $this;
-    }*/
-
-    /**
-     * Remove permissions from an account
-     *
-     * @param mixed ...$permissions
-     * @return $this
-     *
-    public function deletePermissions(...$permissions)
-    {
-        $permissions = $this->getAllPermissions($permissions);
-        $this->permissions()->detach($permissions);
-
-        return $this;
-    }*/
 
     /**
      * Roles relationship

@@ -17,9 +17,9 @@ class SearchController extends Controller
      */
     public function characterSearch(Request $r)
     {
-        if (Auth::user()->hasPermissionTo(Config::get('constants.permissions')['MANAGE_GLOBAL_PERMISSIONS']))
+        if (Auth::user()->hasRole('admin'))
             $scope = 'global';
-        else if (Auth::user()->hasPermissionTo(Config::get('constants.permissions')['MANAGE_CORP_PERMISSIONS']))
+        else if (Auth::user()->hasRole('director'))
             $scope = 'corp';
         else
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));

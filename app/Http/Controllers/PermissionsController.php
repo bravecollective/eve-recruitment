@@ -29,7 +29,7 @@ class PermissionsController extends Controller
      */
     public function globalRoles()
     {
-        if (!Auth::user()->hasPermissionTo(Config::get('constants.permissions')['MANAGE_GLOBAL_PERMISSIONS']))
+        if (!Auth::user()->hasRole('admin'))
             return redirect('/')->with('error', 'Unauthorized');
 
         $roles = Role::all();
@@ -114,10 +114,9 @@ class PermissionsController extends Controller
      */
     private function getAccountWithScopes($character_id)
     {
-        if (Auth::user()->hasPermissionTo(Config::get('constants.permissions')['MANAGE_GLOBAL_PERMISSIONS']))
+        // TODO: Refine this later when group permissions are implemented
+        if (Auth::user()->hasRole('admin'))
             $scope = 'global';
-        else if (Auth::user()->hasPermissionTo(Config::get('constants.permissions')['MANAGE_CORP_PERMISSIONS']))
-            $scope = 'corp';
         else
             $scope = null;
 
@@ -147,6 +146,9 @@ class PermissionsController extends Controller
      */
     public function saveUserRoles()
     {
+        if (!Auth::user()->hasRole('admin'))
+            die(json_encode(['success' => false, 'message' => 'Unauthorized']));
+
         $user_id = Input::get('userid');
         $roles = Input::get('roles');
 
@@ -175,6 +177,9 @@ class PermissionsController extends Controller
      */
     public function loadUserRoles()
     {
+        if (!Auth::user()->hasRole('admin'))
+            die(json_encode(['success' => false, 'message' => 'Unauthorized']));
+
         $user_id = Input::get('userid');
 
         $user = $this->getAccountWithScopes($user_id);
