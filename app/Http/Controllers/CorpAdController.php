@@ -72,6 +72,9 @@ class CorpAdController extends Controller
             // Should be one of two: question ID, or 0 for new question
             foreach ($questions as $id => $q)
             {
+                if ($q === null)
+                    continue;
+
                 // Inner loop iterates through questions in that ID set
                 foreach ($q as $question)
                 {

@@ -113,7 +113,12 @@ class AccountRole extends Model
                 continue; // No corp associated with this one
 
             $corp = preg_split("/\s+(?=\S*+$)/", $role->name)[0]; // Split at last space. Everything before 'director' or 'recruiter'
-            $corp_id = User::where('corporation_name', $corp)->first()->corporation_id;
+            $corp_id = User::where('corporation_name', $corp)->first();
+
+            if (!$corp_id)
+                continue;
+
+            $corp_id = $corp_id->corporation_id;
             $ads[] = (object) [ 'corp_name' => $corp, 'corp_id' => $corp_id ];
         }
 

@@ -40,7 +40,7 @@
 @endsection
 @section('scripts')
     <script type="text/javascript">
-        let counter = 1;
+        let counter = $(".questions").children().length + 1;
 
         function addQuestion() {
             let toAppend = "<div class='form-group'> \

@@ -33,14 +33,15 @@ class CreateAdTables extends Migration
         });
 
         Schema::create('form_response', function (Blueprint $table) {
+            $table->increments('id');
             $table->unsignedInteger('account_id');
             $table->unsignedInteger('question_id');
-            $table->integer('application_id');
+            $table->unsignedInteger('application_id');
+            $table->text('response');
             $table->timestamps();
 
-            $table->primary(['account_id', 'question_id', 'application_id']);
-
             // TODO: Application FK
+            $table->foreign('account_id')->references('id')->on('account')->onDelete('cascade');
             $table->foreign('question_id')->references('id')->on('form')->onDelete('cascade');
         });
     }
