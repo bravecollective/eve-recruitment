@@ -11,7 +11,7 @@
         <div class="row">
             <div class="col-1"><input class="form-control" type="text" value="{{ $role->group_name }}"></div>
             <div class="col-1"><input class="form-control" type="text" value="{{ $role->role_name }}"></div>
-        </div>
+        </div><br />
     @endforeach
     </div>
     <br />
