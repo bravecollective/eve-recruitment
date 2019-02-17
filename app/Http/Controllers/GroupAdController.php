@@ -144,6 +144,12 @@ class GroupAdController extends Controller
         if (!$slug || !$text || !$name)
             die(json_encode(['success' => false, 'message' => 'Slug, text, and name are all required']));
 
+        if (strpos($name, ':') !== false || strpos($name, '_') !== false)
+            die(json_encode(['success' => false, 'message' => 'Group name cannot contain colons or underscores']));
+
+        if (strpos($slug, ' ') !== false)
+            die(json_encode(['success' => false, 'message' => 'Slug cannot contain spaces']));
+
         if (!$ad_id) {
             $ad = new RecruitmentAd();
             $ad->created_by = Auth::user()->id;

@@ -76,6 +76,9 @@ class CorpAdController extends Controller
         if (!$slug || !$text)
             die(json_encode(['success' => false, 'message' => 'Slug and text are both required']));
 
+        if (strpos($slug, ' ') !== false)
+            die(json_encode(['success' => false, 'message' => 'Slug cannot contain spaces']));
+
         if (!$ad_id)
             $ad = new RecruitmentAd();
         else
