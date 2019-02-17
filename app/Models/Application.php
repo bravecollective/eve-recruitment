@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\FormResponse;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -32,7 +33,7 @@ class Application extends Model
     // Override what the user sees
     public static $state_names_overrides = [
         self::BLACKLISTED => "Closed",
-        self::REVIEW_REQUESTED => "On Hold",
+        self::REVIEW_REQUESTED => "Open",
     ];
 
     protected $table = 'application';
@@ -77,6 +78,16 @@ class Application extends Model
     }
 
     /**
+     * Get applications for currently logged in user
+     *
+     * @return mixed
+     */
+    public static function getUserApplications()
+    {
+        return self::where('account_id', Auth::user()->id)->get();
+    }
+
+    /**
      * Check if a user can apply to a recruitment ad
      *
      * @param $account
@@ -101,5 +112,57 @@ class Application extends Model
             return false;
 
         return true;
+    }
+
+    /**
+     * Recruitment ad relationship
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function recruitmentAd()
+    {
+        return $this->belongsTo('App\Models\RecruitmentAd', 'recruitment_id', 'id');
+    }
+
+    /**
+     * Account relation
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function account()
+    {
+        return $this->hasOne('App\Models\Account', 'id', 'account_id');
+    }
+
+    /**
+     * Changelog relation
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function changelog()
+    {
+        return $this->hasMany('App\Models\ApplicationChangelog');
+    }
+
+    /**
+     * Comments relation
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function comments()
+    {
+        return $this->hasMany('App\Models\Comment');
+    }
+
+    /**
+     * Questions relation
+     *
+     * @return mixed
+     */
+    public function questions()
+    {
+        return FormResponse::join('form', 'form.id', '=', 'form_response.question_id')
+            ->where('application_id', $this->id)->where('account_id', $this->account_id)
+            ->get();
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models\Permission;
 
+use App\Models\Account;
 use App\Models\Permissions\Role;
 use App\Models\RecruitmentAd;
 use App\Models\User;
@@ -139,5 +140,18 @@ class AccountRole extends Model
         $dir_role = $corp_name . " director";
 
         return (Auth::user()->hasRole($role) || Auth::user()->hasRole($dir_role));
+    }
+
+    public static function canViewApplications($ad)
+    {
+        $role = Role::where('name', $ad->group_name . ' recruiter');
+
+        if ($ad->corp_id != null)
+        {
+            $role = $role->orWhere('name', $ad->group_name . ' director')->get()->pluck('id')->toArray();
+            return AccountRole::where('account_id', Auth::user()->id)->whereIn('role_id', $role)->exists();
+        }
+        else
+            return AccountRole::where('account_id', Auth::user()->id)->where('role_id', $role->first()->id)->exists();
     }
 }

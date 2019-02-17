@@ -5,7 +5,7 @@
     @foreach($corpMembers as $member)
         <p>
             <img src="https://image.eveonline.com/Character/{{ $member->character_id }}_32.jpg">
-            <a class="text-white" href="/member/{{ $member->character_id }}" target="_blank">{{ $member->name }}</a>
+            <a class="text-white" href="/character/{{ $member->character_id }}" target="_blank">{{ $member->name }}</a>
         </p>
     @endforeach
 @endsection

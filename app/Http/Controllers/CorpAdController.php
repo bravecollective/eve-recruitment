@@ -88,6 +88,7 @@ class CorpAdController extends Controller
         $ad->slug = $slug;
         $ad->text = $text;
         $ad->corp_id = $corp_id;
+        $ad->group_name = User::where('corporation_id', $corp_id)->first()->corporation_name;
         $ad->save();
 
         Role::createRoleForAd($ad);

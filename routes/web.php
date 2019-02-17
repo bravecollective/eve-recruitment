@@ -42,3 +42,8 @@ Route::get('/logout', function () {
 // Application routes
 Route::get('/{slug}', 'ApplicationController@loadAdBySlug');
 Route::post('/recruitments/{recruitment_id}/apply', 'ApplicationController@apply');
+Route::get('/applications/{id}', 'ApplicationController@viewApplications');
+Route::get('/application/{id}', 'ApplicationController@viewApplication');
+Route::post('/application/{id}/state/update', 'ApplicationController@updateState');
+Route::post('/application/{id}/comments/add', 'CommentController@addComment');
+Route::post('/application/{id}/comments/delete', 'CommentController@deleteComment');

@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Application;
+use App\Models\ApplicationChangelog;
+use App\Models\Comment;
 use App\Models\FormQuestion;
+use App\Models\FormResponse;
+use App\Models\Permission\AccountRole;
 use App\Models\RecruitmentAd;
 use App\Models\RecruitmentRequirement;
 use App\Models\User;
@@ -12,6 +16,73 @@ use Illuminate\Support\Facades\Input;
 
 class ApplicationController extends Controller
 {
+
+    /**
+     * View a single application
+     * @param $id
+     * @return
+     */
+    function viewApplication($id)
+    {
+        $application = Application::find($id);
+
+        if (!$application)
+            return redirect('/')->with('error', 'Invalid application ID');
+
+        $ad = $application->recruitmentAd;
+
+        if (!AccountRole::canViewApplications($ad))
+            return redirect('/')->with('error', 'Unauthorized');
+
+        return view('application', ['application' => $application, 'states' => Application::$state_names]);
+    }
+
+    /**
+     * Update the state of an application
+     *
+     * @param $id
+     */
+    function updateState($id)
+    {
+        $application = Application::find($id);
+        $newState = Input::get('state');
+
+        if (!$application)
+            die(json_encode(['success' => false, 'message' => 'Invalid application ID']));
+
+        $ad = $application->recruitmentAd;
+        $oldState = $application->status;
+
+        if (!AccountRole::canViewApplications($ad))
+            return die(json_encode(['success' => false, 'message' => 'Unauthorized']));
+
+        ApplicationChangelog::addEntry($application->id, $oldState, $newState);
+        $application->status = $newState;
+        $application->save();
+
+        die(json_encode(['success' => true, 'message' => 'Application state updated']));
+    }
+
+    /**
+     * View applications to a recruitment ad
+     *
+     * @param $id
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
+     */
+    function viewApplications($id)
+    {
+        $ad = RecruitmentAd::find($id);
+
+        if (!$ad)
+            return redirect('/')->with('error', 'Invalid recruitment ID');
+
+        if (!AccountRole::canViewApplications($ad))
+            return redirect('/')->with('error', 'Unauthorized');
+
+        $open_apps = Application::where('status', Application::OPEN)->where('recruitment_id', $id)->get();
+
+        return view('applications', ['ad' => $ad, 'open_apps' => $open_apps]);
+    }
 
     /**
      * Load an ad from the slug

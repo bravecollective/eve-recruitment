@@ -5,14 +5,6 @@
             <li class="nav-item">
                 <a class="nav-link" href="/">Home</a>
             </li>
-        @auth
-            <li class="nav-item">
-                <a class="nav-link" href="/profile/applications">My Applications</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/profile/applications">Submit Application</a>
-            </li>
-        @endauth
         </ul>
         <ul class="nav navbar-nav navbar-right">
         @auth
@@ -78,7 +70,7 @@
             <li class="nav-item">
                 <span class="navbar-brand">
                     <img src="https://image.eveonline.com/Character/{{ Auth::user()->main_user_id }}_32.jpg" />
-                    {{ Auth::user()->getMainUser()->name }}
+                    {{ Auth::user()->main()->name }}
                 </span>
             </li>
             <li class="nav-item">

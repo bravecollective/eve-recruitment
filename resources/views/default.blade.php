@@ -35,14 +35,16 @@
             {
                 let d = $("#inline-info");
                 d.text(msg);
-                d.show();
+                d.fadeIn();
+                setTimeout(() => d.fadeOut(), 3000);
             }
 
             function showError(msg)
             {
                 let d = $("#inline-error");
                 d.text("ERROR: " + msg);
-                d.show();
+                d.fadeIn();
+                setTimeout(() => d.fadeOut(), 3000);
             }
 
             (function($){

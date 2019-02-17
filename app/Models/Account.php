@@ -58,7 +58,7 @@ class Account extends Authenticatable
      *
      * @return mixed
      */
-    public function getMainUser()
+    public function main()
     {
         return User::find($this->main_user_id);
     }
