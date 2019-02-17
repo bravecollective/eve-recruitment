@@ -21,7 +21,7 @@
         <div class="row">
             <h2>Changelog</h2>
         </div>
-        @foreach($changelog as $changelog)
+        @foreach($changelog->reverse() as $changelog)
         <div class="row">
             {{ \App\Models\Application::getStringForState($changelog->old_state) }} -> {{ \App\Models\Application::getStringForState($changelog->new_state) }}
         </div>
