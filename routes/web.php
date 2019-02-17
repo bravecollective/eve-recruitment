@@ -39,5 +39,6 @@ Route::get('/logout', function () {
     return redirect('/');
 })->name('logout');
 
-// View ad route
-Route::get('/{slug}', 'GroupAdController@loadAdBySlug');
+// Application routes
+Route::get('/{slug}', 'ApplicationController@loadAdBySlug');
+Route::post('/recruitments/{recruitment_id}/apply', 'ApplicationController@apply');

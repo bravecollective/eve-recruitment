@@ -13,24 +13,6 @@ use Illuminate\Support\Facades\Auth;
 class GroupAdController extends Controller
 {
 
-    public function loadAdBySlug($slug)
-    {
-        $ad = RecruitmentAd::where('slug', $slug)->first();
-
-        if (!$ad)
-            return redirect('/')->with('error', 'Recruitment ad does not exist');
-
-        $requirements = $ad->requirements;
-
-        if (!RecruitmentRequirement::accountMeetsRequirements(Auth::user(), $requirements))
-            return redirect('/')->with('error', 'Unauthorized');
-
-        $name = ($ad->corp_id == null) ? $ad->group_name : User::where('corporation_id', $ad->corp_id)->first()->corporation_name;
-        $form = FormQuestion::where('recruitment_id', $ad->id)->get();
-
-        return view('view_ad', ['name' => $name, 'text' => $ad->text, 'questions' => $form]);
-    }
-
     /**
      * Delete a question. This is for both group and corp ads
      *
