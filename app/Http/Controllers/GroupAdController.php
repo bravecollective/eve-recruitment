@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\FormQuestion;
 use App\Models\Permissions\Role;
 use App\Models\RecruitmentAd;
+use App\Models\RecruitmentRequirement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Config;
 
 class GroupAdController extends Controller
 {
@@ -58,10 +58,17 @@ class GroupAdController extends Controller
         $ad = ($ad == null) ? new RecruitmentAd() : $ad;
 
         $questions = FormQuestion::where('recruitment_id', $ad->id)->get();
+        $requirements = (new RecruitmentRequirementController())->getApplicationRequirements($ad->id);
 
-        return view('edit_ad', ['title' => 'Group', 'ad' => $ad, 'questions' => $questions]);
+        return view('edit_ad', ['title' => 'Group', 'ad' => $ad, 'questions' => $questions, 'requirements' => $requirements]);
     }
 
+    /**
+     * Save a group recruitment ad
+     *
+     * @param Request $r
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function saveAd(Request $r)
     {
         if (!Auth::user()->hasRole('director'))
@@ -71,6 +78,7 @@ class GroupAdController extends Controller
         $text = $r->input('text');
         $ad_id = $r->input('ad_id');
         $questions = $r->input('questions');
+        $requirements = $r->input('requirements');
 
         // TODO: No colons or underscores allowed in the name
         $name = $r->input('name');
@@ -84,6 +92,9 @@ class GroupAdController extends Controller
         } else
             $ad = RecruitmentAd::find($ad_id);
 
+        if (RecruitmentAd::where('slug', $slug)->exists() && $slug != $ad->slug)
+            die(json_encode(['success' => false, 'message' => 'Slug already exists']));
+
         $ad->slug = $slug;
         $ad->text = $text;
         $ad->group_name = $name;
@@ -95,7 +106,11 @@ class GroupAdController extends Controller
         {
             // Outer loop iterates through the different ID sets
             // Should be one of two: question ID, or 0 for new question
-            foreach ($questions as $id => $q) {
+            foreach ($questions as $id => $q)
+            {
+                if ($q === null)
+                    continue;
+
                 // Inner loop iterates through questions in that ID set
                 foreach ($q as $question) {
                     if ($id == 0)
@@ -110,6 +125,32 @@ class GroupAdController extends Controller
             }
         }
 
-        die(json_encode(['success' => 'true', 'message' => 'Ad updated']));
+        if ($requirements)
+        {
+            foreach ($requirements as $id => $requirement)
+            {
+                if ($requirement === null)
+                    continue;
+
+                foreach ($requirement as $r)
+                {
+                    $data = explode('-', $r);
+
+                    if (sizeof($data) != 2)
+                        continue;
+
+                    $rec_id = $data[0];
+                    $type = $data[1];
+
+                    $dbRequirement = ($id == 0) ? new RecruitmentRequirement() : RecruitmentRequirement::find($id);
+                    $dbRequirement->type = (int) $type;
+                    $dbRequirement->requirement_id = $rec_id;
+                    $dbRequirement->recruitment_id = $ad->id;
+                    $dbRequirement->save();
+                }
+            }
+        }
+
+        die(json_encode(['success' => 'true', 'message' => 'Ad updated', 'data' => $ad->id]));
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\FormQuestion;
 use App\Models\Permissions\Role;
 use App\Models\RecruitmentAd;
+use App\Models\RecruitmentRequirement;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -30,8 +31,9 @@ class CorpAdController extends Controller
         $ad = ($ad == null) ? new RecruitmentAd() : $ad;
 
         $questions = FormQuestion::where('recruitment_id', $ad->id)->get();
+        $requirements = (new RecruitmentRequirementController())->getApplicationRequirements($ad->id);
 
-        return view('edit_ad', ['title' => Auth::user()->getMainUser()->corporation_name, 'ad' => $ad, 'questions' => $questions, 'corp_id' => $corp_id]);
+        return view('edit_ad', ['title' => Auth::user()->getMainUser()->corporation_name, 'ad' => $ad, 'questions' => $questions, 'corp_id' => $corp_id, 'requirements' => $requirements]);
     }
 
     /**
@@ -49,6 +51,7 @@ class CorpAdController extends Controller
         $text = $r->input('text');
         $ad_id = $r->input('ad_id');
         $questions = $r->input('questions');
+        $requirements = $r->input('requirements');
 
         if (!$slug || !$text)
             die(json_encode(['success' => false, 'message' => 'Slug and text are both required']));
@@ -57,6 +60,9 @@ class CorpAdController extends Controller
             $ad = new RecruitmentAd();
         else
             $ad = RecruitmentAd::find($ad_id);
+
+        if (RecruitmentAd::where('slug', $slug)->exists() && $slug != $ad->slug)
+            die(json_encode(['success' => false, 'message' => 'Slug already exists']));
 
         $ad->created_by = Auth::user()->id;
         $ad->slug = $slug;
@@ -78,10 +84,7 @@ class CorpAdController extends Controller
                 // Inner loop iterates through questions in that ID set
                 foreach ($q as $question)
                 {
-                    if ($id == 0)
-                        $q = new FormQuestion();
-                    else
-                        $q = FormQuestion::find($id);
+                    $q = ($id == 0) ? new FormQuestion() : FormQuestion::find($id);
 
                     $q->recruitment_id = $ad->id;
                     $q->question = $question;
@@ -90,6 +93,32 @@ class CorpAdController extends Controller
             }
         }
 
-        die(json_encode(['success' => true, 'message' => 'Ad updated']));
+        if ($requirements)
+        {
+            foreach ($requirements as $id => $requirement)
+            {
+                if ($requirement === null)
+                    continue;
+
+                foreach ($requirement as $r)
+                {
+                    $data = explode('-', $r);
+
+                    if (sizeof($data) !== 2)
+                        continue;
+
+                    $rec_id = $data[0];
+                    $type = $data[1];
+
+                    $dbRequirement = ($id == 0) ? new RecruitmentRequirement() : RecruitmentRequirement::find($id);
+                    $dbRequirement->type = $type;
+                    $dbRequirement->requirement_id = $rec_id;
+                    $dbRequirement->recruitment_id = $ad->id;
+                    $dbRequirement->save();
+                }
+            }
+        }
+
+        die(json_encode(['success' => true, 'message' => 'Ad updated', 'data' => $ad->id]));
     }
 }

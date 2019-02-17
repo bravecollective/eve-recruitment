@@ -21,6 +21,7 @@ Route::post('/api/character/search', 'SearchController@characterSearch');
 Route::post('/api/character/roles', 'PermissionsController@loadUserRoles');
 Route::post('/api/character/roles/save', 'PermissionsController@saveUserRoles');
 Route::post('/api/admin/roles/auto/save', 'PermissionsController@saveAutoRoles');
+Route::get('/api/requirements/template', 'RecruitmentRequirementController@getTemplate');
 
 // Global admin routes
 Route::get('/admin/roles', 'PermissionsController@globalRoles');

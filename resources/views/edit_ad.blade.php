@@ -25,15 +25,28 @@
             <small id="textInfo" class="form-text">Markdown is supported.</small>
         </div>
         <div class="form-group">
-            <label>Form Questions</label>
-            <div class="questions">
-            @foreach($questions as $question)
-                <div class="form-group">
-                    <input type="text" class="form-control" value="{{ $question->question }}" name="questions[{{ $question->id }}][]" id="questions[{{ $question->id }}][]"/>
+            <div class="row">
+                <div class="col-4">
+                    <label>Form Questions</label>
+                    <div class="questions">
+                        @foreach($questions as $question)
+                            <div class="form-group">
+                                <input type="text" class="form-control" value="{{ $question->question }}" name="questions[{{ $question->id }}][]" id="questions[{{ $question->id }}][]"/>
+                            </div>
+                        @endforeach
+                    </div>
+                    <button type="button" class="btn btn-success" onClick="addQuestion();"><span class="fa fa-plus"></span></button>
                 </div>
-            @endforeach
+                <div class="col-4">
+                    <label>Application Requirements</label>
+                    <div class="requirements">
+                        @foreach($requirements as $requirement)
+                            {!! $requirement !!}
+                        @endforeach
+                    </div>
+                    <button type="button" class="btn btn-success" onClick="addRequirement();"><span class="fa fa-plus"></span></button>
+                </div>
             </div>
-            <button type="button" class="btn btn-success" onClick="addQuestion();"><span class="fa fa-plus"></span></button>
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
@@ -41,6 +54,9 @@
 @section('scripts')
     <script type="text/javascript">
         let counter = $(".questions").children().length + 1;
+        let requirement = null;
+
+        $.get('/api/requirements/template', (e) => requirement = e);
 
         function addQuestion() {
             let toAppend = "<div class='form-group'> \
@@ -48,6 +64,11 @@
             </div>";
             $(".questions").append(toAppend);
             counter++;
+        }
+
+        function addRequirement()
+        {
+            $(".requirements").append(requirement);
         }
 
         function saveAd(f)
@@ -62,7 +83,14 @@
                 if (e.success === false)
                     showError(e.message);
                 else
-                    showInfo(e.message);
+                {
+                    if (c !== undefined)
+                        setTimeout(() => location.reload(), 2000);
+                    else
+                        setTimeout(() => window.location.href = '/group/ad/' + e.data, 2000);
+
+                    showInfo(e.message + ". Page will reload in a few seconds");
+                }
            });
 
             return false;

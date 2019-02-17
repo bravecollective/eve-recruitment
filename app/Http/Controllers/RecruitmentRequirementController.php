@@ -1,0 +1,38 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\RecruitmentRequirement;
+use Illuminate\Support\Facades\Auth;
+
+class RecruitmentRequirementController extends Controller
+{
+
+    /**
+     * Ajax function to get the template for application requirements
+     *
+     * @throws \Throwable
+     */
+    public function getTemplate()
+    {
+        if (!Auth::user()->hasRole('director') || !Auth::user()->hasRole('recruiter'))
+            die(json_encode(['success' => false, 'message' => 'Unauthorized']));
+
+        $requirements = RecruitmentRequirement::getPossibleRequirements(0);
+
+        die(view('parts/recruitment_requirement', ['requirements' => $requirements])->render());
+    }
+
+    // This is a controller function for access to the view() function
+    public function getApplicationRequirements($ad_id)
+    {
+        // No need to check permissions - called from Ad controllers after permission checks
+        $output = [];
+        $requirements = RecruitmentRequirement::where('recruitment_id', $ad_id)->get();
+
+        foreach ($requirements as $requirement)
+            $output[] = view('parts/recruitment_requirement', ['requirements' => RecruitmentRequirement::getPossibleRequirements($requirement->id), 'selected' => $requirement->requirement_id . '-' . $requirement->type])->render();
+
+        return $output;
+    }
+}
