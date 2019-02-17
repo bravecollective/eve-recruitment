@@ -30,8 +30,11 @@
                     <label>Form Questions</label>
                     <div class="questions">
                         @foreach($questions as $question)
-                            <div class="form-group">
-                                <input type="text" class="form-control" value="{{ $question->question }}" name="questions[{{ $question->id }}][]" id="questions[{{ $question->id }}][]"/>
+                            <div class="input-group" style="margin-bottom: 1em;">
+                                <input type="text" class="form-control question_{{ $question->id }}" value="{{ $question->question }}" name="questions[{{ $question->id }}][]" id="questions[{{ $question->id }}][]"/>
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="deleteQuestion({{ $question->id }});">X</button>
+                                </div>
                             </div>
                         @endforeach
                     </div>
@@ -41,7 +44,9 @@
                     <label>Application Requirements</label>
                     <div class="requirements">
                         @foreach($requirements as $requirement)
+                        <div class="input-group" style="margin-bottom: 1em;">
                             {!! $requirement !!}
+                        </div>
                         @endforeach
                     </div>
                     <button type="button" class="btn btn-success" onClick="addRequirement();"><span class="fa fa-plus"></span></button>
@@ -56,7 +61,57 @@
         let counter = $(".questions").children().length + 1;
         let requirement = null;
 
-        $.get('/api/requirements/template', (e) => requirement = e);
+        $.get('/api/requirements/template', (e) => requirement = '<div class="input-group" style="margin-bottom: 1em;">' + e + '</div>');
+
+        function deleteRequirement(requirement_id)
+        {
+            let ad_id = $("#ad_id").val();
+            let url = '/api/recruitments/'+ ad_id +'/requirements/' + requirement_id;
+
+            if (!confirm("Are you sure you wish to delete this requirement?"))
+                return;
+
+            $.ajax({
+                url: url,
+                type: 'DELETE',
+                data: { _token: "{{ csrf_token() }}" },
+                success: function(e) {
+                    e = JSON.parse(e);
+                    if (e.success === false)
+                        showError(e.message);
+                    else
+                    {
+                        showInfo(e.message);
+                        $(".requirement_" + requirement_id).parent().remove();
+                    }
+                }
+            });
+        }
+
+        function deleteQuestion(question_id)
+        {
+            let ad_id = $("#ad_id").val();
+            let url = '/api/recruitments/'+ ad_id +'/questions/' + question_id;
+
+            if (!confirm("Are you sure you wish to delete this form question?"))
+                return;
+
+            $.ajax({
+                url: url,
+                type: 'DELETE',
+                data: { _token: "{{ csrf_token() }}" },
+                success: function(e) {
+                    e = JSON.parse(e);
+                    if (e.success === false)
+                        showError(e.message);
+                    else
+                    {
+                        showInfo(e.message);
+                        $(".question_" + question_id).parent().remove();
+                    }
+                }
+            });
+        }
 
         function addQuestion() {
             let toAppend = "<div class='form-group'> \

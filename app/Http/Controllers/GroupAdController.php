@@ -6,11 +6,69 @@ use App\Models\FormQuestion;
 use App\Models\Permissions\Role;
 use App\Models\RecruitmentAd;
 use App\Models\RecruitmentRequirement;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class GroupAdController extends Controller
 {
+
+    /**
+     * Delete a question. This is for both group and corp ads
+     *
+     * @param $ad_id
+     * @param $question_id
+     */
+    public function deleteQuestion($ad_id, $question_id)
+    {
+        $dbAd = RecruitmentAd::find($ad_id);
+
+        if ($dbAd->corporation_id == null && $dbAd->created_by != Auth::user()->id)
+            die(json_encode(['success' => false, 'message' => 'Unauthorized']));
+
+        $corp_name = ($dbAd->corporation_id != null) ? User::where('corporation_id', $dbAd->corporation_id)->first()->coropration_name : null;
+
+        if ($corp_name != null && !Auth::user()->hasRole($corp_name . ' director'))
+            die(json_encode(['success' => false, 'message' => 'Unauthorized']));
+
+        $question = FormQuestion::find($question_id);
+
+        if (!$question)
+            die(json_encode(['success' => false, 'message' => 'Invalid question ID']));
+
+        $question->delete();
+
+        die(json_encode(['success' => true, 'message' => 'Question deleted']));
+    }
+
+    /**
+     * Delete a question. This is for both group and corp ads
+     *
+     * @param $ad_id
+     * @param $requirement_id
+     */
+    public function deleteRequirement($ad_id, $requirement_id)
+    {
+        $dbAd = RecruitmentAd::find($ad_id);
+
+        if ($dbAd->corporation_id == null && $dbAd->created_by != Auth::user()->id)
+            die(json_encode(['success' => false, 'message' => 'Unauthorized']));
+
+        $corp_name = ($dbAd->corporation_id != null) ? User::where('corporation_id', $dbAd->corporation_id)->first()->coropration_name : null;
+
+        if ($corp_name != null && !Auth::user()->hasRole($corp_name . ' director'))
+            die(json_encode(['success' => false, 'message' => 'Unauthorized']));
+
+        $requirement = RecruitmentRequirement::find($requirement_id);
+
+        if (!$requirement)
+            die(json_encode(['success' => false, 'message' => 'Invalid requirement ID']));
+
+        $requirement->delete();
+
+        die(json_encode(['success' => true, 'message' => 'Requirement deleted']));
+    }
+
     /**
      * List group ads belonging to a user
      *
@@ -112,7 +170,11 @@ class GroupAdController extends Controller
                     continue;
 
                 // Inner loop iterates through questions in that ID set
-                foreach ($q as $question) {
+                foreach ($q as $question)
+                {
+                    if (!$question)
+                        continue;
+
                     if ($id == 0)
                         $q = new FormQuestion();
                     else

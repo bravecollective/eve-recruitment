@@ -86,6 +86,9 @@ class CorpAdController extends Controller
                 {
                     $q = ($id == 0) ? new FormQuestion() : FormQuestion::find($id);
 
+                    if (!$question)
+                        continue;
+
                     $q->recruitment_id = $ad->id;
                     $q->question = $question;
                     $q->save();
