@@ -81,8 +81,15 @@ class ApplicationController extends Controller
             return redirect('/')->with('error', 'Unauthorized');
 
         $open_apps = Application::where('status', Application::OPEN)->where('recruitment_id', $id)->get();
+        $on_hold_apps = Application::where('status', Application::ON_HOLD)->where('recruitment_id', $id)->get();
+        $accepted_apps = Application::where('status', Application::ACCEPTED)->where('recruitment_id', $id)->get();
+        $closed_apps = Application::whereIn('status', [Application::CLOSED, Application::DENIED])->where('recruitment_id', $id)->get();
 
-        return view('applications', ['ad' => $ad, 'open_apps' => $open_apps]);
+        return view('applications',  ['ad' => $ad,
+                                            'open_apps' => $open_apps,
+                                            'on_hold_apps' => $on_hold_apps,
+                                            'accepted_apps' => $accepted_apps,
+                                            'closed_apps' => $closed_apps]);
     }
 
     /**
