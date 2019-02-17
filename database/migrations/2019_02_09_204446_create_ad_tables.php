@@ -31,19 +31,6 @@ class CreateAdTables extends Migration
 
             $table->foreign('recruitment_id')->references('id')->on('recruitment_ad')->onDelete('cascade');
         });
-
-        Schema::create('form_response', function (Blueprint $table) {
-            $table->increments('id');
-            $table->unsignedInteger('account_id');
-            $table->unsignedInteger('question_id');
-            $table->unsignedInteger('application_id');
-            $table->text('response');
-            $table->timestamps();
-
-            // TODO: Application FK
-            $table->foreign('account_id')->references('id')->on('account')->onDelete('cascade');
-            $table->foreign('question_id')->references('id')->on('form')->onDelete('cascade');
-        });
     }
 
     /**
@@ -53,7 +40,6 @@ class CreateAdTables extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('form_response');
         Schema::dropIfExists('form');
         Schema::dropIfExists('recruitment_ad');
     }
