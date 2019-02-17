@@ -45,7 +45,7 @@
         {
             if (!confirm("Are you sure you wish to delete this comment?"))
                 return;
-            
+
             let data = {
                 _token: "{{ csrf_token() }}",
                 comment_id: id

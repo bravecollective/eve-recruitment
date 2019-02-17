@@ -49,7 +49,7 @@ class Application extends Model
         if (!array_key_exists($state, self::$state_names))
             return "UNKNOWN STATE";
 
-        if (!Auth::user()->hasRole('recruiter') && array_key_exists($state, self::$state_names_overrides))
+        if (!Auth::user()->hasRole('recruiter') && !Auth::user()->hasRole('director') && array_key_exists($state, self::$state_names_overrides))
             return self::$state_names_overrides[$state];
 
         return self::$state_names[$state];
@@ -64,13 +64,15 @@ class Application extends Model
      */
     public static function apply($account_id, $recruitment_id)
     {
-        $dbApp = Application::where('account_id', $account_id)->where('recruitment_id')->first();
+        $dbApp = Application::where('account_id', $account_id)->where('recruitment_id', $recruitment_id)->first();
 
         if (!$dbApp)
+        {
             $dbApp = new Application();
+            $dbApp->account_id = $account_id;
+            $dbApp->recruitment_id = $recruitment_id;
+        }
 
-        $dbApp->account_id = $account_id;
-        $dbApp->recruitment_id = $recruitment_id;
         $dbApp->status = self::OPEN;
         $dbApp->save();
 
