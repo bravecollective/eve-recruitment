@@ -14,7 +14,10 @@
 </select>
 <hr class="my-4">
 
-@include('parts/application/question_row', ['questions' => $application->questions(), 'changelog' => $application->changelog, 'comments' => $application->comments])
+@include('parts/application/question_row', ['questions' => $application->questions(),
+                                            'changelog' => $application->changelog,
+                                            'comments' => $application->comments,
+                                            'warnings' => $warnings])
 
 @endsection
 @section('scripts')

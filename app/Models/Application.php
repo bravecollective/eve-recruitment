@@ -79,6 +79,22 @@ class Application extends Model
         return $dbApp;
     }
 
+    public static function getWarnings($application)
+    {
+        $previously_denied = false;
+        $warnings = [];
+        $changes = $application->changelog;
+
+        foreach ($changes as $change)
+            if ($change->new_state == self::DENIED)
+                $previously_denied = true;
+
+        if ($previously_denied)
+            $warnings[] = "User was previously denied";
+
+        return $warnings;
+    }
+
     /**
      * Get applications for currently logged in user
      *

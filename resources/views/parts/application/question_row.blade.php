@@ -16,6 +16,11 @@
         <div class="row">
             <h2>Warnings</h2>
         </div>
+    @foreach($warnings as $warning)
+        <div class="row">
+            <li>{{ $warning }}</li>
+        </div>
+    @endforeach
     </div>
     <div class="col-2">
         <div class="row">

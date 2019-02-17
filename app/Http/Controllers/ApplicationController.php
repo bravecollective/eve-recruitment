@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Application;
 use App\Models\ApplicationChangelog;
-use App\Models\Comment;
 use App\Models\FormQuestion;
 use App\Models\FormResponse;
 use App\Models\Permission\AccountRole;
@@ -34,7 +33,9 @@ class ApplicationController extends Controller
         if (!AccountRole::canViewApplications($ad))
             return redirect('/')->with('error', 'Unauthorized');
 
-        return view('application', ['application' => $application, 'states' => Application::$state_names]);
+        $warnings = Application::getWarnings($application);
+
+        return view('application', ['application' => $application, 'states' => Application::$state_names, 'warnings' => $warnings]);
     }
 
     /**
