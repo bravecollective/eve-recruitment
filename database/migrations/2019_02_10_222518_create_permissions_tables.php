@@ -22,6 +22,8 @@ class CreatePermissionsTables extends Migration
 
             $table->unique(['name', 'slug', 'recruitment_id']);
 
+            $table->foreign('recruitment_id')->references('id')->on('recruitment_ad')->onDelete('cascade');
+
             $table->timestamps();
         });
 

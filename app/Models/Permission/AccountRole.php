@@ -122,7 +122,8 @@ class AccountRole extends Model
             $ads[] = (object) [ 'corp_name' => $corp, 'corp_id' => $corp_id ];
         }
 
-        return $ads;
+        // array_unique is needed to avoid returning duplicates when the user has both director and recruiter permissions
+        return array_unique($ads, SORT_REGULAR);
     }
 
     /**

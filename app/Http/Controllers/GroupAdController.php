@@ -168,6 +168,9 @@ class GroupAdController extends Controller
         } else
             $ad = RecruitmentAd::find($ad_id);
 
+        if (RecruitmentAd::where('group_name', $name)->exists() && $name != $ad->group_name)
+            die(json_encode(['success' => false, 'message' => 'Group name already exists']));
+
         if (RecruitmentAd::where('slug', $slug)->exists() && $slug != $ad->slug)
             die(json_encode(['success' => false, 'message' => 'Slug already exists']));
 
