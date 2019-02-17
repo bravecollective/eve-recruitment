@@ -36,6 +36,26 @@ class CorpAdController extends Controller
         return view('edit_ad', ['title' => Auth::user()->getMainUser()->corporation_name, 'ad' => $ad, 'questions' => $questions, 'corp_id' => $corp_id, 'requirements' => $requirements]);
     }
 
+    public function deleteAd($id)
+    {
+        $dbAd = RecruitmentAd::find($id);
+
+        if (!$dbAd)
+            die(json_encode(['success' => false, 'message' => 'Invalid question ID']));
+
+        if ($dbAd->corporation_id == null && $dbAd->created_by != Auth::user()->id)
+            die(json_encode(['success' => false, 'message' => 'Unauthorized']));
+
+        $corp_name = ($dbAd->corporation_id != null) ? User::where('corporation_id', $dbAd->corporation_id)->first()->coropration_name : null;
+
+        if ($corp_name != null && !Auth::user()->hasRole($corp_name . ' director'))
+            die(json_encode(['success' => false, 'message' => 'Unauthorized']));
+
+        $dbAd->delete();
+
+        return redirect('/')->with('info', 'Ad deleted');
+    }
+
     /**
      * Save a corporation recruitment ad
      *

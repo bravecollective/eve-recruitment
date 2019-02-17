@@ -10,6 +10,8 @@ Route::get('/corporations/{corp_id}', 'CorpMembersController@viewCorpMembers');
 Route::get('/corporations/{id}/ad', 'CorpAdController@manageAd');
 Route::post('/corporations/{id}/ad/save', 'CorpAdController@saveAd');
 
+Route::get('/recruitments/{id}/delete', 'CorpAdController@deleteAd');
+
 // Group Ads
 Route::get('/group/ads', 'GroupAdController@listAds');
 Route::get('/group/ad/create', 'GroupAdController@createAd');

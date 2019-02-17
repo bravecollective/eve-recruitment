@@ -54,6 +54,9 @@
             </div>
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
+    @if($ad->id)
+        <a class="btn btn-danger" href="/recruitments/{{ $ad->id }}/delete">Delete Ad</a>
+    @endif
     </form>
 @endsection
 @section('scripts')
