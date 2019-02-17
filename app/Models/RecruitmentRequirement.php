@@ -17,6 +17,44 @@ class RecruitmentRequirement extends Model
     const TYPES = [self::CORPORATION, self::CORE_GROUP, self::ALLIANCE];
 
     /**
+     * Check if a user meets a set of requirements
+     *
+     * @param $account
+     * @param $requirements
+     * @return bool
+     */
+    public static function accountMeetsRequirements($account, $requirements)
+    {
+        $meets_requirements = true;
+
+        foreach ($requirements as $requirement)
+        {
+            switch ($requirement->type)
+            {
+                case self::CORPORATION:
+                    $meets_requirements = User::where('account_id', $account->id)->where('corporation_id', $requirement->requirement_id)->exists();
+                    break;
+
+                case self::CORE_GROUP:
+                    $meets_requirements = AccountGroup::where('account_id', $account->id)->where('group_id', $requirement->requirement_id)->exists();
+                    break;
+
+                case self::ALLIANCE:
+                    $meets_requirements = User::where('account_id', $account->id)->where('alliance_id', $requirement->requirement_id)->exists();
+                    break;
+
+                default:
+                    break;
+            }
+
+            if (!$meets_requirements)
+                break;
+        }
+
+        return $meets_requirements;
+    }
+
+    /**
      * Get all requirements, with their corresponding names
      *
      * @return RecruitmentRequirement[]|\Illuminate\Database\Eloquent\Collection
@@ -87,5 +125,14 @@ class RecruitmentRequirement extends Model
         $obj->type = $type;
 
         return $obj;
+    }
+
+    /**
+     * Recruitment ad relationship
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function recruitmentAd()
+    {
+        return $this->belongsTo('App\Models\RecruitmentAd');
     }
 }

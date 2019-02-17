@@ -27,13 +27,13 @@ class CorpAdController extends Controller
         if (!Auth::user()->hasRole(User::where('corporation_id', $corp_id)->first()->corporation_name . " director"))
             return redirect('/')->with('error', 'Unauthorized');
 
-        $ad = RecruitmentAd::where('corp_id', Auth::user()->getMainUser()->corporation_id)->first();
+        $ad = RecruitmentAd::where('corp_id', $corp_id)->first();
         $ad = ($ad == null) ? new RecruitmentAd() : $ad;
 
         $questions = FormQuestion::where('recruitment_id', $ad->id)->get();
         $requirements = (new RecruitmentRequirementController())->getApplicationRequirements($ad->id);
 
-        return view('edit_ad', ['title' => Auth::user()->getMainUser()->corporation_name, 'ad' => $ad, 'questions' => $questions, 'corp_id' => $corp_id, 'requirements' => $requirements]);
+        return view('edit_ad', ['title' => User::where('corporation_id', $corp_id)->first()->corporation_name, 'ad' => $ad, 'questions' => $questions, 'corp_id' => $corp_id, 'requirements' => $requirements]);
     }
 
     public function deleteAd($id)

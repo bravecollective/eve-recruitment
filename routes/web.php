@@ -9,7 +9,6 @@ Route::get('/corporations/{corp_id}', 'CorpMembersController@viewCorpMembers');
 // Corp ad routes
 Route::get('/corporations/{id}/ad', 'CorpAdController@manageAd');
 Route::post('/corporations/{id}/ad/save', 'CorpAdController@saveAd');
-
 Route::get('/recruitments/{id}/delete', 'CorpAdController@deleteAd');
 
 // Group Ads
@@ -39,3 +38,6 @@ Route::get('/logout', function () {
     Auth::logout();
     return redirect('/');
 })->name('logout');
+
+// View ad route
+Route::get('/{slug}', 'GroupAdController@loadAdBySlug');
