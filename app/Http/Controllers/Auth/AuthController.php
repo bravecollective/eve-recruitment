@@ -57,7 +57,7 @@ class AuthController extends Controller
         // Insert/update core groups in database
         AccountGroup::updateGroupsForUser($main->id);
 
-        $dbAccount = Account::where('main_user_id', $main->id)->first();
+        $dbAccount = User::where('character_id', $main->id)->first()->account;
 
         // Create director roles
         Role::createDirectorRoles($dbAccount);
