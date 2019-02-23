@@ -4,6 +4,7 @@ namespace App\Models\Permission;
 
 use App\Models\AccountGroup;
 use App\Models\Permissions\Role;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class AutoRole extends Model
@@ -18,7 +19,7 @@ class AutoRole extends Model
      */
     public static function addOrUpdateAutoRole($group, $role)
     {
-        $dbRole = AutoRole::where('core_group_id', $group)->where('role_id', $role)->first();
+        $dbRole = AutoRole::getAutoRole($group, $role);
 
         if (!$dbRole)
             $dbRole = new AutoRole();
@@ -40,5 +41,25 @@ class AutoRole extends Model
        $roles_to_assign = Role::whereIn('id', $auto_roles)->get()->pluck('name')->toArray();
 
        $account->giveRoles(...$roles_to_assign);
+    }
+
+    /**
+     * Get an auto role from the database
+     *
+     * @param $group_id
+     * @param $role_id
+     * @return mixed
+     */
+    public static function getAutoRole($group_id, $role_id)
+    {
+        return AutoRole::where('core_group_id', $group_id)->where('role_id', $role_id)->first();
+    }
+
+    protected function setKeysForSaveQuery(Builder $query)
+    {
+        $query->where('core_group_id', $this->getAttribute('core_group_id'))
+            ->where('role_id', $this->getAttribute('role_id'));
+
+        return $query;
     }
 }

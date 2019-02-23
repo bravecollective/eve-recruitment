@@ -55,32 +55,29 @@ class PermissionsController extends Controller
         // First, validate inputs
         foreach ($roles as $role)
         {
-            $group_name = $role['group'];
-            $role_name = $role['role'];
+            $group_id = $role['group'];
+            $role_id = $role['role'];
 
-            $dbGroup = CoreGroup::where('name', $group_name)->first();
-            $dbRole = Role::where('name', $role_name)->first();
+            $dbGroup = CoreGroup::where('id', $group_id)->first();
+            $dbRole = Role::where('id', $role_id)->first();
 
-            if (!$group_name || !$role_name)
+            if (!$group_id || !$role_id)
                 die(json_encode(['success' => false, 'message' => 'No input fields can be blank']));
 
             if (!$dbGroup)
-                die(json_encode(['success' => false, 'message' => "Group '{$group_name}' does not exist"]));
+                die(json_encode(['success' => false, 'message' => "Group '{$group_id}' does not exist"]));
 
             if (!$dbRole)
-                die(json_encode(['success' => false, 'message' => "Role '{$role_name}' does not exist"]));
+                die(json_encode(['success' => false, 'message' => "Role '{$role_id}' does not exist"]));
         }
 
         // Next, save inputs
         foreach ($roles as $role)
         {
-            $group_name = $role['group'];
-            $role_name = $role['role'];
+            $group_id = $role['group'];
+            $role_id = $role['role'];
 
-            $dbGroup = CoreGroup::where('name', $group_name)->first();
-            $dbRole = Role::where('name', $role_name)->first();
-
-            AutoRole::addOrUpdateAutoRole($dbGroup->id, $dbRole->id);
+            AutoRole::addOrUpdateAutoRole($group_id, $role_id);
         }
 
         die(json_encode(['success' => true, 'message' => "Auto roles updated"]));
@@ -104,7 +101,47 @@ class PermissionsController extends Controller
             $autoRole->group_name = CoreGroup::find($autoRole->core_group_id)->name;
         }
 
-        return view('auto_roles', ['roles' => $autoRoles]);
+        return view('auto_roles', ['roles' => $autoRoles, 'allRoles' => Role::all(), 'allGroups' => CoreGroup::all()]);
+    }
+
+    /**
+     * Delete an auto role
+     */
+    public function deleteAutoRole()
+    {
+        if (!Auth::user()->hasRole('admin'))
+            die(json_encode(['success' => false, 'message' => 'Unauthorized']));
+
+        $group_id = Input::get('group_id');
+        $role_id = Input::get('role_id');
+
+        if (!$group_id || !$role_id)
+            die(json_encode(['success' => false, 'message' => 'Invalid input']));
+
+        $autoRole = AutoRole::getAutoRole($group_id, $role_id);
+
+        if (!$autoRole)
+            die(json_encode(['success' => false, 'message' => 'Invalid input']));
+
+        $autoRole->delete();
+        die(json_encode(['success' => true, 'message' => 'Role deleted']));
+    }
+
+    /**
+     * Ajax route for getting auto role template dropdowns
+     *
+     * @throws \Throwable
+     */
+    public function getAutoRoleTemplate()
+    {
+        if (!Auth::user()->hasRole('admin'))
+            die(json_encode(['success' => false, 'message' => 'Unauthorized']));
+
+        $roles = Role::all();
+        $groups = CoreGroup::all();
+        $view = view('parts/auto_role', ['roles' => $roles, 'groups' => $groups])->render();
+
+        die(json_encode(['success' => true, 'message' => $view]));
     }
 
     /**
