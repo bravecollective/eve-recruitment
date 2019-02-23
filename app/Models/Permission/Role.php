@@ -24,6 +24,23 @@ class Role extends Model
     }
 
     /**
+     * Update the name of a recruiter role
+     *
+     * @param $old_name
+     * @param $new_name
+     */
+    public static function updateGroupRoleName($old_name, $new_name)
+    {
+        $role = Role::where('name', $old_name . ' recruiter')->first();
+
+        if (!$role)
+            return;
+
+        $role->name = $new_name . ' recruiter';
+        $role->save();
+    }
+
+    /**
      * Create director roles that aren't in the database already for the alliance whitelist
      *
      * @param $characters

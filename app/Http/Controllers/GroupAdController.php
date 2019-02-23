@@ -164,6 +164,8 @@ class GroupAdController extends Controller
         if (RecruitmentAd::where('slug', $slug)->exists() && $slug != $ad->slug)
             die(json_encode(['success' => false, 'message' => 'Slug already exists']));
 
+        Role::updateGroupRoleName($ad->name, $name);
+
         $ad->slug = $slug;
         $ad->text = $text;
         $ad->group_name = $name;
