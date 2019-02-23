@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Application;
 use App\Models\ApplicationChangelog;
-use App\Models\EsiModel;
+use App\Connectors\EsiConnection;
 use App\Models\FormQuestion;
 use App\Models\FormResponse;
 use App\Models\Permission\AccountRole;
@@ -35,7 +35,7 @@ class ApplicationController extends Controller
             return redirect('/')->with('error', 'Unauthorized');
 
         $warnings = Application::getWarnings($application);
-        $esi = new EsiModel($application->account->main_user_id);
+        $esi = new EsiConnection($application->account->main_user_id);
 
         return view('application', [
             'application' => $application,

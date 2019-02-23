@@ -2,95 +2,107 @@
 
 namespace App\Connectors;
 
-use Curl;
-use Seat\Eseye\Configuration;
-use Seat\Eseye\Containers\EsiAuthentication;
 use Seat\Eseye\Eseye;
-use Seat\Eseye\Cache\NullCache;
-use App\User;
+use Swagger\Client\Eve\Configuration;
 
 /**
- * Generic class for use by controllers or queued jobs that need to request information
- * from the ESI API.
+ * Handles the connection between the recruitment site and core
  *
- * Source: https://github.com/matthewpennell/moon-mining-manager/blob/master/app/Classes/EsiConnection.php
+ * Class EsiModel
+ * @package App\Models
  */
 class EsiConnection
 {
-    public $esi; // Eseye object for performing all ESI requests
-    public $character_id; // reference to the prime user's character ID
-    public $corporation_id; // reference to the prime user's corporation ID
-    public $token; // reference to the renewed token, needed by the raw curl check for X-Pages header
 
     /**
-     * Class constructor. Create an ESI API object to handle all requests.
+     * Store the configuration instance
      *
-     * @param $needKey bool Specify if the `ESI_PRIME_USER_ID`'s token needs to be refreshed
+     * @var Configuration $config
      */
-    public function __construct($needKey = true)
+    private $config;
+
+    /**
+     * Character ID the instance is created for
+     *
+     * @var int $char_id
+     */
+    private $char_id;
+
+    /**
+     * Eseye instance
+     *
+     * @var Eseye $eseye
+     */
+    private $eseye;
+
+    /**
+     * EsiModel constructor
+     *
+     * @param int $char_id Char ID to create the instance for
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     */
+    public function __construct($char_id)
     {
-        // Set config datasource using environment variable.
-        $configuration = Configuration::getInstance();
-        $configuration->logfile_location = env('ESI_LOG_PATH', '');
-        $configuration->cache = NullCache::class; // TODO: Use Redis
+        $config = new Configuration();
+        $config->setHost(env('CORE_URL') . '/api/app/v1/esi');
+        $config->setAccessToken(base64_encode(env('CORE_APP_ID') . ':' . env('CORE_APP_SECRET')));
 
-        if (!$needKey) {
-            $this->esi = new Eseye();
-            return;
-        }
+        $this->eseye = new Eseye();
+        $this->config = $config;
+        $this->char_id = $char_id;
+    }
 
-        // Create authentication with app details and refresh token from nominated prime user.
-        $user = User::where('eve_user_id', env('ESI_PRIME_USER_ID', 0))->first();
-
-        if (!$user)
-            die('Please ensure <pre>ESI_PRIME_USER_ID</pre> is set to a valid ESI user in .env');
-
-        $url = 'https://login.eveonline.com/oauth/token';
-        $secret = env('APP_SECRET');
-        $client_id = env('APP_ID');
-
-        // Need to request a new valid access token from EVE SSO using the refresh token of the original request.
-        $response = Curl::to($url)
-            ->withData(array(
-                'grant_type' => "refresh_token",
-                'refresh_token' => $user->refreshToken
-            ))
-            ->withHeaders(array(
-                'Authorization: Basic ' . base64_encode($client_id . ':' . $secret)
-            ))
-            //->enableDebug('logFile.txt')
-            ->post();
-
-        $new_token = json_decode($response);
-
-        if (isset($new_token->refresh_token)) {
-            $user->refreshToken = $new_token->refresh_token;
-            $user->save();
-        }
-
-        $authentication = new EsiAuthentication([
-            'secret' => $secret,
-            'client_id' => $client_id,
-            'access_token' => $new_token->access_token,
-            'refresh_token' => $user->refreshToken,
-            'scopes' => [
-                'esi-characters.read_titles.v1',
-                'esi-assets.read_corporation_assets.v1',
-            ],
-            'token_expires' => date('Y-m-d H:i:s', time() + $new_token->expires_in),
+    /**
+     * Get a user's corp history
+     *
+     * @return \Seat\Eseye\Containers\EsiResponse
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     */
+    public function getCorpHistory()
+    {
+        $history = $this->eseye->invoke('get', '/characters/{character_id}/corporationhistory/', [
+            'character_id' => $this->char_id
         ]);
 
-        // Create ESI API object
-        $this->esi = new Eseye($authentication);
+        $data = json_decode($history->raw);
 
-        // Retrieve the prime user's character details
-        $character = $this->esi->invoke('get', '/characters/{character_id}/', [
-            'character_id' => $user->id,
+        // Get corporation names and alliance information
+        foreach ($data as $d)
+        {
+            // TODO: Error handling?
+            $corp_info = $this->eseye->invoke('get', '/corporations/{corporation_id}/', [
+                'corporation_id' => $d->corporation_id
+            ]);
+            $d->corporation_name = $corp_info->name;
+
+            $alliance_id = (isset($corp_info->alliance_id)) ? $corp_info->alliance_id : null;
+            $d->alliance_id = $alliance_id;
+            $d->alliance_name = $this->getAllianceName($alliance_id);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Get the name of an alliance
+     *
+     * @param $alliance_id
+     * @return string|null
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     */
+    public function getAllianceName($alliance_id)
+    {
+        if ($alliance_id == null)
+            return null;
+
+        $alliance_info = $this->eseye->invoke('get', '/alliances/{alliance_id}/', [
+            'alliance_id' => $alliance_id
         ]);
 
-        // Set object variables for use by other classes
-        $this->character_id = $user->id;
-        $this->corporation_id = $character->corporation_id;
-        $this->token = $new_token->access_token;
+        return $alliance_info->name;
     }
 }
