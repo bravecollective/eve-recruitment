@@ -48,8 +48,7 @@ class AuthController extends Controller
         }
 
         if ($main == null)
-            // If this triggers, core is probably broken
-            return redirect('/')->with('error', 'Cannot determine main character. Please try again later.');
+            return redirect('/')->with('error', 'Cannot determine main character. Ensure your main is properly selected in Core.');
 
         // Insert/update users in database
         User::addUsersToDatabase($core_users, $main);

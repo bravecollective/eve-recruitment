@@ -1,5 +1,5 @@
 <div class="row">
-    <div class="col-3">
+    <div class="col-3 esi-container">
         <div class="row">
             <h2>Question Responses</h2>
         </div>
@@ -12,7 +12,7 @@
         </div>
     @endforeach
     </div>
-    <div class="col-2">
+    <div class="col-3 esi-container">
         <div class="row">
             <h2>Warnings</h2>
         </div>
@@ -22,7 +22,7 @@
         </div>
     @endforeach
     </div>
-    <div class="col-2">
+    <div class="col-2 esi-container">
         <div class="row">
             <h2>Changelog</h2>
         </div>
@@ -35,7 +35,7 @@
         </div><br />
         @endforeach
     </div>
-    <div class="col-2">
+    <div class="col-3 esi-container">
         <div class="row">
             <h2>Comments</h2>
         </div>

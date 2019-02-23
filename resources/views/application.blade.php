@@ -18,6 +18,10 @@
                                             'changelog' => $application->changelog,
                                             'comments' => $application->comments,
                                             'warnings' => $warnings])
+<hr class="my-4">
+
+@include('parts/application/corp_history_contacts')
+<hr class="my-4">
 
 @endsection
 @section('scripts')
