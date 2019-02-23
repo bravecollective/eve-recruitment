@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Permission\AccountRole;
 use App\Models\Permissions\Permission;
 use App\Models\Permissions\Role;
 
@@ -92,5 +93,11 @@ trait HasPermissionTrait
     public function roles()
     {
         return $this->belongsToMany(Role::class, 'account_role', 'account_id');
+    }
+
+    public function accountRolesWithSetParameter()
+    {
+        return AccountRole::join('role', 'account_role.role_id', '=', 'role.id')
+            ->where('account_id', $this->id)->get();
     }
 }

@@ -12,10 +12,16 @@
             <h2>Roles</h2>
             <input type="hidden" id="character_id" value="" />
         @foreach($roles as $role)
-             <div class="form-check">
-                 <input type="checkbox" class="form-check-input role-checkbox" id="{{ $role->id }}" />
-                 <label class="text-white form-check-label" for="{{ $role->id }}">{{ $role->name }}</label>
-             </div>
+            <div class="row">
+                <div class="col-9 form-check form-check-inline">
+                    <input autocomplete="off" type="checkbox" class="form-check-input role-checkbox" id="{{ $role->id }}" />
+                    <label class="text-white form-check-label" for="{{ $role->id }}">{{ $role->name }}</label>
+                </div>
+                <div class="col-1 form-check form-check-inline">
+                    <input autocomplete="off" type="checkbox" class="form-check-input" id="persistent-{{ $role->id }}" />
+                    <label class="text-white form-check-label" for="persistent-{{ $role->id }}">Persistent</label>
+                </div>
+            </div>
         @endforeach
         </div>
     </div>
@@ -51,9 +57,11 @@
 
         roles_checkboxes.each(function (e) {
             e = $(this)[0];
-            data.roles.push({ 'id': e.id, 'active': !!(e.checked)});
-            console.log(data);
+            let p = $('#persistent-' + e.id).prop('checked');
+            data.roles.push({ 'id': e.id, 'active': !!(e.checked), 'persistent': p });
         });
+
+        console.log(data);
 
         $.post('/api/character/roles/save', data, function(e) {
             e = JSON.parse(e);
@@ -85,6 +93,8 @@
             e.message.forEach(function (e) {
                 let item = $("#" + e.id);
                 item.prop('checked', true);
+                if (e.set === 1)
+                    $("#persistent-" + e.id).prop('checked', true);
             });
 
             roles_checkboxes.removeAttr('disabled');

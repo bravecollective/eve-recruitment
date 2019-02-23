@@ -7,6 +7,7 @@ use App\Models\Permissions\Role;
 use App\Models\RecruitmentAd;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
 class AccountRole extends Model
@@ -38,6 +39,24 @@ class AccountRole extends Model
         $role->recruitment_id = $recruitment_id;
 
         $role->save();
+    }
+
+    /**
+     * Mark a permission as a persistent value
+     *
+     * @param $account_id
+     * @param $role_id
+     * @param $persistent
+     */
+    public static function setPersistent($account_id, $role_id, $persistent)
+    {
+        $role = AccountRole::getAccountRole($account_id, $role_id);
+
+        if ($role)
+        {
+            $role->set = $persistent;
+            $role->save();
+        }
     }
 
     /**
@@ -142,6 +161,12 @@ class AccountRole extends Model
         return (Auth::user()->hasRole($role) || Auth::user()->hasRole($dir_role));
     }
 
+    /**
+     * Check if the currently logged in user can see applications for a group
+     *
+     * @param $ad
+     * @return mixed
+     */
     public static function canViewApplications($ad)
     {
         $role = Role::where('name', $ad->group_name . ' recruiter');
@@ -153,5 +178,35 @@ class AccountRole extends Model
         }
         else
             return AccountRole::where('account_id', Auth::user()->id)->where('role_id', $role->first()->id)->exists();
+    }
+
+    /**
+     * Delete permissions that aren't persistent
+     *
+     * @param $account_id
+     */
+    public static function deleteNotPersistentRoles($account_id)
+    {
+        AccountRole::where('account_id', $account_id)->where('set', 0)->delete();
+    }
+
+    /**
+     * Get an account role
+     *
+     * @param $account_id
+     * @param $role_id
+     * @return mixed
+     */
+    public static function getAccountRole($account_id, $role_id)
+    {
+        return AccountRole::where('account_id', $account_id)->where('role_id', $role_id)->first();
+    }
+
+    protected function setKeysForSaveQuery(Builder $query)
+    {
+        $query->where('account_id', $this->getAttribute('account_id'))
+            ->where('role_id', $this->getAttribute('role_id'));
+
+        return $query;
     }
 }

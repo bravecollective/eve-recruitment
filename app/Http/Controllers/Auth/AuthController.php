@@ -5,6 +5,7 @@ use App\Connectors\CoreConnection;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\AccountGroup;
+use App\Models\Permission\AccountRole;
 use App\Models\Permission\AutoRole;
 use App\Models\Permissions\Role;
 use App\Models\User;
@@ -56,7 +57,10 @@ class AuthController extends Controller
         // Insert/update core groups in database
         AccountGroup::updateGroupsForUser($main->id);
 
-        $dbAccount = User::where('character_id', $main->id)->first()->account;
+        $dbAccount = Account::where('main_user_id', $main->id)->first();
+
+        // Delete not persistent roles
+        AccountRole::deleteNotPersistentRoles($dbAccount->id);
 
         // Create director roles
         Role::createDirectorRoles($dbAccount);

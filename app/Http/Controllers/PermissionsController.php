@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CoreGroup;
+use App\Models\Permission\AccountRole;
 use App\Models\Permission\AutoRole;
 use App\Models\Permissions\Role;
 use App\Models\Account;
@@ -200,10 +201,17 @@ class PermissionsController extends Controller
         foreach ($roles as $role)
         {
             $dbRole = Role::find($role['id']);
+            $persistent = ($role['persistent'] === "true") ? 1 : 0;
+
             if ($role['active'] == "true" && !$account->hasRole($dbRole->name))
                 $account->giveRoles($dbRole->name);
             else if ($role['active'] == "false" && $account->hasRole($dbRole->name))
                 $account->deleteRoles($dbRole->name);
+
+            $accountRole = AccountRole::getAccountRole($account->id, $dbRole->id);
+
+            if ($persistent != $accountRole->set)
+                AccountRole::setPersistent($account->id, $dbRole->id, $persistent);
         }
 
         die(json_encode(['success' => true, 'message' => 'Permissions updated']));
@@ -224,6 +232,6 @@ class PermissionsController extends Controller
         if ($user == null)
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
-        die(json_encode(['success' => true, 'message' => $user->roles]));
+        die(json_encode(['success' => true, 'message' => $user->accountRolesWithSetParameter()]));
     }
 }
