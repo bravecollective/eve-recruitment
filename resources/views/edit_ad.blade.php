@@ -53,6 +53,15 @@
                 </div>
             </div>
         </div>
+    <div class="form-check">
+    @if($ad->allow_listing == 1)
+        <input autocomplete="off" type="checkbox" id="allow_listing" class="form-check-input" name="allow_listing" checked>
+    @else
+        <input autocomplete="off" type="checkbox" id="allow_listing" class="form-check-input" name="allow_listing">
+    @endif
+        <label for="allow_listing" class="form-check-label">Allow Application Listing</label>
+    </div>
+        <small>If unchecked, application listing will not show up on the "Available Applications" page.</small><br /><br />
         <button type="submit" class="btn btn-primary">Submit</button>
     @if($ad->id)
         <a class="btn btn-danger" href="/recruitments/{{ $ad->id }}/delete">Delete Ad</a>

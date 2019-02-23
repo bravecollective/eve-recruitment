@@ -72,6 +72,7 @@ class CorpAdController extends Controller
         $ad_id = $r->input('ad_id');
         $questions = $r->input('questions');
         $requirements = $r->input('requirements');
+        $allow_listing = ($r->input('allow_listing') === null) ? 0 : 1;
 
         if (!$slug || !$text)
             die(json_encode(['success' => false, 'message' => 'Slug and text are both required']));
@@ -92,6 +93,7 @@ class CorpAdController extends Controller
         $ad->text = $text;
         $ad->corp_id = $corp_id;
         $ad->group_name = User::where('corporation_id', $corp_id)->first()->corporation_name;
+        $ad->allow_listing = $allow_listing;
         $ad->save();
 
         Role::createRoleForAd($ad);

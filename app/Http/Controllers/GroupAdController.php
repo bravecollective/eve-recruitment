@@ -9,6 +9,7 @@ use App\Models\RecruitmentRequirement;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Input;
 
 class GroupAdController extends Controller
 {
@@ -137,6 +138,7 @@ class GroupAdController extends Controller
         $ad_id = $r->input('ad_id');
         $questions = $r->input('questions');
         $requirements = $r->input('requirements');
+        $allow_listing = ($r->input('allow_listing') === null) ? 0 : 1;
 
         // TODO: No colons or underscores allowed in the name
         $name = $r->input('name');
@@ -165,6 +167,7 @@ class GroupAdController extends Controller
         $ad->slug = $slug;
         $ad->text = $text;
         $ad->group_name = $name;
+        $ad->allow_listing = $allow_listing;
         $ad->save();
 
         Role::createRoleForAd($ad);
