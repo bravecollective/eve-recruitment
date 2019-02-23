@@ -40,6 +40,7 @@ Route::get('/logout', function () {
 })->name('logout');
 
 // Application routes
+Route::get('/applications', 'ApplicationController@getAvailableApplications');
 Route::get('/{slug}', 'ApplicationController@loadAdBySlug');
 Route::post('/recruitments/{recruitment_id}/apply', 'ApplicationController@apply');
 Route::get('/applications/{id}', 'ApplicationController@viewApplications');

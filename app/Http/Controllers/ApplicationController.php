@@ -158,4 +158,14 @@ class ApplicationController extends Controller
         FormResponse::saveResponse($application->id, $questions);
         die(json_encode(['success' => true, 'message' => 'Application submitted']));
     }
+
+    public function getAvailableApplications()
+    {
+        $ads = RecruitmentAd::all();
+        foreach ($ads as $idx => $ad)
+            if (!RecruitmentRequirement::accountMeetsRequirements(Auth::user(), $ad->requirements))
+                unset($ads[$idx]);
+
+        return view('available_ads', ['ads' => $ads]);
+    }
 }
