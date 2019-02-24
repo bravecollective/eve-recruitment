@@ -52,11 +52,3 @@
         </div>
     </div>
 </div>
-@section('scripts')
-    <script type="text/javascript">
-        function toggleCollapse(anchor)
-        {
-            $('#' + anchor).collapse('toggle');
-        }
-    </script>
-@endsection

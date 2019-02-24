@@ -155,6 +155,11 @@
                 });
             }
         }
+
+        function toggleCollapse(anchor)
+        {
+            $('#' + anchor).collapse('toggle');
+        }
     @endif
     </script>
 @endsection
