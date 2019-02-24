@@ -2,10 +2,12 @@
 
 namespace App\Connectors;
 
+use App\Models\Type;
+use Illuminate\Support\Facades\Cache;
 use Seat\Eseye\Eseye;
-use Swagger\Client\Eve\Api\CharacterApi;
 use Swagger\Client\Eve\Api\ContactsApi;
 use Swagger\Client\Eve\Api\LocationApi;
+use Swagger\Client\Eve\Api\MailApi;
 use Swagger\Client\Eve\Api\UniverseApi;
 use Swagger\Client\Eve\Configuration;
 
@@ -130,6 +132,67 @@ class EsiConnection
     }
 
     /**
+     * Get a user's mail
+     *
+     * @return \Swagger\Client\Eve\Model\GetCharactersCharacterIdMail200Ok[]
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws \Swagger\Client\Eve\ApiException
+     */
+    public function getMail()
+    {
+        $model = new MailApi(null, $this->config);
+        $mail = $model->getCharactersCharacterIdMail($this->char_id, $this->char_id);
+
+        foreach ($mail as $m)
+        {
+            $m->contents = $model->getCharactersCharacterIdMailMailId($this->char_id, $m->getMailId(), $this->char_id)->getBody();
+            $m->sender = $this->getCharacterName($m->getFrom());
+            $m->recipients = [];
+
+            foreach ($m->getRecipients() as $recipient)
+            {
+                switch ($recipient->getRecipientType())
+                {
+                    case 'character':
+                        $m->recipients[] = [
+                            'type' => 'character',
+                            'name' => $this->getCharacterName($recipient->getRecipientId())
+                        ];
+                        break;
+
+                    case 'corporation':
+                        $m->recipients[] = [
+                            'type' => 'corporation',
+                            'name' => $this->getCorporationName($recipient->getRecipientId())
+                        ];
+                        break;
+
+                    case 'alliance':
+                        $m->recipients[] = [
+                            'type' => 'alliance',
+                            'name' => $this->getAllianceName($recipient->getRecipientId())
+                        ];
+                        break;
+
+                    case 'mailing_list':
+                        $m->recipients[] = [
+                            'type' => 'mailing list',
+                            'name' => $this->getMailingListName($recipient->getRecipientId())
+                        ];
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        }
+
+        return $mail;
+    }
+
+    /**
      * Get a race name given an ID
      *
      * @param $race_id
@@ -228,6 +291,30 @@ class EsiConnection
     }
 
     /**
+     * Get a mailing list ID from the name
+     *
+     * @param $mailing_list_id
+     * @return mixed
+     * @throws \Swagger\Client\Eve\ApiException
+     */
+    public function getMailingListName($mailing_list_id)
+    {
+        if (Cache::has($mailing_list_id))
+            return Cache::get($mailing_list_id);
+
+        $model = new MailApi(null, $this->config);
+        $lists = $model->getCharactersCharacterIdMailLists($this->char_id, $this->char_id);
+
+        foreach ($lists as $list)
+        {
+            if (!Cache::has($list->getMailingListId()))
+                Cache::add($list->getMailingListId(), $list->getName(), env('CACHE_TIME', 3264));
+        }
+
+        return Cache::get($mailing_list_id);
+    }
+
+    /**
      * Get the name of an alliance
      *
      * @param $alliance_id
@@ -241,9 +328,14 @@ class EsiConnection
         if ($alliance_id == null)
             return null;
 
+        if (Cache::has($alliance_id))
+            return Cache::get($alliance_id);
+
         $alliance_info = $this->eseye->invoke('get', '/alliances/{alliance_id}/', [
             'alliance_id' => $alliance_id
         ]);
+
+        Cache::add($alliance_id, $alliance_info->name, env('CACHE_TIME', 3264));
 
         return $alliance_info->name;
     }
@@ -262,9 +354,14 @@ class EsiConnection
         if ($corporation_id == null)
             return null;
 
+        if (Cache::has($corporation_id))
+            return Cache::get($corporation_id);
+
         $corp_info = $this->eseye->invoke('get', '/corporations/{corporation_id}/', [
             'corporation_id' => $corporation_id
         ]);
+
+        Cache::add($corporation_id, $corp_info->name, env('CACHE_TIME', 3264));
 
         return $corp_info->name;
     }
@@ -283,9 +380,14 @@ class EsiConnection
         if ($character_id == null)
             return null;
 
+        if (Cache::has($character_id))
+            return Cache::get($character_id);
+
         $char = $this->eseye->invoke('get', '/characters/{character_id}/', [
             'character_id' => $character_id
         ]);
+
+        Cache::add($character_id, $char->name, env('CACHE_TIME', 3264));
 
         return $char->name;
     }
@@ -372,9 +474,19 @@ class EsiConnection
      */
     public function getTypeName($type_id)
     {
+        $dbItem = Type::find($type_id);
+
+        if ($dbItem)
+            return $dbItem->name;
+
         $res = $this->eseye->invoke('get', '/universe/types/{type_id}/', [
             'type_id' => $type_id
         ]);
+
+        $dbItem = new Type();
+        $dbItem->id = $type_id;
+        $dbItem->name = $res->name;
+        $dbItem->save();
 
         return $res->name;
     }

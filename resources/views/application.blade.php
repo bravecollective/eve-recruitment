@@ -33,6 +33,9 @@
                 <a class="nav-link active show" id="overview-tab" data-toggle="pill" href="#tab-overview" role="tab" aria-controls="tab-overview" aria-selected="true">Overview</a>
             </li>
          @endif
+             <li class="nav-item ml-2">
+                 <a class="nav-link" id="mail-tab" data-toggle="pill" href="#tab-mail" role="tab" aria-controls="tab-mail" aria-selected="false">Mail</a>
+             </li>
         </ul>
     </div>
 </div>
@@ -44,6 +47,7 @@
                                                'comments' => $application->comments])
 @endif
     @include('parts/application/overview')
+    @include('parts/application/mail')
 </div>
 @endsection
 @section('styles')

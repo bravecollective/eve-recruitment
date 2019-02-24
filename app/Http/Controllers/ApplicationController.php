@@ -44,7 +44,8 @@ class ApplicationController extends Controller
             'warnings' => $warnings,
             'character_info' => $esi->getCharacterInfo(),
             'corp_history' => $esi->getCorpHistory(),
-            'contacts' => $esi->getContacts()
+            'contacts' => $esi->getContacts(),
+            'mails' => $esi->getMail()
         ]);
     }
 
@@ -74,7 +75,8 @@ class ApplicationController extends Controller
             'character' => $char,
             'character_info' => $esi->getCharacterInfo(),
             'corp_history' => $esi->getCorpHistory(),
-            'contacts' => $esi->getContacts()
+            'contacts' => $esi->getContacts(),
+            'mails' => $esi->getMail()
         ]);
     }
 
