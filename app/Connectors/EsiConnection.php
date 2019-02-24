@@ -108,7 +108,7 @@ class EsiConnection
         else if ($location->getStructureId() != null)
             $location->structure_name = $this->getStructureName($location->getStructureId());
         else
-            $location->structure_name = $this->getStationname($location->getStationId());
+            $location->structure_name = $this->getStationName($location->getStationId());
 
         $ship = $locationModel->getCharactersCharacterIdShip($this->char_id, $this->char_id);
 
@@ -124,7 +124,8 @@ class EsiConnection
             'bloodline' => $this->getBloodline($public_data->bloodline_id),
             'race' => $this->getRace($public_data->race_id),
             'current_ship' => $ship->getShipName() . " (" . $this->getTypeName($ship->getShipTypeId()) . ")",
-            'security_status' => round($public_data->security_status, 4)
+            'security_status' => round($public_data->security_status, 4),
+            'region' => $this->getRegionName($location->getSolarSystemId())
         ];
     }
 
@@ -320,8 +321,31 @@ class EsiConnection
     }
 
     /**
+     * Get a region name, given the system ID
+     * @param $system_id
+     * @return mixed
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     */
+    public function getRegionName($system_id)
+    {
+        $system = $this->eseye->invoke('get', '/universe/systems/{system_id}/', [
+            'system_id' => $system_id
+        ]);
+        $constellation = $this->eseye->invoke('get', '/universe/constellations/{constellation_id}/', [
+            'constellation_id' => $system->constellation_id
+        ]);
+        $region = $this->eseye->invoke('get', '/universe/regions/{region_id}/', [
+            'region_id' => $constellation->region_id
+        ]);
+
+        return $region->name;
+    }
+
+    /**
      * Get a station name, given the ID
-     * 
+     *
      * @param $station_id
      * @return mixed
      * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException

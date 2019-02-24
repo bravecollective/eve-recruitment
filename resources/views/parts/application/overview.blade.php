@@ -40,6 +40,10 @@
                             {{ $character_info['location']->structure_name }}
                         </div>
                         <div class="list-group-item d-flex justify-content-between align-items-center bg-dark text-white">
+                            <strong>Region</strong>
+                            {{ $character_info['region'] }}
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center bg-dark text-white">
                             <strong>Current Ship</strong>
                             {{ $character_info['current_ship'] }}
                         </div>
