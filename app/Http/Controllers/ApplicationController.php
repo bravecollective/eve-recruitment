@@ -48,6 +48,16 @@ class ApplicationController extends Controller
         ]);
     }
 
+    /**
+     * View ESI for a corp member. The return value must be updated as viewApplication's return values are
+     *
+     * @param $char_id
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws \Swagger\Client\Eve\ApiException
+     */
     public function viewCharacterEsi($char_id)
     {
         $char = User::find($char_id);

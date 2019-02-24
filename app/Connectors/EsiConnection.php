@@ -103,8 +103,12 @@ class EsiConnection
         $locationModel = new LocationApi(null, $this->config);
         $location = $locationModel->getCharactersCharacterIdLocation($this->char_id, $this->char_id);
 
-        // TODO: Handle stations
-        $location->structure_name = $this->getStructureName($location->getStructureId());
+        if ($location->getStructureId() == null && $location->getStationId() == null)
+            $location->structure_name = "In Space (" . $this->getSystemName($location->getSolarSystemId()) . ")";
+        else if ($location->getStructureId() != null)
+            $location->structure_name = $this->getStructureName($location->getStructureId());
+        else
+            $location->structure_name = $this->getStationname($location->getStationId());
 
         $ship = $locationModel->getCharactersCharacterIdShip($this->char_id, $this->char_id);
 
@@ -295,6 +299,42 @@ class EsiConnection
     {
         $model = new UniverseApi(null, $this->config);
         return $model->getUniverseStructuresStructureId($structure_id, $this->char_id)->getName();
+    }
+
+    /**
+     * Get a system name given the ID
+     *
+     * @param $system_id
+     * @return mixed
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     */
+    public function getSystemName($system_id)
+    {
+        $res = $this->eseye->invoke('get', '/universe/systems/{system_id}/', [
+            'system_id' => $system_id
+        ]);
+
+        return $res->name;
+    }
+
+    /**
+     * Get a station name, given the ID
+     * 
+     * @param $station_id
+     * @return mixed
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     */
+    public function getStationName($station_id)
+    {
+        $res = $this->eseye->invoke('get', '/universe/stations/{station_id}/', [
+            'station_id' => $station_id
+        ]);
+
+        return $res->name;
     }
 
     /**
