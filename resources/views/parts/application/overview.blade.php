@@ -1,4 +1,8 @@
+@if(isset($application))
 <div class="tab-pane fade" id="tab-overview" role="tabpanel" aria-labelledby="tab-overview">
+@else
+<div class="tab-pane fade show active" id="tab-overview" role="tabpanel" aria-labelledby="tab-overview">
+@endif
     <div class="row justify-content-center">
         <div class="col-3">
             <div class="card bg-dark">

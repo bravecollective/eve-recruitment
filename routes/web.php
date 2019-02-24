@@ -54,3 +54,4 @@ Route::get('/application/{id}', 'ApplicationController@viewApplication');
 Route::post('/application/{id}/state/update', 'ApplicationController@updateState');
 Route::post('/application/{id}/comments/add', 'CommentController@addComment');
 Route::post('/application/{id}/comments/delete', 'CommentController@deleteComment');
+Route::get('/character/{id}', 'ApplicationController@viewCharacterEsi');

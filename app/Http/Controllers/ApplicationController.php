@@ -38,9 +38,30 @@ class ApplicationController extends Controller
         $esi = new EsiConnection($application->account->main_user_id);
 
         return view('application', [
+            'character' => $application->account->main(),
             'application' => $application,
             'states' => Application::$state_names,
             'warnings' => $warnings,
+            'character_info' => $esi->getCharacterInfo(),
+            'corp_history' => $esi->getCorpHistory(),
+            'contacts' => $esi->getContacts()
+        ]);
+    }
+
+    public function viewCharacterEsi($char_id)
+    {
+        $char = User::find($char_id);
+
+        if (!$char)
+            return redirect('/')->with('error', 'Invalid character ID');
+
+        if (!Auth::user()->hasRole($char->corporation_name . ' recruiter') && !Auth::user()->hasRole($char->corporation_name . ' director'))
+            return redirect('/')->with('error', 'Unauthorized');
+
+        $esi = new EsiConnection($char_id);
+
+        return view('application', [
+            'character' => $char,
             'character_info' => $esi->getCharacterInfo(),
             'corp_history' => $esi->getCorpHistory(),
             'contacts' => $esi->getContacts()

@@ -1,9 +1,10 @@
 @extends('default')
 @section('content')
 
-@include('parts/application/character_header', ['character' => $application->account->main()])
+@include('parts/application/character_header', ['character' => $character])
 <br />
 <div class="row justify-content-center">
+@if(isset($application))
     <div class="col-2">
         <select style="width: 100%;" class="custom-select" style="width: 15%; margin-top: 1em;" autocomplete="off" onchange="updateStatus(this);">
             @foreach($states as $id => $state)
@@ -15,24 +16,33 @@
             @endforeach
         </select>
     </div>
+@endif
 </div><br />
 <div class="row justify-content-center">
     <div class="col-12">
         <ul class="nav nav-pills justify-content-center">
+         @if(isset($application))
             <li class="nav-item ml-2">
-                <a class="nav-link active show" id="application-tab" data-toggle="pill" href="#tab-application" role="tab" aria-controls="tab-application" aria-selected="false">Application</a>
+                <a class="nav-link active show" id="application-tab" data-toggle="pill" href="#tab-application" role="tab" aria-controls="tab-application" aria-selected="true">Application</a>
             </li>
             <li class="nav-item ml-2">
-                <a class="nav-link" id="overview-tab" data-toggle="pill" href="#tab-overview" role="tab" aria-controls="tab-overview" aria-selected="true">Overview</a>
+                <a class="nav-link" id="overview-tab" data-toggle="pill" href="#tab-overview" role="tab" aria-controls="tab-overview" aria-selected="false">Overview</a>
             </li>
+         @else
+            <li class="nav-item ml-2">
+                <a class="nav-link active show" id="overview-tab" data-toggle="pill" href="#tab-overview" role="tab" aria-controls="tab-overview" aria-selected="true">Overview</a>
+            </li>
+         @endif
         </ul>
     </div>
 </div>
 <hr class="my-4">
 <div class="tab-content" id="tab-content">
+@if(isset($application))
     @include('parts/application/application', ['questions' => $application->questions(),
                                                'changelog' => $application->changelog,
                                                'comments' => $application->comments])
+@endif
     @include('parts/application/overview')
 </div>
 @endsection
@@ -62,12 +72,12 @@
 @endsection
 @section('scripts')
     <script type="text/javascript">
+        document.title = "{{ $character->name }} - " + document.title;
+    @if(isset($application))
         let comment_button = $('#add_comment_btn');
         let new_question_textarea = $('#new_question');
         let box_open = false;
         let application_id = "{{ $application->id }}";
-
-        document.title = "{{ $application->account->main()->name }} - " + document.title;
 
         function updateStatus(f)
         {
@@ -141,5 +151,6 @@
                 });
             }
         }
+    @endif
     </script>
 @endsection
