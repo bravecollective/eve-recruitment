@@ -152,39 +152,18 @@ class PermissionsController extends Controller
      */
     private function getAccountWithScopes($character_id)
     {
-        // TODO: Refine this later when group permissions are implemented
-        if (Auth::user()->hasRole('admin'))
-            $scope = 'global';
-        else
-            $scope = null;
-
-        $user = User::where('character_id', $character_id);
-
-        switch($scope)
-        {
-            case 'corp':
-                $user = $user->where('corporation_id', Auth::user()->getMainUser()->corporation_id);
-                break;
-
-            case 'global':
-                break;
-
-            default:
-                $user = null;
-                break;
-        }
-
-        $user = $user->first();
-
+        $user = User::where('character_id', $character_id)->first();
         return ($user == null) ? $user : $user->account;
     }
 
     /**
      * Ajax call to save user permissions and roles
+     *
+     * @param $role
      */
-    public function saveUserRoles()
+    public function saveUserRoles($role = 'admin')
     {
-        if (!Auth::user()->hasRole('admin'))
+        if (!Auth::user()->hasRole($role))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
         $user_id = Input::get('userid');
@@ -210,7 +189,7 @@ class PermissionsController extends Controller
 
             $accountRole = AccountRole::getAccountRole($account->id, $dbRole->id);
 
-            if ($persistent != $accountRole->set)
+            if (!$accountRole || $persistent != $accountRole->set)
                 AccountRole::setPersistent($account->id, $dbRole->id, $persistent);
         }
 

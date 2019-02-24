@@ -13,7 +13,7 @@
         </ul>
         <ul class="nav navbar-nav navbar-right">
         @auth
-            @role('recruiter')
+            @if(count($recruitment_ads) > 0)
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="applications" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Applications
@@ -24,6 +24,8 @@
                 @endforeach
                 </div>
             </li>
+            @endif
+            @if(count($corporations) > 0)
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="corporations_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Corp Members
@@ -34,7 +36,7 @@
                     @endforeach
                 </div>
             </li>
-            @endrole
+            @endif
             @role('director')
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="corp_ads_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

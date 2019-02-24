@@ -75,6 +75,7 @@ class Role extends Model
     public static function createRoleForAd($ad)
     {
         $role = Role::where('recruitment_id', $ad->id)->first();
+
         if (!$role)
             $role = new Role();
 

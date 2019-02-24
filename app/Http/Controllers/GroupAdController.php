@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\FormQuestion;
+use App\Models\Permission\AccountRole;
 use App\Models\Permissions\Role;
 use App\Models\RecruitmentAd;
 use App\Models\RecruitmentRequirement;
@@ -83,6 +84,85 @@ class GroupAdController extends Controller
         $ads = RecruitmentAd::where('created_by', Auth::user()->id)->where('corp_id', null)->get();
 
         return view('group_ads', ['ads' => $ads]);
+    }
+
+    /**
+     * Get the ad listing for permission management
+     *
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
+     */
+    public function listAdsForPermissions()
+    {
+        if (!Auth::user()->hasRole('director'))
+            return redirect('/')->with('error', 'Unauthorized');
+
+        $ads = RecruitmentAd::where('created_by', Auth::user()->id)->where('corp_id', null)->get();
+
+        return view('group_ads', ['ads' => $ads, 'permissions' => true]);
+    }
+
+    /**
+     * Render the group permissions page
+     *
+     * @param $ad_id
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function groupPermissions($ad_id)
+    {
+        $ad = RecruitmentAd::find($ad_id);
+
+        if (!$ad || $ad->corp_id != null)
+            return redirect('/')->with('error', 'Invalid ad ID');
+
+        if (!Auth::user()->hasRole('director') || $ad->created_by != Auth::user()->id)
+            return redirect('/')->with('error', 'Unauthorized');
+
+        return view('group_permissions', [
+            'ad' => $ad,
+            'recruiters' => RecruitmentAd::getRecruiters($ad_id),
+            'roles' => Role::where('recruitment_id', $ad_id)->get()
+        ]);
+    }
+
+    public function savePermissions()
+    {
+        $ad_id = Input::get('ad_id');
+        $ad = RecruitmentAd::find($ad_id);
+
+        if (!$ad)
+            die(json_encode(['success' => false, 'message' => 'Invalid ad ID']));
+
+        if (!Auth::user()->hasRole('director') || $ad->created_by != Auth::user()->id)
+            return redirect('/')->with('error', 'Unauthorized');
+
+        (new PermissionsController())->saveUserRoles();
+        die(json_encode(['success' => true, 'message' => 'Roles updated']));
+    }
+
+    /**
+     * Get a user's permissions
+     */
+    public function loadPermissions()
+    {
+        $ad_id = Input::get('ad_id');
+        $ad = RecruitmentAd::find($ad_id);
+
+        if (!$ad)
+            die(json_encode(['success' => false, 'message' => 'Invalid ad ID']));
+
+        if (!Auth::user()->hasRole('director') || $ad->created_by != Auth::user()->id)
+            die(json_encode(['success' => false, 'message' => 'Unauthorized']));
+
+        $user_id = Input::get('user_id');
+        $user = User::where('character_id', $user_id)->first();
+
+        if (!$user)
+            die(json_encode(['success' => false, 'message' => 'Invalid user ID']));
+
+        $roles = Role::where('recruitment_id', $ad_id)->get();
+        $user_roles = AccountRole::where('account_id', $user->account_id)->whereIn('role_id', $roles->pluck('id')->toArray())->get();
+
+        die(json_encode(['success' => true, 'message' => $user_roles]));
     }
 
     /**

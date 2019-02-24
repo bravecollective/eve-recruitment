@@ -16,6 +16,8 @@ Route::get('/group/ads', 'GroupAdController@listAds');
 Route::get('/group/ad/create', 'GroupAdController@createAd');
 Route::get('/group/ad/{id}', 'GroupAdController@manageAd');
 Route::post('/group/ad/save', 'GroupAdController@saveAd');
+Route::get('/group/permissions', 'GroupAdController@listAdsForPermissions');
+Route::get('/group/ad/{id}/permissions', 'GroupAdController@groupPermissions');
 
 // Ajax routes
 Route::post('/api/character/search', 'SearchController@characterSearch');
@@ -27,6 +29,8 @@ Route::get('/api/auto_roles/template', 'PermissionsController@getAutoRoleTemplat
 Route::post('/api/auto_roles/delete', 'PermissionsController@deleteAutoRole');
 Route::delete('/api/recruitments/{ad_id}/questions/{question_id}', 'GroupAdController@deleteQuestion');
 Route::delete('/api/recruitments/{ad_id}/requirements/{requirement_id}', 'GroupAdController@deleteRequirement');
+Route::post('/api/groups/roles', 'GroupAdController@loadPermissions');
+Route::post('/api/groups/roles/save', 'GroupAdController@savePermissions');
 
 // Global admin routes
 Route::get('/admin/roles', 'PermissionsController@globalRoles');

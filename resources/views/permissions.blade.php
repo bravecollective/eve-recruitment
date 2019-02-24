@@ -61,14 +61,12 @@
             data.roles.push({ 'id': e.id, 'active': !!(e.checked), 'persistent': p });
         });
 
-        console.log(data);
-
         $.post('/api/character/roles/save', data, function(e) {
             e = JSON.parse(e);
             if (e.success === true)
                 showInfo("Permissions saved");
             else
-                alert(e.message);
+                showError(e.message);
         });
     }
 

@@ -29,8 +29,7 @@ class User extends Model
         $account->main_user_id = $main->id;
         $account->save();
 
-        // TODO: Don't count the database every time
-        $first_admin = (env('FIRST_ACCOUNT_ADMIN', false) == true && Account::count() == 1) ? true : false;
+        $first_admin = (env('FIRST_ACCOUNT_ADMIN', false) == true && $account_id == 1) ? true : false;
 
         foreach ($users as $user)
         {
