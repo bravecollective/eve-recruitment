@@ -67,6 +67,8 @@
         let box_open = false;
         let application_id = "{{ $application->id }}";
 
+        document.title = "{{ $application->account->main()->name }} - " + document.title;
+
         function updateStatus(f)
         {
             let data = {
