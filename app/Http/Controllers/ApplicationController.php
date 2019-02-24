@@ -41,6 +41,7 @@ class ApplicationController extends Controller
             'application' => $application,
             'states' => Application::$state_names,
             'warnings' => $warnings,
+            'character_info' => $esi->getCharacterInfo(),
             'corp_history' => $esi->getCorpHistory(),
             'contacts' => $esi->getContacts()
         ]);

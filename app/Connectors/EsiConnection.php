@@ -3,7 +3,10 @@
 namespace App\Connectors;
 
 use Seat\Eseye\Eseye;
+use Swagger\Client\Eve\Api\CharacterApi;
 use Swagger\Client\Eve\Api\ContactsApi;
+use Swagger\Client\Eve\Api\LocationApi;
+use Swagger\Client\Eve\Api\UniverseApi;
 use Swagger\Client\Eve\Configuration;
 
 /**
@@ -84,6 +87,89 @@ class EsiConnection
         }
 
         return $data;
+    }
+
+    /**
+     * Get a character's information
+     *
+     * @return array
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws \Swagger\Client\Eve\ApiException
+     */
+    public function getCharacterInfo()
+    {
+        $locationModel = new LocationApi(null, $this->config);
+        $location = $locationModel->getCharactersCharacterIdLocation($this->char_id, $this->char_id);
+
+        // TODO: Handle stations
+        $location->structure_name = $this->getStructureName($location->getStructureId());
+
+        $ship = $locationModel->getCharactersCharacterIdShip($this->char_id, $this->char_id);
+
+        $public_data = $this->eseye->invoke('get', '/characters/{character_id}/', [
+            "character_id" => $this->char_id
+        ]);
+
+        return [
+            'location' => $location,
+            'birthday' => explode('T', $public_data->birthday)[0],
+            'gender' => ucfirst($public_data->gender),
+            'ancestry' => $this->getAncestry($public_data->ancestry_id),
+            'bloodline' => $this->getBloodline($public_data->bloodline_id),
+            'race' => $this->getRace($public_data->race_id),
+            'current_ship' => $ship->getShipName() . " (" . $this->getTypeName($ship->getShipTypeId()) . ")",
+            'security_status' => round($public_data->security_status, 4)
+        ];
+    }
+
+    /**
+     * Get a race name given an ID
+     *
+     * @param $race_id
+     * @return mixed
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     */
+    public function getRace($race_id)
+    {
+        $res = $this->eseye->invoke('get', '/universe/races');
+        $data = json_decode($res->raw);
+        return $data[$race_id - 1]->name;
+    }
+
+    /**
+     * Get an anestry name given an ID
+     *
+     * @param $ancestry_id
+     * @return mixed
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     */
+    public function getAncestry($ancestry_id)
+    {
+        $res = $this->eseye->invoke('get', '/universe/ancestries');
+        $data = json_decode($res->raw);
+        return $data[$ancestry_id - 1]->name;
+    }
+
+    /**
+     * Get a bloodline name given an ID
+     *
+     * @param $bloodline_id
+     * @return mixed
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     */
+    public function getBloodline($bloodline_id)
+    {
+        $res = $this->eseye->invoke('get', '/universe/bloodlines/');
+        $data = json_decode($res->raw);
+        return $data[$bloodline_id - 1]->name;
     }
 
     /**
@@ -197,5 +283,35 @@ class EsiConnection
         ]);
 
         return $char->name;
+    }
+
+    /**
+     * Get the name of a structure
+     * @param $structure_id
+     * @return string
+     * @throws \Swagger\Client\Eve\ApiException
+     */
+    public function getStructureName($structure_id)
+    {
+        $model = new UniverseApi(null, $this->config);
+        return $model->getUniverseStructuresStructureId($structure_id, $this->char_id)->getName();
+    }
+
+    /**
+     * Given a type ID, get its name
+     *
+     * @param $type_id
+     * @return mixed
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     */
+    public function getTypeName($type_id)
+    {
+        $res = $this->eseye->invoke('get', '/universe/types/{type_id}/', [
+            'type_id' => $type_id
+        ]);
+
+        return $res->name;
     }
 }

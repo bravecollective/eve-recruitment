@@ -20,20 +20,20 @@
     <div class="col-12">
         <ul class="nav nav-pills justify-content-center">
             <li class="nav-item ml-2">
-                <a class="nav-link active show" id="overview-tab" data-toggle="pill" href="#tab-overview" role="tab" aria-controls="tab-overview" aria-selected="true">Overview</a>
+                <a class="nav-link active show" id="application-tab" data-toggle="pill" href="#tab-application" role="tab" aria-controls="tab-application" aria-selected="false">Application</a>
             </li>
             <li class="nav-item ml-2">
-                <a class="nav-link" id="contacts-tab" data-toggle="pill" href="#tab-contacts" role="tab" aria-controls="tab-contacts" aria-selected="false">Contacts</a>
+                <a class="nav-link" id="overview-tab" data-toggle="pill" href="#tab-overview" role="tab" aria-controls="tab-overview" aria-selected="true">Overview</a>
             </li>
         </ul>
     </div>
 </div>
 <hr class="my-4">
 <div class="tab-content" id="tab-content">
-    @include('parts/application/overview', ['questions' => $application->questions(),
-                                            'changelog' => $application->changelog,
-                                            'comments' => $application->comments])
-    @include('parts/application/contacts')
+    @include('parts/application/application', ['questions' => $application->questions(),
+                                               'changelog' => $application->changelog,
+                                               'comments' => $application->comments])
+    @include('parts/application/overview')
 </div>
 @endsection
 @section('styles')
