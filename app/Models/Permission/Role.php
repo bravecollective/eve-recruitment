@@ -2,6 +2,7 @@
 
 namespace App\Models\Permissions;
 
+use App\Models\Account;
 use App\Models\RecruitmentAd;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
@@ -74,7 +75,7 @@ class Role extends Model
      */
     public static function createRoleForAd($ad)
     {
-        $role = Role::where('recruitment_id', $ad->id)->first();
+        $role = Role::where('recruitment_id', $ad->id)->where('slug', 'recruiter')->first();
 
         if (!$role)
             $role = new Role();
@@ -85,15 +86,17 @@ class Role extends Model
         $role->name = $name . ' recruiter';
         $role->recruitment_id = $ad->id;
         $role->save();
-    }
 
-    /**
-     * Permissions relation
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
-     */
-    public function permissions()
-    {
-        return $this->belongsToMany(Permission::class, 'role_permissions', 'role_id');
+        $role = Role::where('slug', 'director')->where('name', $ad->group_name . ' director')->first();
+
+        if (!$role)
+            $role = new Role();
+
+        $name = ($ad->corp_id === null) ? $ad->group_name : User::where('corporation_id', $ad->corp_id)->first()->corporation_name;
+
+        $role->slug = 'director';
+        $role->name = $name . ' director';
+        $role->recruitment_id = $ad->id;
+        $role->save();
     }
 }

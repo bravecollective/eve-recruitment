@@ -29,8 +29,6 @@ class User extends Model
         $account->main_user_id = $main->id;
         $account->save();
 
-        $first_admin = (env('FIRST_ACCOUNT_ADMIN', false) == true && $account_id == 1) ? true : false;
-
         foreach ($users as $user)
         {
             $dbUser = User::where('character_id', $user->id)->first();
@@ -53,9 +51,6 @@ class User extends Model
             $dbUser->save();
             $new_user_ids[] = $dbUser->character_id;
         }
-
-        if ($first_admin)
-            $account->giveAllRoles();
 
         // Delete old characters
         User::where('account_id', $account_id)->whereNotIn('character_id', $new_user_ids)->delete();

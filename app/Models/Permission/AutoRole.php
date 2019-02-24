@@ -41,6 +41,9 @@ class AutoRole extends Model
        $roles_to_assign = Role::whereIn('id', $auto_roles)->get()->pluck('name')->toArray();
 
        $account->giveRoles(...$roles_to_assign);
+
+       if (env('FIRST_ACCOUNT_ADMIN', false) == true && $account->id == 1)
+           $account->giveAllRoles();
     }
 
     /**

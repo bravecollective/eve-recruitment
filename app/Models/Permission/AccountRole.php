@@ -65,16 +65,16 @@ class AccountRole extends Model
     public static function getAdsUserCanView()
     {
         $account_id = Auth::user()->id;
-        $recruiter_role_ids = Role::where('slug', 'recruiter')->get()->pluck('id')->toArray();
+        $recruiter_role_ids = Role::where('slug', 'recruiter')->orWhere('slug', 'director')->get()->pluck('id')->toArray();
 
         // 1. Get the recruitment IDs a user can view
-        $account_recruitments = AccountRole::whereIn('role_id', $recruiter_role_ids)->where('account_id', $account_id)->get();
+        $account_roles = AccountRole::whereIn('role_id', $recruiter_role_ids)->where('account_id', $account_id)->get();
 
-        if (!$account_recruitments)
+        if (!$account_roles)
             return null;
 
         // 2. Get the ad IDs
-        $recruitment_ads = Role::whereIn('id', $account_recruitments->pluck('role_id')->toArray())->get();
+        $recruitment_ads = Role::whereIn('id', $account_roles->pluck('role_id')->toArray())->get();
 
         if (!$recruitment_ads)
             return null;

@@ -36,6 +36,12 @@ class CorpAdController extends Controller
         return view('edit_ad', ['title' => User::where('corporation_id', $corp_id)->first()->corporation_name, 'ad' => $ad, 'questions' => $questions, 'corp_id' => $corp_id, 'requirements' => $requirements]);
     }
 
+    /**
+     * Delete a recruitment ad
+     *
+     * @param $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function deleteAd($id)
     {
         $dbAd = RecruitmentAd::find($id);

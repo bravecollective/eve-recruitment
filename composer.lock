@@ -4,58 +4,9 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "45e4a7a7da9cab515cd1501892641ca1",
-    "content-hash": "cb2697dcff9dad42341c016a0eb2c7da",
+    "hash": "8a44663ffbc356cc9e875dbdd46b3fe5",
+    "content-hash": "6f910d6be271726b8dbededce43bd47c",
     "packages": [
-        {
-            "name": "bravecollective/neucore-api",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/bravecollective/neucore-api.git",
-                "reference": "22f28d2b15bdf98aa0d0bb110dd69b914d662e76"
-            },
-            "require": {
-                "ext-curl": "*",
-                "ext-json": "*",
-                "ext-mbstring": "*",
-                "guzzlehttp/guzzle": "^6.2",
-                "php": ">=5.5"
-            },
-            "require-dev": {
-                "friendsofphp/php-cs-fixer": "~1.12",
-                "phpunit/phpunit": "^4.8",
-                "squizlabs/php_codesniffer": "~2.6"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Brave\\NeucoreApi\\": "lib/"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "Brave\\NeucoreApi\\": "test/"
-                }
-            },
-            "license": [
-                "proprietary"
-            ],
-            "authors": [
-                {
-                    "name": "Swagger and contributors",
-                    "homepage": "https://github.com/swagger-api/swagger-codegen"
-                }
-            ],
-            "homepage": "http://swagger.io",
-            "keywords": [
-                "api",
-                "php",
-                "sdk",
-                "swagger"
-            ],
-            "time": "2019-02-18 23:11:39"
-        },
         {
             "name": "dnoegel/php-xdg-base-dir",
             "version": "0.1",
@@ -3517,6 +3468,56 @@
             "time": "2017-11-27 11:13:29"
         },
         {
+            "name": "tkhamez/swagger-eve-php",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/tkhamez/swagger-eve-php.git",
+                "reference": "4bf841c7a2366e0100c58593643dc41f642de0da"
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "ext-mbstring": "*",
+                "guzzlehttp/guzzle": "^6.2",
+                "php": ">=5.5"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "~1.12",
+                "phpunit/phpunit": "^4.8",
+                "squizlabs/php_codesniffer": "~2.6"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Swagger\\Client\\Eve\\": "lib/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Swagger\\Client\\Eve\\": "test/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Swagger and contributors",
+                    "homepage": "https://github.com/swagger-api/swagger-codegen"
+                }
+            ],
+            "description": "EVE Online API (ESI) Client Library for PHP",
+            "homepage": "http://swagger.io",
+            "keywords": [
+                "api",
+                "php",
+                "sdk",
+                "swagger"
+            ],
+            "time": "2019-01-27 11:23:58"
+        },
+        {
             "name": "vlucas/phpdotenv",
             "version": "v2.6.1",
             "source": {
@@ -5398,7 +5399,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "bravecollective/neucore-api": 20
+        "tkhamez/swagger-eve-php": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,
