@@ -2,27 +2,63 @@
 @section('content')
 
 @include('parts/application/character_header', ['character' => $application->account->main()])
-
-<select class="custom-select" style="width: 15%; margin-top: 1em;" autocomplete="off" onchange="updateStatus(this);">
-@foreach($states as $id => $state)
-    @if($application->status == $id)
-        <option value="{{ $id }}" selected>{{ $state }}</option>
-    @else
-        <option value="{{ $id }}">{{ $state }}</option>
-    @endif
-@endforeach
-</select>
+<br />
+<div class="row justify-content-center">
+    <div class="col-2">
+        <select style="width: 100%;" class="custom-select" style="width: 15%; margin-top: 1em;" autocomplete="off" onchange="updateStatus(this);">
+            @foreach($states as $id => $state)
+                @if($application->status == $id)
+                    <option value="{{ $id }}" selected>{{ $state }}</option>
+                @else
+                    <option value="{{ $id }}">{{ $state }}</option>
+                @endif
+            @endforeach
+        </select>
+    </div>
+</div><br />
+<div class="row justify-content-center">
+    <div class="col-12">
+        <ul class="nav nav-pills justify-content-center">
+            <li class="nav-item ml-2">
+                <a class="nav-link active show" id="overview-tab" data-toggle="pill" href="#tab-overview" role="tab" aria-controls="tab-overview" aria-selected="true">Overview</a>
+            </li>
+            <li class="nav-item ml-2">
+                <a class="nav-link" id="contacts-tab" data-toggle="pill" href="#tab-contacts" role="tab" aria-controls="tab-contacts" aria-selected="false">Contacts</a>
+            </li>
+        </ul>
+    </div>
+</div>
 <hr class="my-4">
-
-@include('parts/application/question_row', ['questions' => $application->questions(),
+<div class="tab-content" id="tab-content">
+    @include('parts/application/overview', ['questions' => $application->questions(),
                                             'changelog' => $application->changelog,
-                                            'comments' => $application->comments,
-                                            'warnings' => $warnings])
-<hr class="my-4">
+                                            'comments' => $application->comments])
+    @include('parts/application/contacts')
+</div>
+@endsection
+@section('styles')
+    <style>
+        .nav-pills .nav-link {
+            background-image: -webkit-gradient(linear, left top, left bottom, from(#484e55), color-stop(60%, #3A3F44), to(#313539));
+            background-image: linear-gradient(#484e55, #3A3F44 60%, #313539);
+            background-repeat: no-repeat;
+            -webkit-filter: none;
+            filter: none;
+            border: 1px solid rgba(0,0,0,0.6);
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+            color: #fff;
+        }
 
-@include('parts/application/corp_history_contacts')
-<hr class="my-4">
-
+        .nav-pills .nav-link.active, .nav-pills .nav-link:hover {
+            background-color: transparent;
+            background-image: -webkit-gradient(linear, left top, left bottom, from(#101112), color-stop(40%, #17191b), to(#1b1e20));
+            background-image: linear-gradient(#101112, #17191b 40%, #1b1e20);
+            background-repeat: no-repeat;
+            -webkit-filter: none;
+            filter: none;
+            border: 1px solid rgba(0, 0, 0, 0.6);
+        }
+    </style>
 @endsection
 @section('scripts')
     <script type="text/javascript">

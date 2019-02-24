@@ -3,6 +3,7 @@
 namespace App\Connectors;
 
 use Seat\Eseye\Eseye;
+use Swagger\Client\Eve\Api\ContactsApi;
 use Swagger\Client\Eve\Configuration;
 
 /**
@@ -86,6 +87,56 @@ class EsiConnection
     }
 
     /**
+     * Get a user's contacts
+     *
+     * @return \Swagger\Client\Eve\Model\GetCharactersCharacterIdContacts200Ok[]
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws \Swagger\Client\Eve\ApiException
+     */
+    public function getContacts()
+    {
+        $model = new ContactsApi(null, $this->config);
+        $contacts = $model->getCharactersCharacterIdContacts($this->char_id, $this->char_id);
+
+        foreach ($contacts as $contact)
+        {
+            switch($contact->getContactType())
+            {
+                case "character":
+                    $contact->contact_name = $this->getCharacterName($contact->getContactId());
+                    break;
+
+                case "alliance":
+                    $contact->contact_name = $this->getAllianceName($contact->getContactId());
+                    break;
+
+                case "corporation":
+                    $contact->contact_name = $this->getCorporationName($contact->getContactId());
+                    break;
+
+                default:
+                    $contact->contact_name = null;
+                    break;
+            }
+        }
+
+        // Reverse sort by standing
+        usort($contacts, function($a, $b) {
+            $a_standing = $a->getStanding();
+            $b_standing = $b->getStanding();
+
+            if ($a_standing == $b_standing)
+                return 0;
+
+            return ($a_standing > $b_standing) ? -1 : 1;
+        });
+
+        return $contacts;
+    }
+
+    /**
      * Get the name of an alliance
      *
      * @param $alliance_id
@@ -104,5 +155,47 @@ class EsiConnection
         ]);
 
         return $alliance_info->name;
+    }
+
+    /**
+     * Get the name of a corporation
+     *
+     * @param $corporation_id
+     * @return |null
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     */
+    public function getCorporationName($corporation_id)
+    {
+        if ($corporation_id == null)
+            return null;
+
+        $corp_info = $this->eseye->invoke('get', '/corporations/{corporation_id}/', [
+            'corporation_id' => $corporation_id
+        ]);
+
+        return $corp_info->name;
+    }
+
+    /**
+     * Get a character name given an ID
+     *
+     * @param $character_id
+     * @return mixed
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     */
+    public function getCharacterName($character_id)
+    {
+        if ($character_id == null)
+            return null;
+
+        $char = $this->eseye->invoke('get', '/characters/{character_id}/', [
+            'character_id' => $character_id
+        ]);
+
+        return $char->name;
     }
 }

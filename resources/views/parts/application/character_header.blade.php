@@ -1,5 +1,5 @@
-<div class="row">
-    <div class="col-auto">
+<div class="row justify-content-end">
+    <div class="col-1">
         <img src="https://image.eveonline.com/Character/{{ $character->character_id }}_128.jpg">
     </div>
     <div class="col-6">
