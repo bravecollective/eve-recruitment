@@ -114,9 +114,15 @@ class EsiConnection
 
         $ship = $locationModel->getCharactersCharacterIdShip($this->char_id, $this->char_id);
 
-        $public_data = $this->eseye->invoke('get', '/characters/{character_id}/', [
-            "character_id" => $this->char_id
-        ]);
+        if (Cache::has('public_data_' . $this->char_id))
+            $public_data = Cache::get('public_data_' . $this->char_id);
+        else
+        {
+            $public_data = $this->eseye->invoke('get', '/characters/{character_id}/', [
+                "character_id" => $this->char_id
+            ]);
+            Cache::add('public_data_' . $this->char_id, $public_data, env('CACHE_TIME', 3264));
+        }
 
         return [
             'location' => $location,
@@ -147,7 +153,14 @@ class EsiConnection
 
         foreach ($mail as $m)
         {
-            $m->contents = $model->getCharactersCharacterIdMailMailId($this->char_id, $m->getMailId(), $this->char_id)->getBody();
+            if (Cache::has('mail_body_' . $m->getMailId()))
+                $m->contents = Cache::get('mail_body_' . $m->getMailId());
+            else
+            {
+                $m->contents = $model->getCharactersCharacterIdMailMailId($this->char_id, $m->getMailId(), $this->char_id)->getBody();
+                Cache::add('mail_body_' . $m->getMailId(), $m->contents, env('CACHE_TIME', 3264));
+            }
+
             $m->sender = $this->getCharacterName($m->getFrom());
             $m->recipients = [];
 
@@ -400,8 +413,14 @@ class EsiConnection
      */
     public function getStructureName($structure_id)
     {
+        if (Cache::has('structure_' . $structure_id))
+            return Cache::get('structure_' . $structure_id);
+
         $model = new UniverseApi(null, $this->config);
-        return $model->getUniverseStructuresStructureId($structure_id, $this->char_id)->getName();
+        $res = $model->getUniverseStructuresStructureId($structure_id, $this->char_id)->getName();
+
+        Cache::add('structure_' . $structure_id, $res, env('CACHE_TIME', 3264));
+        return $res;
     }
 
     /**
@@ -415,9 +434,14 @@ class EsiConnection
      */
     public function getSystemName($system_id)
     {
+        if (Cache::has('system_' . $system_id))
+            return Cache::get('system_' . $system_id);
+
         $res = $this->eseye->invoke('get', '/universe/systems/{system_id}/', [
             'system_id' => $system_id
         ]);
+
+        Cache::add('system_' . $system_id, $res->name, env('CACHE_TIME', 3264));
 
         return $res->name;
     }
@@ -432,6 +456,9 @@ class EsiConnection
      */
     public function getRegionName($system_id)
     {
+        if (Cache::has('system_region_' . $system_id))
+            return Cache::get('system_region_' . $system_id);
+
         $system = $this->eseye->invoke('get', '/universe/systems/{system_id}/', [
             'system_id' => $system_id
         ]);
@@ -441,6 +468,8 @@ class EsiConnection
         $region = $this->eseye->invoke('get', '/universe/regions/{region_id}/', [
             'region_id' => $constellation->region_id
         ]);
+
+        Cache::add('system_region_' . $system_id, $region->name, env('CACHE_TIME', 3264));
 
         return $region->name;
     }
@@ -456,9 +485,14 @@ class EsiConnection
      */
     public function getStationName($station_id)
     {
+        if (Cache::has('station_' . $station_id))
+            return Cache::get('station_' . $station_id);
+
         $res = $this->eseye->invoke('get', '/universe/stations/{station_id}/', [
             'station_id' => $station_id
         ]);
+
+        Cache::add('station_' . $station_id, $res->name, env('CACHE_TIME', 3264));
 
         return $res->name;
     }
