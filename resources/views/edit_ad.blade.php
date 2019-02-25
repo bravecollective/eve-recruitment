@@ -72,6 +72,7 @@
     <script type="text/javascript">
         let counter = $(".questions").children().length + 1;
         let requirement = null;
+        let newQuestionCounter = -1;
 
         $.get('/api/requirements/template', (e) => requirement = '<div class="input-group" style="margin-bottom: 1em;">' + e + '</div>');
 
@@ -108,6 +109,12 @@
             if (!confirm("Are you sure you wish to delete this form question?"))
                 return;
 
+            if (question_id < 0)
+            {
+                $(".question_" + question_id).parent().remove();
+                return;
+            }
+
             $.ajax({
                 url: url,
                 type: 'DELETE',
@@ -126,10 +133,14 @@
         }
 
         function addQuestion() {
-            let toAppend = "<div class='form-group'> \
-                <input type='text' class='form-control' placeholder='Question " + counter + "' name='questions[0][]' id='questions[0][]'> \
-            </div>";
+            let toAppend = "<div class=\"input-group\" style=\"margin-bottom: 1em;\">\n" +
+"                                <input type=\"text\" class=\"form-control question_" + newQuestionCounter +"\" placeholder=\"Question " + counter + "...\" name=\"questions[0][]\" id=\"questions[0][]\"/>\n" +
+"                                <div class=\"input-group-append\">\n" +
+"                                    <button type=\"button\" class=\"btn btn-outline-secondary\" onclick=\"deleteQuestion(" + newQuestionCounter + ");\">X</button>\n" +
+"                                </div>\n" +
+"                            </div>";
             $(".questions").append(toAppend);
+            newQuestionCounter--;
             counter++;
         }
 
