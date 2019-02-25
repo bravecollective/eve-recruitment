@@ -3,19 +3,17 @@
     <h1>Auto-Assigned Roles</h1>
     <hr class="my-4">
     <div class="row">
-        <div class="col-1"><h2>Core Group</h2></div>
-        <div class="col-1"><h2>Role Name</h2></div>
+        <div class="col-2"><h2>Core Group</h2></div>
+        <div class="col-2"><h2>Role Name</h2></div>
     </div><hr class="my-4">
     <div id="items">
     @foreach($roles as $role)
         <div class="row">
-            <div class="col-1">
+            <div class="col-2">
                 {{ $role->group_name }}
             </div>
             <div class="col-2">
                 {{ $role->role_name }}
-            </div>
-            <div class="col-auto">
                 <a class="text-danger" href="#" onclick="deleteRole({{ $role->core_group_id }}, {{ $role->role_id }})"><span class="fa fa-times-circle"></span></a>
             </div>
         </div>

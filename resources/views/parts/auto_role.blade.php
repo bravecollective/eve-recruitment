@@ -1,5 +1,5 @@
 <div class="row">
-    <div class="col-1">
+    <div class="col-2">
         <select class="custom-select" autocomplete="off">
         @foreach($groups as $group)
             @if(isset($groupSelect) && $groupSelect == $group->name)
@@ -10,7 +10,7 @@
         @endforeach
         </select>
     </div>
-    <div class="col-1">
+    <div class="col-2">
         <select class="custom-select" autocomplete="off">
         @foreach($roles as $role)
             @if(isset($roleSelect) && $roleSelect == $role->name)
