@@ -5,6 +5,7 @@ namespace App\Connectors;
 use App\Models\Type;
 use Illuminate\Support\Facades\Cache;
 use Seat\Eseye\Eseye;
+use Swagger\Client\Eve\Api\ClonesApi;
 use Swagger\Client\Eve\Api\ContactsApi;
 use Swagger\Client\Eve\Api\LocationApi;
 use Swagger\Client\Eve\Api\MailApi;
@@ -135,6 +136,33 @@ class EsiConnection
             'security_status' => round($public_data->security_status, 4),
             'region' => $this->getRegionName($location->getSolarSystemId())
         ];
+    }
+
+    /**
+     * Get a character's clone information
+     *
+     * @return array
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws \Swagger\Client\Eve\ApiException
+     */
+    public function getCloneInfo()
+    {
+        $model = new ClonesApi(null, $this->config);
+
+        $implants = $model->getCharactersCharacterIdImplants($this->char_id, $this->char_id);
+        foreach ($implants as $idx => $implant)
+            $implants[$idx] = $this->getTypeName($implant);
+
+        $clones = $model->getCharactersCharacterIdClones($this->char_id, $this->char_id);
+        $home = $clones->getHomeLocation();
+        $home->location_name = $this->getLocationBasedOnStationType($home->getLocationType(), $home->getLocationId());
+
+        foreach ($clones->getJumpClones() as $clone)
+            $clone->location_name = $this->getLocationBasedOnStationType($clone->getLocationType(), $clone->getLocationId());
+
+        return ['implants' => $implants, 'clones' => $clones];
     }
 
     /**
@@ -418,6 +446,34 @@ class EsiConnection
         Cache::add($character_id, $char->name, env('CACHE_TIME', 3264));
 
         return $char->name;
+    }
+
+    /**
+     * Get a structure name based on the type
+     *
+     * @param $type
+     * @param $id
+     * @return mixed|string|null
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws \Swagger\Client\Eve\ApiException
+     */
+    public function getLocationBasedOnStationType($type, $id)
+    {
+        switch($type)
+        {
+            case "structure":
+                return $this->getStructureName($id);
+                break;
+
+            case "station":
+                return $this->getStationName($id);
+                break;
+
+            default:
+                return null;
+        }
     }
 
     /**

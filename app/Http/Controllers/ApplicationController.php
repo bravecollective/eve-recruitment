@@ -41,6 +41,7 @@ class ApplicationController extends Controller
         $corpHistory = $esi->getCorpHistory();
         $contacts = $esi->getContacts();
         $mail = $esi->getMail();
+        $clones = $esi->getCloneInfo();
 
         return view('application', [
             'character' => $application->account->main(),
@@ -48,6 +49,7 @@ class ApplicationController extends Controller
             'states' => Application::$state_names,
             'warnings' => $warnings,
             'character_info' => $charInfo,
+            'clones' => $clones,
             'corp_history' => $corpHistory,
             'contacts' => $contacts,
             'mails' => $mail
@@ -76,9 +78,12 @@ class ApplicationController extends Controller
 
         $esi = new EsiConnection($char_id);
 
+        $clones = $esi->getCloneInfo();
+
         return view('application', [
             'character' => $char,
             'character_info' => $esi->getCharacterInfo(),
+            'clones' => $clones,
             'corp_history' => $esi->getCorpHistory(),
             'contacts' => $esi->getContacts(),
             'mails' => $esi->getMail()
