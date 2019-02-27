@@ -37,19 +37,11 @@ class ApplicationController extends Controller
         $warnings = Application::getWarnings($application);
         $esi = new EsiConnection($application->account->main_user_id);
 
-        \Barryvdh\Debugbar\Facade::startMeasure('char_info', 'Character info loading');
         $charInfo = $esi->getCharacterInfo();
-        \Barryvdh\Debugbar\Facade::stopMeasure('char_info');
-        \Barryvdh\Debugbar\Facade::startMeasure('corp_history', 'Corp history loading');
         $corpHistory = $esi->getCorpHistory();
-        \Barryvdh\Debugbar\Facade::stopMeasure('corp_history');
-        \Barryvdh\Debugbar\Facade::startMeasure('contacts', 'Contacts loading');
         $contacts = $esi->getContacts();
-        \Barryvdh\Debugbar\Facade::stopMeasure('contacts');
-        \Barryvdh\Debugbar\Facade::startMeasure('mail', 'Mail loading');
         $mail = $esi->getMail();
-        \Barryvdh\Debugbar\Facade::stopMeasure('mail');
-
+        
         return view('application', [
             'character' => $application->account->main(),
             'application' => $application,
