@@ -41,7 +41,7 @@ class ApplicationController extends Controller
         $corpHistory = $esi->getCorpHistory();
         $contacts = $esi->getContacts();
         $mail = $esi->getMail();
-        
+
         return view('application', [
             'character' => $application->account->main(),
             'application' => $application,

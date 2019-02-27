@@ -217,8 +217,13 @@ class EsiConnection
     public function getRace($race_id)
     {
         $res = $this->eseye->invoke('get', '/universe/races');
-        $data = json_decode($res->raw);
-        return $data[$race_id - 1]->name;
+        $races = json_decode($res->raw);
+
+        foreach ($races as $race)
+            if ($race->race_id == $race_id)
+                return $race->name;
+
+        return 'UNKNOWN';
     }
 
     /**
@@ -233,8 +238,13 @@ class EsiConnection
     public function getAncestry($ancestry_id)
     {
         $res = $this->eseye->invoke('get', '/universe/ancestries');
-        $data = json_decode($res->raw);
-        return $data[$ancestry_id - 1]->name;
+        $ancestries = json_decode($res->raw);
+
+        foreach($ancestries as $ancestry)
+            if ($ancestry->id == $ancestry_id)
+                return $ancestry->name;
+
+        return "UNKNOWN";
     }
 
     /**
@@ -249,8 +259,13 @@ class EsiConnection
     public function getBloodline($bloodline_id)
     {
         $res = $this->eseye->invoke('get', '/universe/bloodlines/');
-        $data = json_decode($res->raw);
-        return $data[$bloodline_id - 1]->name;
+        $bloodlines = json_decode($res->raw);
+
+        foreach ($bloodlines as $bloodline)
+            if ($bloodline->bloodline_id == $bloodline_id)
+                return $bloodline->name;
+
+        return "UNKNOWN";
     }
 
     /**
