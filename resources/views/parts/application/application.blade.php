@@ -18,18 +18,43 @@
             </div>
         </div>
         <div class="col-xl-2 col-lg-6 col-md-6 col-sm-12">
-            <div class="card bg-dark text-white">
-                <div class="card-body">
-                    <div class="card-header">
-                        Warnings
-                    </div>
-                    <ul class="list-group">
-                    @foreach($warnings as $warning)
-                        <div class="list-group-item bg-dark text-white">
-                            {{ $warning }}
+            <div class="row">
+                <div class="col-12">
+                    <div class="card bg-dark text-white">
+                        <div class="card-body">
+                            <div class="card-header">
+                                Alts
+                            </div>
+                            <ul class="list-group">
+                                @foreach($alts as $alt)
+                                    <a href="/character/{{ $alt->character_id }}" target="_blank">
+                                        <div class="list-group-item bg-dark text-white">
+                                            <img src="https://image.eveonline.com/Character/{{ $alt->character_id }}_32.jpg" />
+                                            {{ $alt->name }}
+                                        </div>
+                                    </a>
+                                @endforeach
+                            </ul>
                         </div>
-                    @endforeach
-                    </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="card bg-dark text-white">
+                        <div class="card-body">
+                            <div class="card-header">
+                                Warnings
+                            </div>
+                            <ul class="list-group">
+                                @foreach($warnings as $warning)
+                                    <div class="list-group-item bg-dark text-white">
+                                        {{ $warning }}
+                                    </div>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -44,6 +44,7 @@ class ApplicationController extends Controller
         $clones = $esi->getCloneInfo();
 
         return view('application', [
+            'alts' => $application->account->alts(),
             'character' => $application->account->main(),
             'application' => $application,
             'states' => Application::$state_names,
@@ -73,7 +74,7 @@ class ApplicationController extends Controller
         if (!$char)
             return redirect('/')->with('error', 'Invalid character ID');
 
-        if (!Auth::user()->hasRole($char->corporation_name . ' recruiter') && !Auth::user()->hasRole($char->corporation_name . ' director'))
+        if (!AccountRole::recruiterCanViewEsi($char_id) && (!Auth::user()->hasRole($char->corporation_name . ' recruiter') && !Auth::user()->hasRole($char->corporation_name . ' director')))
             return redirect('/')->with('error', 'Unauthorized');
 
         $esi = new EsiConnection($char_id);

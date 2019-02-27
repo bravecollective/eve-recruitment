@@ -3,6 +3,7 @@
 namespace App\Models\Permission;
 
 use App\Models\Account;
+use App\Models\Application;
 use App\Models\Permissions\Role;
 use App\Models\RecruitmentAd;
 use App\Models\User;
@@ -200,6 +201,29 @@ class AccountRole extends Model
     public static function getAccountRole($account_id, $role_id)
     {
         return AccountRole::where('account_id', $account_id)->where('role_id', $role_id)->first();
+    }
+
+    /**
+     * Determine if a user can view an ESI. This checks if the character has an open application
+     *
+     * @param $character_id
+     * @return bool
+     */
+    public static function recruiterCanViewEsi($character_id)
+    {
+        $account = User::where('character_id', $character_id)->first()->account;
+        $open_ad_ids = Application::where('account_id', $account->id)->get();
+
+        if (!$open_ad_ids)
+            return false;
+
+        $open_ad_ids = $open_ad_ids->pluck('recruitment_id')->toArray();
+        $role_ids = Role::whereIn('recruitment_id', $open_ad_ids)->get();
+
+        if (!$role_ids)
+            return false;
+
+        return AccountRole::where('account_id', Auth::user()->id)->whereIn('role_id', $role_ids->pluck('id')->toArray())->exists();
     }
 
     protected function setKeysForSaveQuery(Builder $query)

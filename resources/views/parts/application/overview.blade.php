@@ -101,7 +101,7 @@
                     <div class="card bg-dark">
                         <div class="card-body">
                             <div class="card-header">
-                                Clones
+                                Jump Clones
                             </div>
                             <ul class="list-group">
                                 <div class="list-group-item bg-dark text-white">
