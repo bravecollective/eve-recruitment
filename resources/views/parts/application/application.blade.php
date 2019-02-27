@@ -1,6 +1,6 @@
 <div class="tab-pane fade show active" id="tab-application" role="tabpanel" aria-labelledby="tab-application">
     <div class="row">
-        <div class="col-4">
+        <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
             <div class="card bg-dark text-white">
                 <div class="card-body">
                     <div class="card-header">
@@ -17,7 +17,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-2">
+        <div class="col-xl-2 col-lg-6 col-md-6 col-sm-12">
             <div class="card bg-dark text-white">
                 <div class="card-body">
                     <div class="card-header">
@@ -33,7 +33,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-2">
+        <div class="col-xl-2 col-lg-6 col-md-6 col-sm-12">
             <div class="card bg-dark text-white">
                 <div class="card-body">
                     <div class="card-header">
@@ -50,7 +50,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-3">
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12">
             <div class="card bg-dark text-white">
                 <div class="card-body">
                     <div class="card-header">

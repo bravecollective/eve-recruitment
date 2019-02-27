@@ -36,9 +36,3 @@ body {
 .search-result-item {
     cursor: pointer;
 }
-
-.esi-container {
-    max-height: 25em;
-    overflow: auto;
-    margin-left: 1em;
-}

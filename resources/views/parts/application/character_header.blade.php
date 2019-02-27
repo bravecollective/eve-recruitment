@@ -1,8 +1,8 @@
-<div class="row justify-content-end">
-    <div class="col-1">
+<div class="row justify-content-xl-end justify-content-lg-end justify-content-md-end justify-content-sm-center justify-content-center">
+    <div class="col-auto">
         <img src="https://image.eveonline.com/Character/{{ $character->character_id }}_128.jpg">
     </div>
-    <div class="col-6">
+    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-auto col-auto">
         <div class="row">
             <h1>{{ $character->name }}</h1>
         </div>
