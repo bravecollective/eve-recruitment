@@ -18,9 +18,14 @@ class ApplicationController extends Controller
 {
 
     /**
-     * View a single application
+     * Load an application
+     *
      * @param $id
-     * @return
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws \Swagger\Client\Eve\ApiException
      */
     function viewApplication($id)
     {
@@ -43,14 +48,59 @@ class ApplicationController extends Controller
             'application' => $application,
             'states' => Application::$state_names,
             'warnings' => $warnings,
-            'character_info' => $esi->getCharacterInfo(),
-            'clones' => $esi->getCloneInfo(),
-            'corp_history' => $esi->getCorpHistory(),
-            'contacts' => $esi->getContacts(),
-            'mails' => $esi->getMail(),
-            'skills' => $esi->getSkills(),
             'sp' => $esi->getSkillpoints()
         ]);
+    }
+
+    /**
+     * Load ESI data for a user
+     *
+     * @param $char_id
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws \Swagger\Client\Eve\ApiException
+     * @throws \Throwable
+     */
+    public function loadEsiData($char_id, $type)
+    {
+        $char = User::find($char_id);
+
+        if (!$char)
+            die(json_encode(['success' => false, 'message' => 'Invalid character ID']));
+
+        if (!AccountRole::recruiterCanViewEsi($char_id) && (!Auth::user()->hasRole($char->corporation_name . ' recruiter') && !Auth::user()->hasRole($char->corporation_name . ' director')))
+            die(json_encode(['success' => false, 'message' => 'Unauthorized']));
+
+        $esi = new EsiConnection($char_id);
+        $mails = $esi->getMail();
+        $skills = $esi->getSkills();
+
+        $tabs = view('parts/application/esi_view', [
+            'skills' => $skills,
+            'mails' => $mails
+        ])->render();
+
+        if ($type == "character")
+        {
+            // Character ESI already has the overview tab loaded, so don't load it
+            die(json_encode(['success' => true, 'message' => $tabs]));
+        }
+        else
+        {
+            $character_info = $esi->getCharacterInfo();
+            $clones = $esi->getCloneInfo();
+            $corp_history = $esi->getCorpHistory();
+            $contacts = $esi->getContacts();
+
+            die(json_encode(['success' => true, 'message' =>
+                view('parts/application/overview', [
+                    'character_info' => $character_info,
+                    'clones' => $clones,
+                    'corp_history' => $corp_history,
+                    'contacts' => $contacts
+                ])->render() . $tabs]));
+        }
     }
 
     /**
@@ -83,8 +133,7 @@ class ApplicationController extends Controller
             'clones' => $clones,
             'corp_history' => $esi->getCorpHistory(),
             'contacts' => $esi->getContacts(),
-            'mails' => $esi->getMail(),
-            'skills' => $esi->getSkills()
+            'sp' => $esi->getSkillpoints()
         ]);
     }
 

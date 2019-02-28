@@ -31,6 +31,7 @@ Route::delete('/api/recruitments/{ad_id}/questions/{question_id}', 'GroupAdContr
 Route::delete('/api/recruitments/{ad_id}/requirements/{requirement_id}', 'GroupAdController@deleteRequirement');
 Route::post('/api/groups/roles', 'GroupAdController@loadPermissions');
 Route::post('/api/groups/roles/save', 'GroupAdController@savePermissions');
+Route::get('/api/esi/{char_id}/{type}', 'ApplicationController@loadEsiData');
 
 // Global admin routes
 Route::get('/admin/roles', 'PermissionsController@globalRoles');
@@ -46,8 +47,6 @@ Route::get('/logout', function () {
 })->name('logout');
 
 // Application routes
-Route::get('/applications', 'ApplicationController@getAvailableApplications');
-Route::get('/{slug}', 'ApplicationController@loadAdBySlug');
 Route::post('/recruitments/{recruitment_id}/apply', 'ApplicationController@apply');
 Route::get('/applications/{id}', 'ApplicationController@viewApplications');
 Route::get('/application/{id}', 'ApplicationController@viewApplication');
@@ -55,3 +54,5 @@ Route::post('/application/{id}/state/update', 'ApplicationController@updateState
 Route::post('/application/{id}/comments/add', 'CommentController@addComment');
 Route::post('/application/{id}/comments/delete', 'CommentController@deleteComment');
 Route::get('/character/{id}', 'ApplicationController@viewCharacterEsi');
+Route::get('/applications', 'ApplicationController@getAvailableApplications');
+Route::get('/{slug}', 'ApplicationController@loadAdBySlug');

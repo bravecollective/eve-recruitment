@@ -40,6 +40,11 @@
              </li>
         </ul>
     </div>
+</div><br />
+<div class="row justify-content-center">
+    <div class="col-auto">
+        <button type="button" class="btn btn-primary" id="load-esi-button" onclick="loadEsiData();">Load ESI Data</button>
+    </div>
 </div>
 <hr class="my-4">
 <div class="tab-content" id="tab-content">
@@ -47,10 +52,9 @@
     @include('parts/application/application', ['questions' => $application->questions(),
                                                'changelog' => $application->changelog,
                                                'comments' => $application->comments])
-@endif
+@else
     @include('parts/application/overview')
-    @include('parts/application/mail')
-    @include('parts/application/skills_assets')
+@endif
 </div>
 @endsection
 @section('styles')
@@ -80,6 +84,25 @@
 @section('scripts')
     <script type="text/javascript">
         document.title = "{{ $character->name }} - " + document.title;
+
+        function loadEsiData() {
+            let char_id = "{{ $character->character_id }}";
+            let url = undefined;
+
+        @if(isset($application))
+            url = "/api/esi/" + char_id + "/application";
+        @else
+            url = "/api/esi/" + char_id + "/character";
+        @endif
+
+            $("#load-esi-button").text('Loading...');
+            $.get(url, function(e) {
+                e = JSON.parse(e);
+                $("#load-esi-button").text('ESI Loaded');
+                $("#tab-content").append(e.message);
+            });
+        }
+
     @if(isset($application))
         let comment_button = $('#add_comment_btn');
         let new_question_textarea = $('#new_question');
