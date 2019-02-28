@@ -95,6 +95,7 @@ class ApplicationController extends Controller
 
             die(json_encode(['success' => true, 'message' =>
                 view('parts/application/overview', [
+                    'application' => true,
                     'character_info' => $character_info,
                     'clones' => $clones,
                     'corp_history' => $corp_history,
