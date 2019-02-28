@@ -8,12 +8,6 @@
         "brave collective"
     ],
     "license": "MIT",
-    "repositories": [
-        {
-            "type": "git",
-            "url": "https://github.com/tkhamez/swagger-eve-php.git"
-        }
-    ],
     "require": {
         "php": "^7.1.3",
         "ext-curl": "*",
@@ -24,7 +18,7 @@
         "laravel/framework": "5.7.*",
         "laravel/tinker": "^1.0",
         "nullx27/eveonline-socialite": "^0.5.0",
-        "tkhamez/swagger-eve-php": "*@dev"
+        "tkhamez/swagger-eve-php": "~1.0.0"
     },
     "require-dev": {
         "beyondcode/laravel-dump-server": "^1.0",
