@@ -2,13 +2,16 @@
 
 namespace App\Connectors;
 
+use App\Models\Group;
 use App\Models\Type;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Seat\Eseye\Eseye;
 use Swagger\Client\Eve\Api\ClonesApi;
 use Swagger\Client\Eve\Api\ContactsApi;
 use Swagger\Client\Eve\Api\LocationApi;
 use Swagger\Client\Eve\Api\MailApi;
+use Swagger\Client\Eve\Api\SkillsApi;
 use Swagger\Client\Eve\Api\UniverseApi;
 use Swagger\Client\Eve\Configuration;
 
@@ -231,6 +234,58 @@ class EsiConnection
         }
 
         return $mail;
+    }
+
+    /**
+     * Get a character's skills
+     *
+     * @return array|mixed
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws \Swagger\Client\Eve\ApiException
+     */
+    public function getSkills()
+    {
+        $cache_key = "skills_{$this->char_id}";
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
+
+        $model = new SkillsApi(null, $this->config);
+        $skills = $model->getCharactersCharacterIdSkillsWithHttpInfo($this->char_id, $this->char_id);
+        $unprocessed_skills = $skills[0]->getSkills();
+        $out = [];
+
+        foreach ($unprocessed_skills as $skill)
+        {
+            $skill_name = $this->getTypeName($skill->getSkillId());
+            $skill_category = $this->getGroupName($skill->getSkillId());
+
+            if (!array_key_exists($skill_category, $out))
+                $out[$skill_category] = [];
+
+            $out[$skill_category][$skill_name] = [
+                'skillpoints' => $skill->getSkillpointsInSkill(),
+                'level' => $skill->getActiveSkillLevel()
+            ];
+        }
+
+        Cache::add($cache_key, $out, $this->getCacheExpirationTime($skills));
+        return $out;
+    }
+
+    /**
+     * Get a character's skillpoints
+     *
+     * @return int
+     * @throws \Swagger\Client\Eve\ApiException
+     */
+    public function getSkillpoints()
+    {
+        $model = new SkillsApi(null, $this->config);
+        $sp = $model->getCharactersCharacterIdSkills($this->char_id, $this->char_id);
+        return number_format($sp->getTotalSp());
     }
 
     /**
@@ -591,8 +646,61 @@ class EsiConnection
         $dbItem = new Type();
         $dbItem->id = $type_id;
         $dbItem->name = $res->name;
+        $dbItem->group_id = $res->group_id;
         $dbItem->save();
 
         return $res->name;
+    }
+
+    /**
+     * Get the name of a group, given an item ID
+     *
+     * @param $id
+     * @return Group|mixed
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     */
+    public function getGroupName($itemId)
+    {
+        $item = Type::find($itemId);
+
+        if (!$item)
+        {
+            // Add it to the database
+            $this->getTypeName($itemId);
+            $item = Type::find($itemId);
+        }
+
+        $dbItem = Group::find($item->group_id);
+
+        if ($dbItem)
+            return $dbItem->name;
+
+        $group_id = $item->group_id;
+
+        $res = $this->eseye->invoke('get', '/universe/groups/{group_id}/', [
+            'group_id' => $group_id
+        ]);
+
+        $dbItem = new Group();
+        $dbItem->id = $group_id;
+        $dbItem->name = $res->name;
+        $dbItem->save();
+
+        return $dbItem->name;
+    }
+
+    /**
+     * Get the cache key expiration seconds
+     * Takes the array output of the model function *withHTTPInfo()
+     * @param array $time
+     * @return mixed
+     */
+    public function getCacheExpirationTime($time)
+    {
+        $time = $time[2]['Expires'][0];
+        $time = Carbon::parse($time);
+        return $time->diffInMinutes(now());
     }
 }

@@ -37,23 +37,19 @@ class ApplicationController extends Controller
         $warnings = Application::getWarnings($application);
         $esi = new EsiConnection($application->account->main_user_id);
 
-        $charInfo = $esi->getCharacterInfo();
-        $corpHistory = $esi->getCorpHistory();
-        $contacts = $esi->getContacts();
-        $mail = $esi->getMail();
-        $clones = $esi->getCloneInfo();
-
         return view('application', [
             'alts' => $application->account->alts(),
             'character' => $application->account->main(),
             'application' => $application,
             'states' => Application::$state_names,
             'warnings' => $warnings,
-            'character_info' => $charInfo,
-            'clones' => $clones,
-            'corp_history' => $corpHistory,
-            'contacts' => $contacts,
-            'mails' => $mail
+            'character_info' => $esi->getCharacterInfo(),
+            'clones' => $esi->getCloneInfo(),
+            'corp_history' => $esi->getCorpHistory(),
+            'contacts' => $esi->getContacts(),
+            'mails' => $esi->getMail(),
+            'skills' => $esi->getSkills(),
+            'sp' => $esi->getSkillpoints()
         ]);
     }
 
@@ -87,7 +83,8 @@ class ApplicationController extends Controller
             'clones' => $clones,
             'corp_history' => $esi->getCorpHistory(),
             'contacts' => $esi->getContacts(),
-            'mails' => $esi->getMail()
+            'mails' => $esi->getMail(),
+            'skills' => $esi->getSkills()
         ]);
     }
 

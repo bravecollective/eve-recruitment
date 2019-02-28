@@ -26,3 +26,10 @@
         </div>
     </div>
 </div>
+<br />
+<div class="row justify-content-center">
+    <div class="col-auto">
+        <h5>{{ $sp }} Skillpoints</h5>
+    </div>
+</div>
+<br />
