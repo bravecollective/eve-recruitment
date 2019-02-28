@@ -1,5 +1,5 @@
 <div class="tab-pane fade show active" id="tab-application" role="tabpanel" aria-labelledby="tab-application">
-    <div class="row">
+    <div class="row justify-content-center">
         <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
             <div class="card bg-dark text-white">
                 <div class="card-body">
@@ -81,18 +81,16 @@
                     <div class="card-header">
                         Comments
                     </div>
-                    <div class="list-group">
-                        <div id="comments">
-                            @foreach($comments as $comment)
-                                @include('parts/application/comment', ['comment' => $comment])
-                            @endforeach
-                        </div>
+                    <div id="comments">
+                    @foreach($comments as $comment)
+                        @include('parts/application/comment', ['comment' => $comment])
+                    @endforeach
                     </div>
                 </div>
-            </div>
-            <div class="row">
-                <textarea id="new_question" class="form-control" style="display: none;" placeholder="Enter comment..."></textarea>
-                <button type="button" class="btn btn-primary" id="add_comment_btn" onclick="handleCommentButtonClick()">Add</button>
+                <div class="card-footer">
+                    <textarea id="new_question" class="form-control" style="display: none;" placeholder="Enter comment..."></textarea>
+                    <button type="button" class="btn btn-primary" id="add_comment_btn" onclick="handleCommentButtonClick()">Add</button>
+                </div>
             </div>
         </div>
     </div>

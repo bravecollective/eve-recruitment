@@ -3,7 +3,7 @@
 @else
 <div class="tab-pane fade show active" id="tab-overview" role="tabpanel" aria-labelledby="tab-overview">
 @endif
-    <div class="row">
+    <div class="row justify-content-center">
         <div class="col-xl-6 col-lg-6 col-12">
             <div class="row">
                 <div class="col-xl-6 col-12">
