@@ -1,6 +1,7 @@
 <div class="tab-pane fade" id="tab-skills" role="tabpanel" aria-labelledby="tab-skills">
     <div class="row">
-        <div class="col-3 offset-3">
+    @foreach($skill_groups as $group)
+        <div class="col-xl-3 col-lg-6 col-md-12">
             <div class="card bg-dark text-white">
                 <div class="card-body">
                     <div class="card-header">
@@ -8,6 +9,9 @@
                     </div>
                 <ul class="list-group">
                 @foreach($skills as $category => $skill)
+                    @if(!in_array($category, $group))
+                        @continue
+                    @endif
                     <div class="list-group-item bg-dark text-white">
                         <h4>{{ $category }}</h4>
                     </div>
@@ -33,12 +37,14 @@
                         </div>
                     </div>
                 @endforeach
-                @endforeach
+                    <div class="list-group-item bg-dark text-white"></div>
+                    @endforeach
                 </ul>
                 </div>
             </div>
         </div>
-        <div class="col-3">
+    @endforeach
+        <div class="col-xl-3 col-lg-6 col-md-12">
             <div class="card bg-dark text-white">
                 <div class="card-body">
                     <div class="card-header">

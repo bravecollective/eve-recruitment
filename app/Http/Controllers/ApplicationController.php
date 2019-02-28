@@ -76,8 +76,15 @@ class ApplicationController extends Controller
         $mails = $esi->getMail();
         $skills = $esi->getSkills();
 
+        $skill_groups = [
+            ["Spaceship Command", "Subsystems", "Shield", "Armor", "Rigging", "Missiles", "Gunnery", "Drones"],
+            ["Engineering", "Navigation", "Electronic Systems", "Targeting", "Fleet Support", "Scanning", "Neural Enhancement"],
+            ["Science", "Resource Processing", "Production", "Planet Management", "Structure Management", "Social", "Trade", "Corporation Management"]
+        ];
+
         $tabs = view('parts/application/esi_view', [
             'skills' => $skills,
+            'skill_groups' => $skill_groups,
             'mails' => $mails
         ])->render();
 
