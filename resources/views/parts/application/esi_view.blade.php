@@ -1,2 +1,2 @@
-@include('parts/application/skills_assets')
+@include('parts.application.skills')
 @include('parts/application/mail')

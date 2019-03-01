@@ -33,7 +33,7 @@
             </li>
          @endif
              <li class="nav-item ml-2">
-                 <a class="nav-link" id="skills-tab" data-toggle="pill" href="#tab-skills" role="tab" aria-controls="tab-skills" aria-selected="false">Skills &amp; Assets</a>
+                 <a class="nav-link" id="skills-tab" data-toggle="pill" href="#tab-skills" role="tab" aria-controls="tab-skills" aria-selected="false">Skills</a>
              </li>
              <li class="nav-item ml-2">
                  <a class="nav-link" id="mail-tab" data-toggle="pill" href="#tab-mail" role="tab" aria-controls="tab-mail" aria-selected="false">Mail</a>

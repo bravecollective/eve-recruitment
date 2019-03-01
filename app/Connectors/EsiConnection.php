@@ -284,6 +284,8 @@ class EsiConnection
             });
         }
 
+        ksort($out);
+
         Cache::add($cache_key, $out, $this->getCacheExpirationTime($skills));
         return $out;
     }
