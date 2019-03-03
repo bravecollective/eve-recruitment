@@ -38,6 +38,9 @@
              <li class="nav-item ml-2">
                  <a class="nav-link" id="mail-tab" data-toggle="pill" href="#tab-mail" role="tab" aria-controls="tab-mail" aria-selected="false">Mail</a>
              </li>
+            <li class="nav-item ml-2">
+                <a class="nav-link" id="assets-tab" data-toggle="pill" href="#tab-assets" role="tab" aria-controls="tab-assets" aria-selected="false">Assets &amp; Journal</a>
+            </li>
         </ul>
     </div>
 </div><br />
@@ -84,8 +87,16 @@
 @section('scripts')
     <script type="text/javascript">
         document.title = "{{ $character->name }} - " + document.title;
+        let esiLoaded = false;
 
         function loadEsiData() {
+            if (esiLoaded)
+            {
+                showError('ESI already loaded. To see updated ESI, reload the page and click the button again.');
+                return;
+            }
+
+            esiLoaded = true;
             let char_id = "{{ $character->character_id }}";
             let url = undefined;
 
@@ -100,6 +111,9 @@
                 e = JSON.parse(e);
                 $("#load-esi-button").text('ESI Loaded');
                 $("#tab-content").append(e.message);
+                $("#journal-table").DataTable({
+                    "order": [[0, "desc"]]
+                });
             });
         }
 

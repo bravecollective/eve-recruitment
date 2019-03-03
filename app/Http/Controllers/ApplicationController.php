@@ -22,9 +22,7 @@ class ApplicationController extends Controller
      *
      * @param $id
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
      * @throws \Swagger\Client\Eve\ApiException
      */
     function viewApplication($id)
@@ -56,6 +54,7 @@ class ApplicationController extends Controller
      * Load ESI data for a user
      *
      * @param $char_id
+     * @param $type
      * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
      * @throws \Seat\Eseye\Exceptions\UriDataMissingException
@@ -75,6 +74,8 @@ class ApplicationController extends Controller
         $esi = new EsiConnection($char_id);
         $mails = $esi->getMail();
         $skills = $esi->getSkills();
+        $assets = $esi->getAssets();
+        $journal = $esi->getJournal();
 
         $skill_groups = [
             ["Spaceship Command", "Subsystems", "Shield", "Armor", "Rigging", "Missiles", "Gunnery", "Drones"],
@@ -85,7 +86,9 @@ class ApplicationController extends Controller
         $tabs = view('parts/application/esi_view', [
             'skills' => $skills,
             'skill_groups' => $skill_groups,
-            'mails' => $mails
+            'mails' => $mails,
+            'assets' => $assets,
+            'journal' => $journal,
         ])->render();
 
         if ($type == "character")

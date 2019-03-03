@@ -7,12 +7,14 @@ use App\Models\Type;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Seat\Eseye\Eseye;
+use Swagger\Client\Eve\Api\AssetsApi;
 use Swagger\Client\Eve\Api\ClonesApi;
 use Swagger\Client\Eve\Api\ContactsApi;
 use Swagger\Client\Eve\Api\LocationApi;
 use Swagger\Client\Eve\Api\MailApi;
 use Swagger\Client\Eve\Api\SkillsApi;
 use Swagger\Client\Eve\Api\UniverseApi;
+use Swagger\Client\Eve\Api\WalletApi;
 use Swagger\Client\Eve\Configuration;
 
 /**
@@ -81,7 +83,6 @@ class EsiConnection
         // Get corporation names and alliance information
         foreach ($data as $d)
         {
-            // TODO: Error handling?
             $corp_info = $this->eseye->invoke('get', '/corporations/{corporation_id}/', [
                 'corporation_id' => $d->corporation_id
             ]);
@@ -117,16 +118,9 @@ class EsiConnection
             $location->structure_name = $this->getStationName($location->getStationId());
 
         $ship = $locationModel->getCharactersCharacterIdShip($this->char_id, $this->char_id);
-
-        if (Cache::has('public_data_' . $this->char_id))
-            $public_data = Cache::get('public_data_' . $this->char_id);
-        else
-        {
-            $public_data = $this->eseye->invoke('get', '/characters/{character_id}/', [
-                "character_id" => $this->char_id
-            ]);
-            Cache::add('public_data_' . $this->char_id, $public_data, env('CACHE_TIME', 3264));
-        }
+        $public_data = $this->eseye->invoke('get', '/characters/{character_id}/', [
+            "character_id" => $this->char_id
+        ]);
 
         return [
             'location' => $location,
@@ -179,17 +173,27 @@ class EsiConnection
      */
     public function getMail()
     {
-        $model = new MailApi(null, $this->config);
-        $mail = $model->getCharactersCharacterIdMail($this->char_id, $this->char_id);
+        $mailCacheKey = "mail_{$this->char_id}";
+        $mailBodyCacheKey = "mail_body_";
+
+        if (Cache::has($mailCacheKey))
+            $mail = Cache::get($mailCacheKey);
+        else
+        {
+            $model = new MailApi(null, $this->config);
+            $mail = $model->getCharactersCharacterIdMailWithHttpInfo($this->char_id, $this->char_id);
+            Cache::add($mailCacheKey, $mail[0], $this->getCacheExpirationTime($mail));
+            $mail = $mail[0];
+        }
 
         foreach ($mail as $m)
         {
-            if (Cache::has('mail_body_' . $m->getMailId()))
-                $m->contents = Cache::get('mail_body_' . $m->getMailId());
+            if (Cache::has($mailBodyCacheKey . $m->getMailId()))
+                $m->contents = Cache::get($mailBodyCacheKey . $m->getMailId());
             else
             {
                 $m->contents = $model->getCharactersCharacterIdMailMailId($this->char_id, $m->getMailId(), $this->char_id)->getBody();
-                Cache::add('mail_body_' . $m->getMailId(), $m->contents, env('CACHE_TIME', 3264));
+                Cache::add($mailBodyCacheKey . $m->getMailId(), $m->contents, env('CACHE_TIME', 3264));
             }
 
             $m->sender = $this->getCharacterName($m->getFrom());
@@ -290,6 +294,68 @@ class EsiConnection
         return $out;
     }
 
+    public function getAssets()
+    {
+        $cache_key = "assets_{$this->char_id}";
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
+
+        $model = new AssetsApi(null, $this->config);
+        $assets = $model->getCharactersCharacterIdAssetsWithHttpInfo($this->char_id, $this->char_id);
+        $out = [];
+
+        foreach ($assets[0] as $asset)
+            $out[$asset->getTypeId()] = $this->getTypeName($asset->getTypeId());
+
+        return;
+        $locations = $model->postCharactersCharacterIdAssetsLocations($this->char_id, json_encode(array_keys($out)), $this->char_id);
+        dd($locations);
+
+        dd($out);
+
+        //Cache::add();
+    }
+
+    /**
+     * Get a user's journal transactions
+     *
+     * @param int $page
+     * @return array|mixed
+     * @throws \Swagger\Client\Eve\ApiException
+     */
+    public function getJournal($page = 1)
+    {
+        $cache_key = "wallet_journal_{$this->char_id}";
+        $out = [];
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
+
+        $model = new WalletApi(null, $this->config);
+        $journal = $model->getCharactersCharacterIdWalletJournalWithHttpInfo($this->char_id, $this->char_id, null, $page);
+
+        for ($i = 2; $i <= $journal[2]['X-Pages'][0]; $i++)
+            $journal[0] += $model->getCharactersCharacterIdWallet($this->char_id, $this->char_id, null, $i);
+
+        foreach ($journal[0] as $entry)
+        {
+            $out[] = [
+                'sender' => $this->getUnknownTypeName($entry->getFirstPartyId()),
+                'receiver' => $this->getUnknownTypeName($entry->getSecondPartyId()),
+                'description' => $entry->getDescription(),
+                'type' => ucwords(str_replace('_', ' ', $entry->getRefType())),
+                'amount' => number_format($entry->getAmount()),
+                'balance' => number_format($entry->getBalance()),
+                'date' => $entry->getDate()->format('Y-m-d H:i:s'),
+                'note' => $entry->getReason()
+            ];
+        }
+
+        Cache::add($cache_key, $out, $this->getCacheExpirationTime($journal));
+        return $out;
+    }
+
     /**
      * Get a character's skillpoints
      *
@@ -298,9 +364,18 @@ class EsiConnection
      */
     public function getSkillpoints()
     {
+        $cache_key = "skillpoints_{$this->char_id}";
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
+
         $model = new SkillsApi(null, $this->config);
-        $sp = $model->getCharactersCharacterIdSkills($this->char_id, $this->char_id);
-        return number_format($sp->getTotalSp());
+        $sp = $model->getCharactersCharacterIdSkillsWithHttpInfo($this->char_id, $this->char_id);
+        $out = number_format($sp[0]->getTotalSp());
+
+        Cache::add($cache_key, $out, $this->getCacheExpirationTime($sp));
+
+        return $out;
     }
 
     /**
@@ -314,8 +389,16 @@ class EsiConnection
      */
     public function getRace($race_id)
     {
-        $res = $this->eseye->invoke('get', '/universe/races');
-        $races = json_decode($res->raw);
+        $cache_key = "races";
+
+        if (Cache::has($cache_key))
+            $races = Cache::get($cache_key);
+        else
+        {
+            $res = $this->eseye->invoke('get', '/universe/races');
+            $races = json_decode($res->raw);
+            Cache::add($cache_key, $races, env('CACHE_TIME', 3264));
+        }
 
         foreach ($races as $race)
             if ($race->race_id == $race_id)
@@ -335,8 +418,16 @@ class EsiConnection
      */
     public function getAncestry($ancestry_id)
     {
-        $res = $this->eseye->invoke('get', '/universe/ancestries');
-        $ancestries = json_decode($res->raw);
+        $cache_key = "ancestries";
+
+        if (Cache::has($cache_key))
+            $ancestries = Cache::get($cache_key);
+        else
+        {
+            $res = $this->eseye->invoke('get', '/universe/ancestries');
+            $ancestries = json_decode($res->raw);
+            Cache::add($cache_key, $ancestries, env('CACHE_TIME', 3264));
+        }
 
         foreach($ancestries as $ancestry)
             if ($ancestry->id == $ancestry_id)
@@ -356,8 +447,16 @@ class EsiConnection
      */
     public function getBloodline($bloodline_id)
     {
-        $res = $this->eseye->invoke('get', '/universe/bloodlines/');
-        $bloodlines = json_decode($res->raw);
+        $cache_key = "bloodlines";
+
+        if (Cache::has($cache_key))
+            $bloodlines = Cache::get($cache_key);
+        else
+        {
+            $res = $this->eseye->invoke('get', '/universe/bloodlines/');
+            $bloodlines = json_decode($res->raw);
+            Cache::add($cache_key, $bloodlines, env('CACHE_TIME', 3264));
+        }
 
         foreach ($bloodlines as $bloodline)
             if ($bloodline->bloodline_id == $bloodline_id)
@@ -425,8 +524,10 @@ class EsiConnection
      */
     public function getMailingListName($mailing_list_id)
     {
-        if (Cache::has($mailing_list_id))
-            return Cache::get($mailing_list_id);
+        $cache_key = "mailing_list_{$mailing_list_id}";
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
 
         $model = new MailApi(null, $this->config);
         $lists = $model->getCharactersCharacterIdMailLists($this->char_id, $this->char_id);
@@ -437,7 +538,7 @@ class EsiConnection
                 Cache::add($list->getMailingListId(), $list->getName(), env('CACHE_TIME', 3264));
         }
 
-        return Cache::get($mailing_list_id);
+        return Cache::get($cache_key);
     }
 
     /**
@@ -454,14 +555,16 @@ class EsiConnection
         if ($alliance_id == null)
             return null;
 
-        if (Cache::has($alliance_id))
-            return Cache::get($alliance_id);
+        $cache_key = "alliance_{$alliance_id}";
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
 
         $alliance_info = $this->eseye->invoke('get', '/alliances/{alliance_id}/', [
             'alliance_id' => $alliance_id
         ]);
 
-        Cache::add($alliance_id, $alliance_info->name, env('CACHE_TIME', 3264));
+        Cache::add($cache_key, $alliance_info->name, env('CACHE_TIME', 3264));
 
         return $alliance_info->name;
     }
@@ -480,14 +583,16 @@ class EsiConnection
         if ($corporation_id == null)
             return null;
 
-        if (Cache::has($corporation_id))
-            return Cache::get($corporation_id);
+        $cache_key = "corporation_{$corporation_id}";
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
 
         $corp_info = $this->eseye->invoke('get', '/corporations/{corporation_id}/', [
             'corporation_id' => $corporation_id
         ]);
 
-        Cache::add($corporation_id, $corp_info->name, env('CACHE_TIME', 3264));
+        Cache::add($cache_key, $corp_info->name, env('CACHE_TIME', 3264));
 
         return $corp_info->name;
     }
@@ -506,14 +611,16 @@ class EsiConnection
         if ($character_id == null)
             return null;
 
-        if (Cache::has($character_id))
-            return Cache::get($character_id);
+        $cache_key = "character_{$character_id}";
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
 
         $char = $this->eseye->invoke('get', '/characters/{character_id}/', [
             'character_id' => $character_id
         ]);
 
-        Cache::add($character_id, $char->name, env('CACHE_TIME', 3264));
+        Cache::add($cache_key, $char->name, env('CACHE_TIME', 3264));
 
         return $char->name;
     }
@@ -554,13 +661,15 @@ class EsiConnection
      */
     public function getStructureName($structure_id)
     {
-        if (Cache::has('structure_' . $structure_id))
-            return Cache::get('structure_' . $structure_id);
+        $cache_key = "structure_{$structure_id}";
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
 
         $model = new UniverseApi(null, $this->config);
         $res = $model->getUniverseStructuresStructureId($structure_id, $this->char_id)->getName();
 
-        Cache::add('structure_' . $structure_id, $res, env('CACHE_TIME', 3264));
+        Cache::add($cache_key, $res, env('CACHE_TIME', 3264));
         return $res;
     }
 
@@ -575,14 +684,16 @@ class EsiConnection
      */
     public function getSystemName($system_id)
     {
-        if (Cache::has('system_' . $system_id))
-            return Cache::get('system_' . $system_id);
+        $cache_key = "system_{$system_id}";
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
 
         $res = $this->eseye->invoke('get', '/universe/systems/{system_id}/', [
             'system_id' => $system_id
         ]);
 
-        Cache::add('system_' . $system_id, $res->name, env('CACHE_TIME', 3264));
+        Cache::add($cache_key, $res->name, env('CACHE_TIME', 3264));
 
         return $res->name;
     }
@@ -597,8 +708,10 @@ class EsiConnection
      */
     public function getRegionName($system_id)
     {
-        if (Cache::has('system_region_' . $system_id))
-            return Cache::get('system_region_' . $system_id);
+        $cache_key = "system_region_{$system_id}";
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
 
         $system = $this->eseye->invoke('get', '/universe/systems/{system_id}/', [
             'system_id' => $system_id
@@ -610,7 +723,7 @@ class EsiConnection
             'region_id' => $constellation->region_id
         ]);
 
-        Cache::add('system_region_' . $system_id, $region->name, env('CACHE_TIME', 3264));
+        Cache::add($cache_key, $region->name, env('CACHE_TIME', 3264));
 
         return $region->name;
     }
@@ -626,14 +739,16 @@ class EsiConnection
      */
     public function getStationName($station_id)
     {
-        if (Cache::has('station_' . $station_id))
-            return Cache::get('station_' . $station_id);
+        $cache_key = "station_{$station_id}";
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
 
         $res = $this->eseye->invoke('get', '/universe/stations/{station_id}/', [
             'station_id' => $station_id
         ]);
 
-        Cache::add('station_' . $station_id, $res->name, env('CACHE_TIME', 3264));
+        Cache::add($cache_key, $res->name, env('CACHE_TIME', 3264));
 
         return $res->name;
     }
@@ -704,6 +819,34 @@ class EsiConnection
         $dbItem->save();
 
         return $dbItem->name;
+    }
+
+    /**
+     * Given a name ID get the name
+     *
+     * @param $name_id
+     * @return \Swagger\Client\Eve\Model\PostUniverseNames200Ok[]
+     * @throws \Swagger\Client\Eve\ApiException
+     */
+    public function getUnknownTypeName($name_id)
+    {
+        if (!$name_id)
+            return null;
+
+        $cache_key = "universe_names_{$name_id}";
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
+
+        $res = $this->eseye->setBody([$name_id])->invoke('post', '/universe/names/');
+
+        if (!$res)
+            return null;
+
+        $data = json_decode($res->raw);
+        $name = $data[0]->name;
+        Cache::add($cache_key, $name, env('CACHE_TIME', 3264));
+        return $name;
     }
 
     /**
