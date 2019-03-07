@@ -314,8 +314,8 @@ class EsiConnection
     {
         $cache_key = "assets_{$this->char_id}";
 
-        //if (Cache::has($cache_key))
-         //   Cache::get($cache_key);
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
 
         $model = new AssetsApi(null, $this->config);
         $assets = $model->getCharactersCharacterIdAssetsWithHttpInfo($this->char_id, $this->char_id);
@@ -337,7 +337,7 @@ class EsiConnection
             }
         }
 
-       //Cache::add($cache_key, $out, $this->getCacheExpirationTime($assets));
+       Cache::add($cache_key, $out, $this->getCacheExpirationTime($assets));
 
         return $out;
     }
@@ -438,6 +438,39 @@ class EsiConnection
     }
 
     /**
+     * Get a user's wallet transactions
+     *
+     * @return mixed
+     * @throws \Swagger\Client\Eve\ApiException
+     */
+    public function getTransactions()
+    {
+        $cache_key = "wallet_transactions_{$this->char_id}";
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
+
+        $model = new WalletApi(null, $this->config);
+        $res = $model->getCharactersCharacterIdWalletTransactionsWithHttpInfo($this->char_id, $this->char_id);
+        $out = [];
+
+        foreach ($res[0] as $transaction)
+        {
+            $out[] = [
+                'date' => $transaction->getDate()->format('Y-m-d H:i:s'),
+                'client' => $this->getCharacterName($transaction->getClientId()),
+                'item' => $this->getTypeName($transaction->getTypeId()),
+                'quantity' => $transaction->getQuantity(),
+                'change' => number_format((int) $transaction->getQuantity() * (int) $transaction->getUnitPrice()),
+                'buy' => $transaction->getIsBuy()
+            ];
+        }
+
+        Cache::add($cache_key, $out, $this->getCacheExpirationTime($res));
+        return $out;
+    }
+
+    /**
      * Given a location ID, figure out what type it is and return the name
      *
      * @param $id
@@ -445,8 +478,6 @@ class EsiConnection
      */
     private function getAssetLocationName($id)
     {
-        $location = null;
-
         try {
             return $this->getStationName($id);
         } catch (\Exception $e) { }

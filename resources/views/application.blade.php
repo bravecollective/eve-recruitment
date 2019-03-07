@@ -41,6 +41,9 @@
             <li class="nav-item ml-2">
                 <a class="nav-link" id="assets-tab" data-toggle="pill" href="#tab-assets" role="tab" aria-controls="tab-assets" aria-selected="false">Assets &amp; Journal</a>
             </li>
+            <li class="nav-item ml-2">
+                <a class="nav-link" id="market-tab" data-toggle="pill" href="#tab-market" role="tab" aria-controls="tab-market" aria-selected="false">Market</a>
+            </li>
         </ul>
     </div>
 </div><br />

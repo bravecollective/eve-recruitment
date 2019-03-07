@@ -76,6 +76,7 @@ class ApplicationController extends Controller
         $skills = $esi->getSkills();
         $assets = $esi->getAssets();
         $journal = $esi->getJournal();
+        $transactions = $esi->getTransactions();
 
         $skill_groups = [
             ["Spaceship Command", "Subsystems", "Shield", "Armor", "Rigging", "Missiles", "Gunnery", "Drones"],
@@ -89,6 +90,7 @@ class ApplicationController extends Controller
             'mails' => $mails,
             'assets' => $assets,
             'journal' => $journal,
+            'transactions' => $transactions
         ])->render();
 
         if ($type == "character")
