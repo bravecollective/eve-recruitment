@@ -6,6 +6,53 @@
                     <div class="card-header">
                         Assets
                     </div>
+                    <div class="accordian" id="top-level-accordian">
+                    @foreach($assets as $location => $location_info)
+                        <div class="card bg-dark text-white" id="location-{{ $location_info['id'] }}">
+                            <div class="card-header" id="parent-{{ $location_info['id'] }}">
+                                <button class="btn btn-link text-white" type="button" data-toggle="collapse" data-target="#children-{{ $location_info['id'] }}" aria-expanded="false" aria-controls="children-{{ $location_info['id'] }}">
+                                    {{ $location }}
+                                </button>
+                            </div>
+                            <div id="children-{{ $location_info['id'] }}" class="collapse" aria-labelledby="parent-{{ $location_info['id'] }}" data-parent="#top-level-accordian">
+                                <div class="list-group">
+                                @foreach($location_info['items'] as $asset)
+                                @if(count($asset['items']) == 0)
+                                    <div class="list-group-item bg-dark text-white">
+                                        <img src="https://image.eveonline.com/Type/{{ $asset['type_id'] }}_32.png" />
+                                        {{ $asset['name'] }} - {{ $asset['quantity'] }}
+                                        <div class="float-right">
+                                            {{ $asset['price'] }} ISK
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="list-group-item bg-dark text-white">
+                                        <img src="https://image.eveonline.com/Type/{{ $asset['type_id'] }}_32.png" />
+                                        <a href="#" class="text-white" data-toggle="collapse" data-target="#items-{{ $asset['id'] }}">{{ $asset['name'] }}</a>
+                                        <div class="float-right">
+                                            {{ $asset['price'] }} ISK
+                                        </div>
+                                        <div class="collapse" data-parent="#location-{{ $location_info['id'] }}" id="items-{{ $asset['id'] }}">
+                                            <div class="list-group">
+                                            @foreach($asset['items'] as $item)
+                                                <div class="list-group-item bg-dark text-white">
+                                                    <img src="https://image.eveonline.com/Type/{{ $item['type_id'] }}_32.png" />
+                                                    {{ $item['name'] }} - {{ $item['quantity'] }}
+                                                    <div class="float-right">
+                                                        {{ $item['price'] }} ISK
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                                @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                    </div>
                 </div>
             </div>
         </div>

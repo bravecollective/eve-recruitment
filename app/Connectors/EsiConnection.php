@@ -47,6 +47,13 @@ class EsiConnection
      */
     private $eseye;
 
+    private static $stationContentLocationFlags = [
+        "AssetSafety",
+        "Deliveries",
+        "Hangar",
+        "HangarAll"
+    ];
+
     /**
      * EsiModel constructor
      *
@@ -294,27 +301,161 @@ class EsiConnection
         return $out;
     }
 
+    /**
+     * Get a user's assets
+     *
+     * @return array
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws \Swagger\Client\Eve\ApiException
+     */
     public function getAssets()
     {
         $cache_key = "assets_{$this->char_id}";
 
-        if (Cache::has($cache_key))
-            return Cache::get($cache_key);
+        //if (Cache::has($cache_key))
+         //   Cache::get($cache_key);
 
         $model = new AssetsApi(null, $this->config);
         $assets = $model->getCharactersCharacterIdAssetsWithHttpInfo($this->char_id, $this->char_id);
         $out = [];
 
         foreach ($assets[0] as $asset)
-            $out[$asset->getTypeId()] = $this->getTypeName($asset->getTypeId());
+        {
+            if (in_array($asset->getLocationFlag(), self::$stationContentLocationFlags))
+            {
+                $location = $this->getAssetLocationName($asset->getLocationId());
 
-        return;
-        $locations = $model->postCharactersCharacterIdAssetsLocations($this->char_id, json_encode(array_keys($out)), $this->char_id);
-        dd($locations);
+                if (!array_key_exists($location, $out))
+                    $out[$location] = [
+                        'id' => $asset->getLocationId(),
+                        'items' => []
+                    ];
 
-        dd($out);
+                $out[$location]['items'][] = $this->constructAssetTreeForItem($asset, $assets[0]);
+            }
+        }
 
-        //Cache::add();
+       //Cache::add($cache_key, $out, $this->getCacheExpirationTime($assets));
+
+        return $out;
+    }
+
+    /**
+     * Get the asset tree for an item that can contain other items, like a container or ship
+     *
+     * @param $item
+     * @param $assets
+     * @return array
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     */
+    private function constructAssetTreeForItem($item, $assets)
+    {
+        // These locations are part of a ship, container, etc
+        $shipContentLocationFlags = [
+            "Cargo",
+            "BoosterBay",
+            "AutoFit",
+            "CorpseBay",
+            "FighterTube[0-9]",
+            "HiSlot[0-9]",
+            "LoSlot[0-9]",
+            "FighterBay*",
+            "FleetHangar",
+            "MedSlot[0-9]",
+            "QuafeBay",
+            "RigSlot[0-9]",
+            "ShipHangar",
+            "Specialized(Ammo|CommandCenter|Gas|IndustrialShip|LargeShip|MediumShip|Mineral|Ore|PlanetaryCommodities|Salvage|Ship|SmallShip)Hold",
+            "Specialized(Fuel|Material)Bay",
+            "SubSystemBay",
+            "SubSystemSlot[0-9]",
+            "DroneBay"
+        ];
+        $pattern = "/(" . implode('|', $shipContentLocationFlags) .")/";
+
+        $tree = [];
+        $tree['name'] = $this->getTypeName($item->getTypeId());
+        $tree['location'] = $this->getAssetLocationName($item->getLocationId());
+        $tree['quantity'] = $item->getQuantity();
+        $tree['id'] = $item->getItemId();
+        $tree['type_id'] = $item->getTypeId();
+        $tree['price'] = number_format((int) $this->getMarketPrice($item->getTypeId()) * (int) $item->getQuantity(), 0);
+        $tree['items'] = [];
+
+        foreach ($assets as $asset)
+        {
+            // TODO: Nested container items
+            if (preg_match($pattern, $asset->getLocationFlag()) && $asset->getLocationId() == $item->getItemId())
+            {
+                $tree['items'][] = [
+                    'name' => $this->getTypeName($asset->getTypeId()),
+                    'quantity' => $asset->getQuantity(),
+                    'type_id' => $asset->getTypeId(),
+                    'price' => number_format((int) $this->getMarketPrice($asset->getTypeId()) * (int) $asset->getQuantity(), 0),
+                    'items' => []
+                ];
+            }
+        }
+
+        return $tree;
+    }
+
+    /**
+     * Get the market price for an item
+     *
+     * @param $type_id
+     * @return int|string
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     */
+    private function getMarketPrice($type_id)
+    {
+        static $lookup_table = null;
+        $cache_key = "market_prices";
+
+        if ($lookup_table == null)
+        {
+            if (Cache::has($cache_key))
+                $market = Cache::get($cache_key);
+            else
+            {
+                $res = $this->eseye->invoke('get', '/markets/prices/');
+                $market = json_decode($res->raw);
+                Cache::add($cache_key, $market, 60);
+            }
+
+            $lookup_table = [];
+            foreach ($market as $entry)
+                $lookup_table[$entry->type_id] = $entry->adjusted_price;
+        }
+
+        return (array_key_exists($type_id, $lookup_table) ? $lookup_table[$type_id] : 0);
+    }
+
+    /**
+     * Given a location ID, figure out what type it is and return the name
+     *
+     * @param $id
+     * @return mixed|string
+     */
+    private function getAssetLocationName($id)
+    {
+        $location = null;
+
+        try {
+            return $this->getStationName($id);
+        } catch (\Exception $e) { }
+
+        try {
+            return $this->getStructureName($id);
+        } catch (\Exception $e) { }
+
+        return null;
     }
 
     /**

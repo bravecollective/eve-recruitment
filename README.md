@@ -8,6 +8,7 @@
 1. Run migrations: `php artisan migrate`
 1. Update `config/constants.php` to include any additional permissions
 1. Run database seeder: `php artisan db:seed`
+1. Ensure php's `max_execution_time` is set to at least 300
 1. 
 
 ## Roles
