@@ -31,7 +31,6 @@ Route::delete('/api/recruitments/{ad_id}/questions/{question_id}', 'GroupAdContr
 Route::delete('/api/recruitments/{ad_id}/requirements/{requirement_id}', 'GroupAdController@deleteRequirement');
 Route::post('/api/groups/roles', 'GroupAdController@loadPermissions');
 Route::post('/api/groups/roles/save', 'GroupAdController@savePermissions');
-Route::get('/api/esi/{char_id}/{type}', 'ApplicationController@loadEsiData');
 
 // Global admin routes
 Route::get('/admin/roles', 'PermissionsController@globalRoles');
@@ -55,4 +54,13 @@ Route::post('/application/{id}/comments/add', 'CommentController@addComment');
 Route::post('/application/{id}/comments/delete', 'CommentController@deleteComment');
 Route::get('/character/{id}', 'ApplicationController@viewCharacterEsi');
 Route::get('/applications', 'ApplicationController@getAvailableApplications');
+
+// ESI AJAX routes
+Route::get('/api/esi/{char_id}/overview', 'ApplicationController@loadOverview');
+Route::get('/api/esi/{char_id}/skills', 'ApplicationController@loadSkills');
+Route::get('/api/esi/{char_id}/mail', 'ApplicationController@loadMail');
+Route::get('/api/esi/{char_id}/assets_journal', 'ApplicationController@loadAssetsJournal');
+Route::get('/api/esi/{char_id}/market', 'ApplicationController@loadMarket');
+
+// Recruitment ad
 Route::get('/{slug}', 'ApplicationController@loadAdBySlug');

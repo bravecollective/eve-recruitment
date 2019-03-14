@@ -22,27 +22,46 @@
         <ul class="nav nav-pills justify-content-center">
          @if(isset($application))
             <li class="nav-item ml-2">
-                <a class="nav-link active show" id="application-tab" data-toggle="pill" href="#tab-application" role="tab" aria-controls="tab-application" aria-selected="true">Application</a>
+                <a class="nav-link active show" id="application-tab" data-toggle="pill" href="#tab-application" role="tab" aria-controls="tab-application" aria-selected="true">
+                    Application
+                </a>
             </li>
             <li class="nav-item ml-2">
-                <a class="nav-link" id="overview-tab" data-toggle="pill" href="#tab-overview" role="tab" aria-controls="tab-overview" aria-selected="false">Overview</a>
+                <a class="nav-link" id="overview-tab" data-toggle="pill" href="#tab-overview" role="tab" aria-controls="tab-overview" aria-selected="false">
+                    Overview
+                    <span id="result-tab-overview" style="color: red;" class="fas fa-times"></span>
+                </a>
             </li>
          @else
             <li class="nav-item ml-2">
-                <a class="nav-link active show" id="overview-tab" data-toggle="pill" href="#tab-overview" role="tab" aria-controls="tab-overview" aria-selected="true">Overview</a>
+                <a class="nav-link active show" id="overview-tab" data-toggle="pill" href="#tab-overview" role="tab" aria-controls="tab-overview" aria-selected="true">
+                    Overview
+                </a>
             </li>
          @endif
              <li class="nav-item ml-2">
-                 <a class="nav-link" id="skills-tab" data-toggle="pill" href="#tab-skills" role="tab" aria-controls="tab-skills" aria-selected="false">Skills</a>
+                 <a class="nav-link" id="skills-tab" data-toggle="pill" href="#tab-skills" role="tab" aria-controls="tab-skills" aria-selected="false">
+                     Skills
+                     <span id="result-tab-skills" style="color: red;" class="fas fa-times"></span>
+                 </a>
              </li>
              <li class="nav-item ml-2">
-                 <a class="nav-link" id="mail-tab" data-toggle="pill" href="#tab-mail" role="tab" aria-controls="tab-mail" aria-selected="false">Mail</a>
+                 <a class="nav-link" id="mail-tab" data-toggle="pill" href="#tab-mail" role="tab" aria-controls="tab-mail" aria-selected="false">
+                     Mail
+                     <span id="result-tab-mail" style="color: red;" class="fas fa-times"></span>
+                 </a>
              </li>
             <li class="nav-item ml-2">
-                <a class="nav-link" id="assets-tab" data-toggle="pill" href="#tab-assets" role="tab" aria-controls="tab-assets" aria-selected="false">Assets &amp; Journal</a>
+                <a class="nav-link" id="assets-tab" data-toggle="pill" href="#tab-assets" role="tab" aria-controls="tab-assets" aria-selected="false">
+                    Assets &amp; Journal
+                    <span id="result-tab-assets" style="color: red;" class="fas fa-times"></span>
+                </a>
             </li>
             <li class="nav-item ml-2">
-                <a class="nav-link" id="market-tab" data-toggle="pill" href="#tab-market" role="tab" aria-controls="tab-market" aria-selected="false">Market</a>
+                <a class="nav-link" id="market-tab" data-toggle="pill" href="#tab-market" role="tab" aria-controls="tab-market" aria-selected="false">
+                    Market
+                    <span id="result-tab-market" style="color: red;" class="fas fa-times"></span>
+                </a>
             </li>
         </ul>
     </div>
@@ -58,10 +77,16 @@
     @include('parts/application/application', ['questions' => $application->questions(),
                                                'changelog' => $application->changelog,
                                                'comments' => $application->comments])
+    <div class="tab-pane fade" id="tab-overview" role="tabpanel" aria-labelledby="tab-overview"></div>
 @else
-    @include('parts/application/overview')
+    <div class="tab-pane fade show active" id="tab-overview" role="tabpanel" aria-labelledby="tab-overview">
+        @include('parts/application/overview')
+    </div>
 @endif
-</div>
+    <div class="tab-pane fade" id="tab-skills" role="tabpanel" aria-labelledby="tab-skills"></div>
+    <div class="tab-pane fade" id="tab-mail" role="tabpanel" aria-labelledby="tab-mail"></div>
+    <div class="tab-pane fade" id="tab-assets" role="tabpanel" aria-labelledby="tab-assets"></div>
+    <div class="tab-pane fade" id="tab-market" role="tabpanel" aria-labelledby="tab-market"></div>
 @endsection
 @section('styles')
     <style>
@@ -92,6 +117,27 @@
         document.title = "{{ $character->name }} - " + document.title;
         let esiLoaded = false;
 
+        function loadPartial(url, anchor, additionalFunction = null)
+        {
+            $.get(url, function(e) {
+                e = JSON.parse(e);
+                if (e.success === true)
+                {
+                    $("#" + anchor).html(e.message);
+
+                    let res = $("#result-" + anchor);
+                    res.attr('style', 'color: green;');
+                    res.removeClass('fa-times');
+                    res.addClass('fa-check');
+
+                    if (additionalFunction)
+                        additionalFunction();
+                }
+                else
+                    showError(e.message);
+            });
+        }
+
         function loadEsiData() {
             if (esiLoaded)
             {
@@ -101,23 +147,14 @@
 
             esiLoaded = true;
             let char_id = "{{ $character->character_id }}";
-            let url = undefined;
 
-        @if(isset($application))
-            url = "/api/esi/" + char_id + "/application";
-        @else
-            url = "/api/esi/" + char_id + "/character";
-        @endif
-
-            $("#load-esi-button").text('Loading...');
-            $.get(url, function(e) {
-                e = JSON.parse(e);
-                $("#load-esi-button").text('ESI Loaded');
-                $("#tab-content").append(e.message);
-                $("#journal-table").DataTable({
-                    "order": [[0, "desc"]]
-                });
-            });
+            @if(isset($application))
+                loadPartial('/api/esi/' + char_id + '/overview', 'tab-overview');
+            @endif
+            loadPartial('/api/esi/' + char_id + '/skills', "tab-skills");
+            loadPartial('/api/esi/' + char_id + '/mail', "tab-mail");
+            loadPartial('/api/esi/' + char_id + '/assets_journal', "tab-assets", () => $("#journal-table").DataTable({"order": [[0, "desc"]]}));
+            loadPartial('/api/esi/' + char_id + '/market', "tab-market");
         }
 
     @if(isset($application))

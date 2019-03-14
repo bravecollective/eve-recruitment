@@ -51,17 +51,125 @@ class ApplicationController extends Controller
     }
 
     /**
-     * Load ESI data for a user
+     * Load character overview (used on the application page)
      *
      * @param $char_id
-     * @param $type
      * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
      * @throws \Seat\Eseye\Exceptions\UriDataMissingException
      * @throws \Swagger\Client\Eve\ApiException
      * @throws \Throwable
      */
-    public function loadEsiData($char_id, $type)
+    public function loadOverview($char_id)
+    {
+        $this->checkPermissions($char_id);
+        $esi = new EsiConnection($char_id);
+
+        $character_info = $esi->getCharacterInfo();
+        $clones = $esi->getCloneInfo();
+        $corp_history = $esi->getCorpHistory();
+        $contacts = $esi->getContacts();
+        $res = view('parts/application/overview', [
+            'application' => true,
+            'character_info' => $character_info,
+            'clones' => $clones,
+            'corp_history' => $corp_history,
+            'contacts' => $contacts
+        ])->render();
+
+        die(json_encode(['success' => true, 'message' => $res]));
+    }
+
+    /**
+     * Load user skills
+     *
+     * @param $char_id
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws \Swagger\Client\Eve\ApiException
+     * @throws \Throwable
+     */
+    public function loadSkills($char_id)
+    {
+        $this->checkPermissions($char_id);
+        $esi = new EsiConnection($char_id);
+
+        $skill_groups = [
+            ["Spaceship Command", "Subsystems", "Shield", "Armor", "Rigging", "Missiles", "Gunnery", "Drones"],
+            ["Engineering", "Navigation", "Electronic Systems", "Targeting", "Fleet Support", "Scanning", "Neural Enhancement"],
+            ["Science", "Resource Processing", "Production", "Planet Management", "Structure Management", "Social", "Trade", "Corporation Management"]
+        ];
+
+        $skills = $esi->getSkills();
+        $res = view('parts/application/skills', ['skills' => $skills, 'skill_groups' => $skill_groups])->render();
+
+        die(json_encode(['success' => true, 'message' => $res]));
+    }
+
+    /**
+     * Load user mail
+     *
+     * @param $char_id
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws \Swagger\Client\Eve\ApiException
+     * @throws \Throwable
+     */
+    public function loadMail($char_id)
+    {
+        $this->checkPermissions($char_id);
+        $esi = new EsiConnection($char_id);
+
+        $mail = $esi->getMail();
+        $res = view('parts/application/mail', ['mails' => $mail])->render();
+
+        die(json_encode(['success' => true, 'message' => $res]));
+    }
+
+    /**
+     * Load assets and journal tab
+     *
+     * @param $char_id
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws \Swagger\Client\Eve\ApiException
+     * @throws \Throwable
+     */
+    public function loadAssetsJournal($char_id)
+    {
+        $this->checkPermissions($char_id);
+        $esi = new EsiConnection($char_id);
+
+        $assets = $esi->getAssets();
+        $journal = $esi->getJournal();
+        $res = view('parts/application/assets_journal', ['assets' => $assets, 'journal' => $journal])->render();
+
+        die(json_encode(['success' => true, 'message' => $res]));
+    }
+
+    /**
+     * Load a user's market information
+     *
+     * @param $char_id
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Swagger\Client\Eve\ApiException
+     * @throws \Throwable
+     */
+    public function loadMarket($char_id)
+    {
+        $this->checkPermissions($char_id);
+        $esi = new EsiConnection($char_id);
+
+        $transactions = $esi->getTransactions();
+        $res = view('parts/application/market', ['transactions' => $transactions])->render();
+
+        die(json_encode(['success' => true, 'message' => $res]));
+    }
+
+    private function checkPermissions($char_id)
     {
         $char = User::find($char_id);
 
@@ -70,50 +178,6 @@ class ApplicationController extends Controller
 
         if (!AccountRole::recruiterCanViewEsi($char_id) && (!Auth::user()->hasRole($char->corporation_name . ' recruiter') && !Auth::user()->hasRole($char->corporation_name . ' director')))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
-
-        $esi = new EsiConnection($char_id);
-        $mails = $esi->getMail();
-        $skills = $esi->getSkills();
-        $assets = $esi->getAssets();
-        $journal = $esi->getJournal();
-        $transactions = $esi->getTransactions();
-
-        $skill_groups = [
-            ["Spaceship Command", "Subsystems", "Shield", "Armor", "Rigging", "Missiles", "Gunnery", "Drones"],
-            ["Engineering", "Navigation", "Electronic Systems", "Targeting", "Fleet Support", "Scanning", "Neural Enhancement"],
-            ["Science", "Resource Processing", "Production", "Planet Management", "Structure Management", "Social", "Trade", "Corporation Management"]
-        ];
-
-        $tabs = view('parts/application/esi_view', [
-            'skills' => $skills,
-            'skill_groups' => $skill_groups,
-            'mails' => $mails,
-            'assets' => $assets,
-            'journal' => $journal,
-            'transactions' => $transactions
-        ])->render();
-
-        if ($type == "character")
-        {
-            // Character ESI already has the overview tab loaded, so don't load it
-            die(json_encode(['success' => true, 'message' => $tabs]));
-        }
-        else
-        {
-            $character_info = $esi->getCharacterInfo();
-            $clones = $esi->getCloneInfo();
-            $corp_history = $esi->getCorpHistory();
-            $contacts = $esi->getContacts();
-
-            die(json_encode(['success' => true, 'message' =>
-                view('parts/application/overview', [
-                    'application' => true,
-                    'character_info' => $character_info,
-                    'clones' => $clones,
-                    'corp_history' => $corp_history,
-                    'contacts' => $contacts
-                ])->render() . $tabs]));
-        }
     }
 
     /**
