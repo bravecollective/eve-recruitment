@@ -12,6 +12,7 @@ use Swagger\Client\Eve\Api\ClonesApi;
 use Swagger\Client\Eve\Api\ContactsApi;
 use Swagger\Client\Eve\Api\LocationApi;
 use Swagger\Client\Eve\Api\MailApi;
+use Swagger\Client\Eve\Api\MarketApi;
 use Swagger\Client\Eve\Api\SkillsApi;
 use Swagger\Client\Eve\Api\UniverseApi;
 use Swagger\Client\Eve\Api\WalletApi;
@@ -471,6 +472,44 @@ class EsiConnection
     }
 
     /**
+     * Get a character's market orders
+     *
+     * @return array|mixed
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws \Swagger\Client\Eve\ApiException
+     */
+    public function getMarketOrders()
+    {
+        $cache_key = "market_orders_{$this->char_id}";
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
+
+        $model = new MarketApi(null, $this->config);
+        $res = $model->getCharactersCharacterIdOrdersWithHttpInfo($this->char_id, $this->char_id);
+        $out = [];
+
+        foreach ($res[0] as $order)
+        {
+            $out[] = [
+                'date' => $order->getIssued()->format('Y-m-d H:i:s'),
+                'time_remaining' => $order->getDuration() - floor((time() - $order->getIssued()->format('U')) / 86400),
+                'location' => $this->getAssetLocationName($order->getLocationId()),
+                'item' => $this->getTypeName($order->getTypeId()),
+                'price' => number_format($order->getPrice(), 2),
+                'buy' => $order->getIsBuyOrder(),
+                'quantity_total' => $order->getVolumeTotal(),
+                'quantity_remain' => $order->getVolumeRemain()
+            ];
+        }
+
+        Cache::add($cache_key, $out, $this->getCacheExpirationTime($res));
+        return $out;
+    }
+
+    /**
      * Given a location ID, figure out what type it is and return the name
      *
      * @param $id
@@ -486,7 +525,7 @@ class EsiConnection
             return $this->getStructureName($id);
         } catch (\Exception $e) { }
 
-        return null;
+        return "UNKNOWN LOCATION";
     }
 
     /**

@@ -164,7 +164,8 @@ class ApplicationController extends Controller
         $esi = new EsiConnection($char_id);
 
         $transactions = $esi->getTransactions();
-        $res = view('parts/application/market', ['transactions' => $transactions])->render();
+        $orders = $esi->getMarketOrders();
+        $res = view('parts/application/market', ['transactions' => $transactions, 'orders' => $orders])->render();
 
         die(json_encode(['success' => true, 'message' => $res]));
     }

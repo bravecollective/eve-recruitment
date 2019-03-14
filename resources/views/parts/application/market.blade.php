@@ -39,4 +39,46 @@
             </div>
         </div>
     </div>
+    <div class="col-6">
+        <div class="card bg-dark text-white">
+            <div class="card-body">
+                <div class="card-header">
+                    Market Orders
+                </div>
+                <div class="table-responsive">
+                    <table id="transactions-table" class="table table-hover table-striped table-bordered bg-dark text-white">
+                        <thead>
+                        <tr>
+                            <th scope="col">Issued</th>
+                            <th scope="col">Time Remaining</th>
+                            <th scope="col">Location</th>
+                            <th scope="col">Item</th>
+                            <th scope="col">Remain/Total</th>
+                            <th scope="col">Price</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach($orders as $order)
+                            <tr>
+                                <td>{{ $order['date'] }}</td>
+                                <td>{{ $order['time_remaining'] }} Days</td>
+                                <td>{{ $order['location'] }}</td>
+                                <td>{{ $order['item'] }}</td>
+                                <td>{{ $order['quantity_remain'] }}/{{ $order['quantity_total'] }}</td>
+                                <td>
+                                    @if($order['buy'])
+                                        -
+                                    @else
+                                        +
+                                    @endif
+                                    {{ $order['price'] }}
+                                </td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
