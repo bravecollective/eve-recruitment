@@ -370,8 +370,8 @@ class EsiConnection
     {
         $cache_key = "assets_{$this->char_id}";
 
-        //if (Cache::has($cache_key))
-         //   return Cache::get($cache_key);
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
 
         $model = new AssetsApi(null, $this->config);
         $assets = $model->getCharactersCharacterIdAssetsWithHttpInfo($this->char_id, $this->char_id);
@@ -618,7 +618,7 @@ class EsiConnection
             $out[] = [
                 'sender' => $name,
                 'type' => $notification->getType(),
-                'text' => $notification->getText(),
+                'variables' => $notification->getText(),
                 'timestamp' => $notification->getTimestamp()->format('Y-m-d H:i')
             ];
         }
