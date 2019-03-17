@@ -183,12 +183,12 @@ class EsiConnection
     {
         $mailCacheKey = "mail_{$this->char_id}";
         $mailBodyCacheKey = "mail_body_";
+        $model = new MailApi(null, $this->config);
 
         if (Cache::has($mailCacheKey))
             $mail = Cache::get($mailCacheKey);
         else
         {
-            $model = new MailApi(null, $this->config);
             $mail = $model->getCharactersCharacterIdMailWithHttpInfo($this->char_id, $this->char_id);
             Cache::add($mailCacheKey, $mail[0], $this->getCacheExpirationTime($mail));
             $mail = $mail[0];

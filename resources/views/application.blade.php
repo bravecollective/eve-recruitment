@@ -29,7 +29,7 @@
             <li class="nav-item ml-2">
                 <a class="nav-link" id="overview-tab" data-toggle="pill" href="#tab-overview" role="tab" aria-controls="tab-overview" aria-selected="false">
                     Overview
-                    <span id="result-tab-overview" style="color: red;" class="fas fa-times"></span>
+                    <span id="result-tab-overview" style="color: red;" class="fas"></span>
                 </a>
             </li>
          @else
@@ -42,30 +42,31 @@
              <li class="nav-item ml-2">
                  <a class="nav-link" id="skills-tab" data-toggle="pill" href="#tab-skills" role="tab" aria-controls="tab-skills" aria-selected="false">
                      Skills
-                     <span id="result-tab-skills" style="color: red;" class="fas fa-times"></span>
+                     <span id="result-tab-skills" style="color: red;" class="fas"></span>
                  </a>
              </li>
              <li class="nav-item ml-2">
                  <a class="nav-link" id="mail-tab" data-toggle="pill" href="#tab-mail" role="tab" aria-controls="tab-mail" aria-selected="false">
                      Mail
-                     <span id="result-tab-mail" style="color: red;" class="fas fa-times"></span>
+                     <span id="result-tab-mail" style="color: red;" class="fas"></span>
                  </a>
              </li>
             <li class="nav-item ml-2">
                 <a class="nav-link" id="assets-tab" data-toggle="pill" href="#tab-assets" role="tab" aria-controls="tab-assets" aria-selected="false">
                     Assets &amp; Journal
-                    <span id="result-tab-assets" style="color: red;" class="fas fa-times"></span>
+                    <span id="result-tab-assets" style="color: red;" class="fas"></span>
                 </a>
             </li>
             <li class="nav-item ml-2">
                 <a class="nav-link" id="market-tab" data-toggle="pill" href="#tab-market" role="tab" aria-controls="tab-market" aria-selected="false">
                     Market
-                    <span id="result-tab-market" style="color: red;" class="fas fa-times"></span>
+                    <span id="result-tab-market" style="color: red;" class="fas"></span>
                 </a>
             </li>
         </ul>
     </div>
 </div><br />
+<div id="errors"></div><br />
 <div class="row justify-content-center">
     <div class="col-auto">
         <button type="button" class="btn btn-primary" id="load-esi-button" onclick="loadEsiData();">Load ESI Data</button>
@@ -117,24 +118,35 @@
         document.title = "{{ $character->name }} - " + document.title;
         let esiLoaded = false;
 
-        function loadPartial(url, anchor, additionalFunction = null)
+        function loadPartial(url, anchor, name, additionalFunction = null)
         {
-            $.get(url, function(e) {
-                e = JSON.parse(e);
-                if (e.success === true)
-                {
-                    $("#" + anchor).html(e.message);
+            let res = $("#result-" + anchor);
+            let errors = $("#errors");
 
-                    let res = $("#result-" + anchor);
-                    res.attr('style', 'color: green;');
-                    res.removeClass('fa-times');
-                    res.addClass('fa-check');
+            $.ajax({
+                url: url,
+                type: 'GET',
+                success: function(e) {
+                    e = JSON.parse(e);
 
-                    if (additionalFunction)
-                        additionalFunction();
+                    if (e.success === true)
+                    {
+                        $("#" + anchor).html(e.message);
+                        res.attr('style', 'color: green;');
+                        res.addClass('fa-check');
+
+                        if (additionalFunction)
+                            additionalFunction();
+                    }
+                    else
+                    {
+                        res.addClass('fa-times');
+                    }
+                },
+                error: function(e) {
+                    errors.append('<div class="row justify-content-center">Loading of ' + name + ' failed: ' + e.statusText + '</div>');
+                    res.addClass('fa-times');
                 }
-                else
-                    showError(e.message);
             });
         }
 
@@ -149,12 +161,12 @@
             let char_id = "{{ $character->character_id }}";
 
             @if(isset($application))
-                loadPartial('/api/esi/' + char_id + '/overview', 'tab-overview');
+                loadPartial('/api/esi/' + char_id + '/overview', 'tab-overview', 'overview');
             @endif
-            loadPartial('/api/esi/' + char_id + '/skills', "tab-skills");
-            loadPartial('/api/esi/' + char_id + '/mail', "tab-mail");
-            loadPartial('/api/esi/' + char_id + '/assets_journal', "tab-assets", () => $("#journal-table").DataTable({"order": [[0, "desc"]]}));
-            loadPartial('/api/esi/' + char_id + '/market', "tab-market");
+            loadPartial('/api/esi/' + char_id + '/skills', "tab-skills", 'skills');
+            loadPartial('/api/esi/' + char_id + '/mail', "tab-mail", 'mail');
+            loadPartial('/api/esi/' + char_id + '/assets_journal', "tab-assets", 'assets', () => $("#journal-table").DataTable({"order": [[0, "desc"]]}));
+            loadPartial('/api/esi/' + char_id + '/market', "tab-market", 'market');
         }
 
     @if(isset($application))
