@@ -70,6 +70,10 @@ class EsiConnection
         $config->setHost(env('CORE_URL') . '/api/app/v1/esi');
         $config->setAccessToken(base64_encode(env('CORE_APP_ID') . ':' . env('CORE_APP_SECRET')));
 
+        $eseye_config = \Seat\Eseye\Configuration::getInstance();
+        $eseye_config->logfile_location = storage_path() . '/logs';
+        $eseye_config->file_cache_location = storage_path() . '/framework/cache';
+
         $this->eseye = new Eseye();
         $this->config = $config;
         $this->char_id = $char_id;
