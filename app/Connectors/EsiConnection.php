@@ -517,6 +517,11 @@ class EsiConnection
      */
     private function getAssetLocationName($id)
     {
+        $cache_key = "user_location_{$this->char_id}_{$id}";
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
+
         try {
             return $this->getStationName($id);
         } catch (\Exception $e) { }
@@ -525,6 +530,7 @@ class EsiConnection
             return $this->getStructureName($id);
         } catch (\Exception $e) { }
 
+        Cache::add($cache_key, "Unknown Location", env('CACHE_TIME', 3264));
         return "UNKNOWN LOCATION";
     }
 
