@@ -64,6 +64,12 @@
                 </a>
             </li>
              <li class="nav-item ml-2">
+                 <a class="nav-link" id="contracts-tab" data-toggle="pill" href="#tab-contracts" role="tab" aria-controls="tab-contracts" aria-selected="false">
+                     Contracts
+                     <span id="result-tab-contracts" style="color: red;" class="fas"></span>
+                 </a>
+             </li>
+             <li class="nav-item ml-2">
                  <a class="nav-link" id="notifications-tab" data-toggle="pill" href="#tab-notifications" role="tab" aria-controls="tab-notifications" aria-selected="false">
                      Notifications
                      <span id="result-tab-notifications" style="color: red;" class="fas"></span>
@@ -94,6 +100,7 @@
     <div class="tab-pane fade" id="tab-mail" role="tabpanel" aria-labelledby="tab-mail"></div>
     <div class="tab-pane fade" id="tab-assets" role="tabpanel" aria-labelledby="tab-assets"></div>
     <div class="tab-pane fade" id="tab-market" role="tabpanel" aria-labelledby="tab-market"></div>
+    <div class="tab-pane fade" id="tab-contracts" role="tabpanel" aria-labelledby="tab-contracts"></div>
     <div class="tab-pane fade" id="tab-notifications" role="tabpanel" aria-labelledby="tab-notifications"></div>
 @endsection
 @section('styles')
@@ -174,6 +181,7 @@
             loadPartial('/api/esi/' + char_id + '/mail', "tab-mail", 'mail');
             loadPartial('/api/esi/' + char_id + '/assets_journal', "tab-assets", 'assets', () => $("#journal-table").DataTable({"order": [[0, "desc"]]}));
             loadPartial('/api/esi/' + char_id + '/market', "tab-market", 'market');
+            loadPartial('/api/esi/' + char_id + '/contracts', "tab-contracts", 'contracts');
             loadPartial('/api/esi/' + char_id + '/notifications', "tab-notifications", 'notifications', () => $("#notifications-table").DataTable({"order": [[0, "desc"]]}));
         }
 

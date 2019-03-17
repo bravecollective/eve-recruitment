@@ -12,6 +12,7 @@ use Swagger\Client\Eve\Api\AssetsApi;
 use Swagger\Client\Eve\Api\CharacterApi;
 use Swagger\Client\Eve\Api\ClonesApi;
 use Swagger\Client\Eve\Api\ContactsApi;
+use Swagger\Client\Eve\Api\ContractsApi;
 use Swagger\Client\Eve\Api\LocationApi;
 use Swagger\Client\Eve\Api\MailApi;
 use Swagger\Client\Eve\Api\MarketApi;
@@ -328,7 +329,7 @@ class EsiConnection
         {
             if (in_array($asset->getLocationFlag(), self::$stationContentLocationFlags))
             {
-                $location = $this->getAssetLocationName($asset->getLocationId());
+                $location = $this->getLocationName($asset->getLocationId());
 
                 if (!array_key_exists($location, $out))
                     $out[$location] = [
@@ -382,8 +383,8 @@ class EsiConnection
 
         $tree = [];
         $tree['name'] = $this->getTypeName($item->getTypeId());
-        $tree['location'] = $this->getAssetLocationName($item->getLocationId());
-        $tree['quantity'] = $item->getQuantity();
+        $tree['location'] = $this->getLocationName($item->getLocationId());
+        $tree['quantity'] = number_format($item->getQuantity());
         $tree['id'] = $item->getItemId();
         $tree['type_id'] = $item->getTypeId();
         $tree['price'] = number_format((int) $this->getMarketPrice($item->getTypeId()) * (int) $item->getQuantity(), 0);
@@ -396,7 +397,7 @@ class EsiConnection
             {
                 $tree['items'][] = [
                     'name' => $this->getTypeName($asset->getTypeId()),
-                    'quantity' => $asset->getQuantity(),
+                    'quantity' => number_format($asset->getQuantity()),
                     'type_id' => $asset->getTypeId(),
                     'price' => number_format((int) $this->getMarketPrice($asset->getTypeId()) * (int) $asset->getQuantity(), 0),
                     'items' => []
@@ -498,7 +499,7 @@ class EsiConnection
             $out[] = [
                 'date' => $order->getIssued()->format('Y-m-d H:i:s'),
                 'time_remaining' => $order->getDuration() - floor((time() - $order->getIssued()->format('U')) / 86400),
-                'location' => $this->getAssetLocationName($order->getLocationId()),
+                'location' => $this->getLocationName($order->getLocationId()),
                 'item' => $this->getTypeName($order->getTypeId()),
                 'price' => number_format($order->getPrice(), 2),
                 'buy' => $order->getIsBuyOrder(),
@@ -564,24 +565,129 @@ class EsiConnection
     }
 
     /**
+     * Get a character's contracts
+     *
+     * @return mixed
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws \Swagger\Client\Eve\ApiException
+     */
+    public function getContracts()
+    {
+        $cache_key = "contracts_{$this->char_id}";
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
+
+        $model = new ContractsApi(null, $this->config);
+        $contracts = $model->getCharactersCharacterIdContractsWithHttpInfo($this->char_id, $this->char_id);
+        $out = [];
+
+        foreach ($contracts[0] as $contract)
+        {
+            $model_items = $model->getCharactersCharacterIdContractsContractIdItems($this->char_id, $contract->getContractId(), $this->char_id);
+            $items = [];
+
+            foreach ($model_items as $item)
+            {
+                $items[] = [
+                    'id' => $item->getTypeId(),
+                    'type' => $this->getTypeName($item->getTypeId()),
+                    'quantity' => number_format($item->getQuantity()),
+                    'price' => number_format($this->getMarketPrice($item->getTypeId()) * $item->getQuantity())
+                ];
+            }
+
+            $type = $contract->getType();
+            $collateral = null;
+            $start = $this->getLocationName($contract->getStartLocationId());
+            $end = $this->getLocationName($contract->getEndLocationId());
+
+            switch($type)
+            {
+                case 'item_exchange':
+                case 'auction':
+                    $price = number_format($contract->getPrice());
+                    break;
+                case 'courier':
+                    $price = number_format($contract->getReward());
+                    $collateral = number_format($contract->getCollateral());
+                    break;
+                default:
+                    $price = "Unknown";
+                    break;
+            }
+
+            $assignee = null;
+
+            try {
+                $assignee = $this->getCharacterName($contract->getAssigneeId());
+            } catch (\Exception $e) { }
+
+            if ($assignee == null)
+            {
+                try {
+                    $assignee = $this->getCorporationName($contract->getAssigneeId());
+                } catch (\Exception $e) { }
+            }
+
+            $assignee = ($assignee == null) ? "Unknown" : $assignee;
+
+            $out[] = [
+                'id' => $contract->getContractId(),
+                'issued' => $contract->getDateIssued()->format('Y-m-d H:i'),
+                'expired' => $contract->getDateExpired()->format('Y-m-d H:i'),
+                'assignee' => $assignee,
+                'acceptor' => $this->getCharacterName($contract->getAcceptorId()),
+                'issuer' => $this->getCharacterName($contract->getIssuerId()),
+                'type' => ucwords(implode(' ', explode('_', $type))),
+                'status' => ucwords(implode(' ', explode('_', $contract->getStatus()))),
+                'price' => $price,
+                'start' => $start,
+                'end' => $end,
+                'collateral' => $collateral,
+                'title' => $contract->getTitle(),
+                'items' => $items,
+                'volume' => number_format($contract->getVolume()),
+            ];
+        }
+
+        Cache::add($cache_key, $out, $this->getCacheExpirationTime($contracts));
+
+        return $out;
+    }
+
+    /**
      * Given a location ID, figure out what type it is and return the name
      *
      * @param $id
      * @return mixed|string
      */
-    private function getAssetLocationName($id)
+    private function getLocationName($id)
     {
         $cache_key = "user_location_{$this->char_id}_{$id}";
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
 
-        try {
-            return $this->getStationName($id);
-        } catch (\Exception $e) { }
+        if ($id >= 60000000 && $id <= 64000000)
+        {
+            try {
+                $res = $this->getStationName($id);
+                Cache::add($cache_key, $res, env('CACHE_TIME', 3264));
+                return $res;
+            } catch (\Exception $e) { }
+        }
+        else if ($id == 2004)
+            return "Asset Safety";
+        else if ($id >= 40000000 && $id <= 50000000)
+            return "Deleted PI Structure";
 
         try {
-            return $this->getStructureName($id);
+            $res = $this->getStructureName($id);
+            Cache::add($cache_key, $res, env('CACHE_TIME', 3264));
+            return $res;
         } catch (\Exception $e) { }
 
         Cache::add($cache_key, "Unknown Location", env('CACHE_TIME', 3264));

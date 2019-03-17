@@ -170,6 +170,16 @@ class ApplicationController extends Controller
         die(json_encode(['success' => true, 'message' => $res]));
     }
 
+    /**
+     * Load a user's notifications
+     *
+     * @param $char_id
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws \Swagger\Client\Eve\ApiException
+     * @throws \Throwable
+     */
     public function loadNotifications($char_id)
     {
         $this->checkPermissions($char_id);
@@ -177,6 +187,27 @@ class ApplicationController extends Controller
 
         $notifications = $esi->getNotifications();
         $res = view('parts/application/notifications', ['notifications' => $notifications])->render();
+
+        die(json_encode(['success' => true, 'message' => $res]));
+    }
+
+    /**
+     * Load a user's contracts
+     *
+     * @param $char_id
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws \Swagger\Client\Eve\ApiException
+     * @throws \Throwable
+     */
+    public function loadContracts($char_id)
+    {
+        $this->checkPermissions($char_id);
+        $esi = new EsiConnection($char_id);
+
+        $contracts = $esi->getContracts();
+        $res = view('parts/application/contracts', ['contracts' => $contracts])->render();
 
         die(json_encode(['success' => true, 'message' => $res]));
     }
