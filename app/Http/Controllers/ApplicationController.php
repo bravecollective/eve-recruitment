@@ -170,6 +170,22 @@ class ApplicationController extends Controller
         die(json_encode(['success' => true, 'message' => $res]));
     }
 
+    public function loadNotifications($char_id)
+    {
+        $this->checkPermissions($char_id);
+        $esi = new EsiConnection($char_id);
+
+        $notifications = $esi->getNotifications();
+        $res = view('parts/application/notifications', ['notifications' => $notifications])->render();
+
+        die(json_encode(['success' => true, 'message' => $res]));
+    }
+
+    /**
+     * Check to make sure the recruiter can view the esi
+     *
+     * @param $char_id
+     */
     private function checkPermissions($char_id)
     {
         $char = User::find($char_id);

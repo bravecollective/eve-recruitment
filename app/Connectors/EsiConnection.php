@@ -4,10 +4,12 @@ namespace App\Connectors;
 
 use App\Models\Group;
 use App\Models\Type;
+use Brave\NeucoreApi\Model\Character;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Seat\Eseye\Eseye;
 use Swagger\Client\Eve\Api\AssetsApi;
+use Swagger\Client\Eve\Api\CharacterApi;
 use Swagger\Client\Eve\Api\ClonesApi;
 use Swagger\Client\Eve\Api\ContactsApi;
 use Swagger\Client\Eve\Api\LocationApi;
@@ -506,6 +508,58 @@ class EsiConnection
         }
 
         Cache::add($cache_key, $out, $this->getCacheExpirationTime($res));
+        return $out;
+    }
+
+    /**'
+     * Get user notifications
+     *
+     * @return array|mixed
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws \Swagger\Client\Eve\ApiException
+     */
+    public function getNotifications()
+    {
+        $cache_key = "notifications_{$this->char_id}";
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
+
+        $model = new CharacterApi(null, $this->config);
+        $notifications = $model->getCharactersCharacterIdNotificationsWithHttpInfo($this->char_id, $this->char_id);
+        $out = [];
+
+        foreach ($notifications[0] as $notification)
+        {
+            $name = null;
+            switch($notification->getSenderType())
+            {
+                case 'character':
+                    $name = $this->getCharacterName($notification->getSenderId());
+                    break;
+                case 'corporation':
+                    $name = $this->getCorporationName($notification->getSenderId());
+                    break;
+                case 'alliance':
+                    $name = $this->getAllianceName($notification->getSenderId());
+                    break;
+                default:
+                    $name = 'Other';
+                    break;
+            }
+
+            $out[] = [
+                'sender' => $name,
+                'type' => $notification->getType(),
+                'text' => $notification->getText(),
+                'timestamp' => $notification->getTimestamp()->format('Y-m-d H:i')
+            ];
+        }
+
+        Cache::add($cache_key, $out, $this->getCacheExpirationTime($notifications));
+
         return $out;
     }
 
