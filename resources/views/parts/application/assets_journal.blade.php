@@ -30,7 +30,13 @@
                             @else
                                 <div class="list-group-item bg-dark text-white">
                                     <img src="https://image.eveonline.com/Type/{{ $asset['type_id'] }}_32.png" />
-                                    <a href="#" class="text-white" data-toggle="collapse" data-target="#items-{{ $asset['id'] }}">{{ $asset['name'] }}</a>
+                                    <a href="#" class="text-white" data-toggle="collapse" data-target="#items-{{ $asset['id'] }}">
+                                    @if($asset['item_name'] != 'None')
+                                        {{ $asset['item_name'] }} ({{ $asset['name'] }})
+                                    @else
+                                        {{ $asset['name'] }}
+                                    @endif
+                                    </a>
                                     <div class="float-right">
                                         {{ $asset['price'] }} ISK
                                     </div>

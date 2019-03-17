@@ -418,6 +418,8 @@ class EsiConnection
      */
     private function constructAssetTreeForItem($item, $assets)
     {
+        $model = new AssetsApi(null, $this->config);
+
         // These locations are part of a ship, container, etc
         $shipContentLocationFlags = [
             "Cargo",
@@ -440,6 +442,7 @@ class EsiConnection
             "DroneBay"
         ];
         $pattern = "/(" . implode('|', $shipContentLocationFlags) .")/";
+        $name = $model->postCharactersCharacterIdAssetsNames($this->char_id, json_encode([$item->getItemId()]), $this->char_id);
 
         $tree = [];
         $tree['name'] = $this->getTypeName($item->getTypeId());
@@ -450,6 +453,7 @@ class EsiConnection
         $tree['price'] = number_format((int) $this->getMarketPrice($item->getTypeId()) * $item->getQuantity(), 0);
         $tree['total_price'] = $this->getMarketPrice($item->getTypeId()) * $item->getQuantity();
         $tree['items'] = [];
+        $tree['item_name'] = $name[0]->getName();
 
         foreach ($assets as $asset)
         {
