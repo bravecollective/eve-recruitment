@@ -32,4 +32,9 @@
         <h5>{{ $sp }} Skillpoints</h5>
     </div>
 </div>
+<div class="row justify-content-center">
+    <div class="col-auto">
+        <h5>{{ $isk }} isk</h5>
+    </div>
+</div>
 <br />

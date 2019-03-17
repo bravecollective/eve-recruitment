@@ -76,6 +76,20 @@ class EsiConnection
     }
 
     /**
+     * Get a user's wallet balance
+     *
+     * @return string
+     * @throws \Swagger\Client\Eve\ApiException
+     */
+    public function getWalletBalance()
+    {
+        $model = new WalletApi(null, $this->config);
+        $balance = number_format($model->getCharactersCharacterIdWallet($this->char_id, $this->char_id));
+
+        return $balance;
+    }
+
+    /**
      * Get a user's corp history
      *
      * @return \Seat\Eseye\Containers\EsiResponse
@@ -306,6 +320,40 @@ class EsiConnection
     }
 
     /**
+     * Get a character's skillqueue
+     *
+     * @return array|mixed
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws \Swagger\Client\Eve\ApiException
+     */
+    public function getSkillQueue()
+    {
+        $cache_key = "skill_queue_{$this->char_id}";
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
+
+        $model = new SkillsApi(null, $this->config);
+        $queue = $model->getCharactersCharacterIdSkillqueueWithHttpInfo($this->char_id, $this->char_id);
+        $out = [];
+
+        foreach ($queue[0] as $skill)
+        {
+            $out[] = [
+                'skill' => $this->getTypeName($skill->getSkillId()),
+                'end_level' => $skill->getFinishedLevel(),
+                'finishes' => $skill->getFinishDate()->format('Y-m-d H:i:s')
+            ];
+        }
+
+        Cache::add($cache_key, $out, $this->getCacheExpirationTime($queue));
+
+        return $out;
+    }
+
+    /**
      * Get a user's assets
      *
      * @return array
@@ -318,8 +366,8 @@ class EsiConnection
     {
         $cache_key = "assets_{$this->char_id}";
 
-        if (Cache::has($cache_key))
-            return Cache::get($cache_key);
+        //if (Cache::has($cache_key))
+         //   return Cache::get($cache_key);
 
         $model = new AssetsApi(null, $this->config);
         $assets = $model->getCharactersCharacterIdAssetsWithHttpInfo($this->char_id, $this->char_id);
@@ -341,7 +389,15 @@ class EsiConnection
             }
         }
 
-       Cache::add($cache_key, $out, $this->getCacheExpirationTime($assets));
+        foreach ($out as $location => $tree)
+        {
+            $location_price = 0;
+            foreach ($out[$location]['items'] as $item)
+                $location_price += $item['total_price'];
+            $out[$location]['value'] = number_format($location_price);
+        }
+
+        Cache::add($cache_key, $out, $this->getCacheExpirationTime($assets));
 
         return $out;
     }
@@ -387,7 +443,8 @@ class EsiConnection
         $tree['quantity'] = number_format($item->getQuantity());
         $tree['id'] = $item->getItemId();
         $tree['type_id'] = $item->getTypeId();
-        $tree['price'] = number_format((int) $this->getMarketPrice($item->getTypeId()) * (int) $item->getQuantity(), 0);
+        $tree['price'] = number_format((int) $this->getMarketPrice($item->getTypeId()) * $item->getQuantity(), 0);
+        $tree['total_price'] = $this->getMarketPrice($item->getTypeId()) * $item->getQuantity();
         $tree['items'] = [];
 
         foreach ($assets as $asset)
@@ -395,13 +452,16 @@ class EsiConnection
             // TODO: Nested container items
             if (preg_match($pattern, $asset->getLocationFlag()) && $asset->getLocationId() == $item->getItemId())
             {
+                $price = (int) $this->getMarketPrice($asset->getTypeId()) * $asset->getQuantity();
                 $tree['items'][] = [
                     'name' => $this->getTypeName($asset->getTypeId()),
                     'quantity' => number_format($asset->getQuantity()),
                     'type_id' => $asset->getTypeId(),
-                    'price' => number_format((int) $this->getMarketPrice($asset->getTypeId()) * (int) $asset->getQuantity(), 0),
+                    'price' => number_format($price),
                     'items' => []
                 ];
+
+                $tree['total_price'] += $price;
             }
         }
 
@@ -979,9 +1039,6 @@ class EsiConnection
      *
      * @param $character_id
      * @return mixed
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
      */
     public function getCharacterName($character_id)
     {
@@ -993,9 +1050,14 @@ class EsiConnection
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
 
-        $char = $this->eseye->invoke('get', '/characters/{character_id}/', [
-            'character_id' => $character_id
-        ]);
+        try {
+            $char = $this->eseye->invoke('get', '/characters/{character_id}/', [
+                'character_id' => $character_id
+            ]);
+        } catch(\Exception $e) {
+            return "Unknown Character";
+        }
+
 
         Cache::add($cache_key, $char->name, env('CACHE_TIME', 3264));
 

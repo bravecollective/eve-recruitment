@@ -46,7 +46,8 @@ class ApplicationController extends Controller
             'application' => $application,
             'states' => Application::$state_names,
             'warnings' => $warnings,
-            'sp' => $esi->getSkillpoints()
+            'sp' => $esi->getSkillpoints(),
+            'isk' => $esi->getWalletBalance(),
         ]);
     }
 
@@ -102,7 +103,8 @@ class ApplicationController extends Controller
         ];
 
         $skills = $esi->getSkills();
-        $res = view('parts/application/skills', ['skills' => $skills, 'skill_groups' => $skill_groups])->render();
+        $queue = $esi->getSkillQueue();
+        $res = view('parts/application/skills', ['skills' => $skills, 'skill_groups' => $skill_groups, 'queue' => $queue])->render();
 
         die(json_encode(['success' => true, 'message' => $res]));
     }
@@ -258,7 +260,8 @@ class ApplicationController extends Controller
             'clones' => $clones,
             'corp_history' => $esi->getCorpHistory(),
             'contacts' => $esi->getContacts(),
-            'sp' => $esi->getSkillpoints()
+            'sp' => $esi->getSkillpoints(),
+            'isk' => $esi->getWalletBalance(),
         ]);
     }
 

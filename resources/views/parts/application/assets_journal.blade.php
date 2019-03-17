@@ -12,6 +12,9 @@
                             <button class="btn btn-link text-white" type="button" data-toggle="collapse" data-target="#children-{{ $location_info['id'] }}" aria-expanded="false" aria-controls="children-{{ $location_info['id'] }}">
                                 {{ $location }}
                             </button>
+                            <div class="float-right">
+                                {{ $location_info['value'] }} isk
+                            </div>
                         </div>
                         <div id="children-{{ $location_info['id'] }}" class="collapse" aria-labelledby="parent-{{ $location_info['id'] }}" data-parent="#top-level-accordian">
                             <div class="list-group">
