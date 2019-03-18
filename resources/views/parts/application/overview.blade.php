@@ -115,6 +115,59 @@
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-xl-6 col-lg-6 col-12">
+                <div class="card bg-dark text-white">
+                    <div class="card-body">
+                        <div class="card-header">
+                            Attributes
+                        </div>
+                        <div class="list-group-item bg-dark text-white">
+                            Charisma
+                            <div class="float-right">
+                                {{ $character_info['attributes']->getCharisma() }}
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-dark text-white">
+                            Intelligence
+                            <div class="float-right">
+                                {{ $character_info['attributes']->getIntelligence() }}
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-dark text-white">
+                            Memory
+                            <div class="float-right">
+                                {{ $character_info['attributes']->getMemory() }}
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-dark text-white">
+                            Perception
+                            <div class="float-right">
+                                {{ $character_info['attributes']->getPerception() }}
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-dark text-white">
+                            Willpower
+                            <div class="float-right">
+                                {{ $character_info['attributes']->getWillpower() }}
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-dark text-white">
+                            Bonus Remaps Remaining
+                            <div class="float-right">
+                                {{ $character_info['attributes']->getBonusRemaps() }}
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-dark text-white">
+                            Last Remap
+                            <div class="float-right">
+                                {{ $character_info['attributes']->getLastRemapDate()->format('Y-m-d H:i') }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="col-xl-4 col-lg-6 col-12">
         <div class="card bg-dark">

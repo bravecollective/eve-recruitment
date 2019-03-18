@@ -139,6 +139,9 @@ class EsiConnection
         $locationModel = new LocationApi(null, $this->config);
         $location = $locationModel->getCharactersCharacterIdLocation($this->char_id, $this->char_id);
 
+        $skillsModel = new SkillsApi(null, $this->config);
+        $attributes = $skillsModel->getCharactersCharacterIdAttributes($this->char_id, $this->char_id);
+
         if ($location->getStructureId() == null && $location->getStationId() == null)
             $location->structure_name = "In Space (" . $this->getSystemName($location->getSolarSystemId()) . ")";
         else if ($location->getStructureId() != null)
@@ -160,7 +163,8 @@ class EsiConnection
             'race' => $this->getRace($public_data->race_id),
             'current_ship' => $ship->getShipName() . " (" . $this->getTypeName($ship->getShipTypeId()) . ")",
             'security_status' => round($public_data->security_status, 4),
-            'region' => $this->getRegionName($location->getSolarSystemId())
+            'region' => $this->getRegionName($location->getSolarSystemId()),
+            'attributes' => $attributes
         ];
     }
 
