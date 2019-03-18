@@ -196,6 +196,96 @@ class EsiConnection
     }
 
     /**
+     * Determine if a character can fly a fit
+     * 
+     * @param $item_id
+     * @return bool
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws \Swagger\Client\Eve\ApiException
+     */
+    public function characterCanUseItem($item_id)
+    {
+        // Pulled from SDE
+        $requiredSkillDogmaAttributes = [
+            182,
+            183,
+            184,
+            1285,
+            1289,
+            1290
+        ];
+        $requiredSkillDogmaAttributesLevels = [
+            277,
+            278,
+            279,
+            1286,
+            1287,
+            1288
+        ];
+        $requiredSkills = [];
+
+        static $skills = null;
+
+        if (!$skills)
+            $skills = $this->getSkills();
+
+        $attributes = $this->eseye->invoke('get', '/universe/types/{type_id}/', [
+            'type_id' => $item_id
+        ])->dogma_attributes;
+
+        foreach ($attributes as $attribute)
+        {
+            if (in_array($attribute->attribute_id, $requiredSkillDogmaAttributes))
+            {
+                $idx = array_search($attribute->attribute_id, $requiredSkillDogmaAttributes);
+
+                if (!array_key_exists($idx, $requiredSkills))
+                    $requiredSkills[$idx] = [];
+
+                $requiredSkills[$idx]['skill'] = $this->getTypeName(floor($attribute->value));
+            }
+            else if (in_array($attribute->attribute_id, $requiredSkillDogmaAttributesLevels))
+            {
+                $idx = array_search($attribute->attribute_id, $requiredSkillDogmaAttributesLevels);
+
+                if (!array_key_exists($idx, $requiredSkills))
+                    $requiredSkills[$idx] = [];
+
+                $requiredSkills[$idx]['level'] = (int) number_format($attribute->value);
+            }
+        }
+
+        foreach ($requiredSkills as $requirement)
+        {
+            $skillFound = false;
+
+            foreach ($skills as $category)
+            {
+                foreach ($category as $name => $theSkill)
+                {
+                    if ($name == $requirement['skill'])
+                    {
+                        if ($theSkill['level'] < $requirement['level'])
+                            return false;
+                        $skillFound = true;
+                        break;
+                    }
+                }
+
+                if ($skillFound == true)
+                    break;
+            }
+
+            if (!$skillFound)
+                return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Get a user's mail
      *
      * @return \Swagger\Client\Eve\Model\GetCharactersCharacterIdMail200Ok[]

@@ -75,6 +75,11 @@
                      <span id="result-tab-notifications" style="color: red;" class="fas"></span>
                  </a>
              </li>
+             <li class="nav-item ml-2">
+                 <a class="nav-link" id="utilities-tab" data-toggle="pill" href="#tab-utilities" role="tab" aria-controls="tab-utilities" aria-selected="false">
+                     Utilities
+                 </a>
+             </li>
         </ul>
     </div>
 </div><br />
@@ -102,6 +107,7 @@
     <div class="tab-pane fade" id="tab-market" role="tabpanel" aria-labelledby="tab-market"></div>
     <div class="tab-pane fade" id="tab-contracts" role="tabpanel" aria-labelledby="tab-contracts"></div>
     <div class="tab-pane fade" id="tab-notifications" role="tabpanel" aria-labelledby="tab-notifications"></div>
+    <div class="tab-pane fade" id="tab-utilities" role="tabpanel" aria-labelledby="tab-utilities">@include('parts/application/utilities')</div>
 @endsection
 @section('styles')
     <style>
@@ -131,6 +137,7 @@
     <script type="text/javascript">
         document.title = "{{ $character->name }} - " + document.title;
         let esiLoaded = false;
+        let char_id = "{{ $character->character_id }}";
 
         function loadPartial(url, anchor, name, additionalFunction = null)
         {
@@ -172,7 +179,6 @@
             }
 
             esiLoaded = true;
-            let char_id = "{{ $character->character_id }}";
 
             @if(isset($application))
                 loadPartial('/api/esi/' + char_id + '/overview', 'tab-overview', 'overview');
@@ -264,6 +270,29 @@
             }
         }
     @endif
+
+    function checkFit(f)
+    {
+        let fit = f[0].value;
+        if (!fit)
+            return false;
+
+        let data = {
+            _token: "{{ csrf_token() }}",
+            fit: fit
+        };
+
+        $.post('/api/esi/' + char_id + '/fit_check', data, function (e) {
+            e = JSON.parse(e);
+
+            if (e.success === true)
+                showInfo(e.message);
+            else
+                showError(e.message);
+        });
+
+        return false;
+    }
 
         function toggleCollapse(anchor)
         {

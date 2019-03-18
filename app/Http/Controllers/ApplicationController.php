@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Application;
 use App\Models\ApplicationChangelog;
 use App\Connectors\EsiConnection;
+use App\Models\EveFittingEFTParser;
 use App\Models\FormQuestion;
 use App\Models\FormResponse;
 use App\Models\Permission\AccountRole;
@@ -212,6 +213,41 @@ class ApplicationController extends Controller
         $res = view('parts/application/contracts', ['contracts' => $contracts])->render();
 
         die(json_encode(['success' => true, 'message' => $res]));
+    }
+
+    /**
+     * Check if a user can fly a fit
+     *
+     * @param $char_id
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     */
+    public function checkFit($char_id)
+    {
+        $this->checkPermissions($char_id);
+        $esi = new EsiConnection($char_id);
+        $fit = Input::get('fit');
+
+        if (!$fit)
+            die(json_encode(['success' => false, 'message' => 'Invalid fit']));
+
+        try {
+            $itemIDs = EveFittingEFTParser::EveFittingRender($fit);
+        } catch(\Exception $e) {
+            die(json_encode(['success' => false, 'message' => 'Invalid fit']));
+        }
+
+        if ($itemIDs == null)
+            die(json_encode(['success' => false, 'message' => 'Invalid fit']));
+
+        foreach ($itemIDs as $itemID)
+        {
+            if ($itemID < 0)
+                continue;
+            if (!$esi->characterCanUseItem($itemID))
+                die(json_encode(['success' => true, 'message' => 'Character cannot fly ship']));
+        }
+
+        die(json_encode(['success' => true, 'message' => 'Character can fly ship']));
     }
 
     /**
