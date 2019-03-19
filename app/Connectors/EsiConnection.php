@@ -867,7 +867,7 @@ class EsiConnection
         } catch (\Exception $e) { }
 
         Cache::add($cache_key, "Unknown Location", env('CACHE_TIME', 3264));
-        return "UNKNOWN LOCATION";
+        return "Unknown Location";
     }
 
     /**
