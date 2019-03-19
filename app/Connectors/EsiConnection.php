@@ -2,9 +2,9 @@
 
 namespace App\Connectors;
 
+use Swagger\Client\Eve\ApiException;
 use App\Models\Group;
 use App\Models\Type;
-use Brave\NeucoreApi\Model\Character;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Seat\Eseye\Eseye;
@@ -83,12 +83,16 @@ class EsiConnection
      * Get a user's wallet balance
      *
      * @return string
-     * @throws \Swagger\Client\Eve\ApiException
      */
     public function getWalletBalance()
     {
         $model = new WalletApi(null, $this->config);
-        $balance = number_format($model->getCharactersCharacterIdWallet($this->char_id, $this->char_id));
+
+        try {
+            $balance = number_format($model->getCharactersCharacterIdWallet($this->char_id, $this->char_id));
+        } catch(ApiException $e) {
+            return null;
+        }
 
         return $balance;
     }
@@ -132,24 +136,28 @@ class EsiConnection
      * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
      * @throws \Seat\Eseye\Exceptions\UriDataMissingException
-     * @throws \Swagger\Client\Eve\ApiException
      */
     public function getCharacterInfo()
     {
-        $locationModel = new LocationApi(null, $this->config);
-        $location = $locationModel->getCharactersCharacterIdLocation($this->char_id, $this->char_id);
+        try {
+            $locationModel = new LocationApi(null, $this->config);
+            $location = $locationModel->getCharactersCharacterIdLocation($this->char_id, $this->char_id);
 
-        $skillsModel = new SkillsApi(null, $this->config);
-        $attributes = $skillsModel->getCharactersCharacterIdAttributes($this->char_id, $this->char_id);
+            $skillsModel = new SkillsApi(null, $this->config);
+            $attributes = $skillsModel->getCharactersCharacterIdAttributes($this->char_id, $this->char_id);
 
-        if ($location->getStructureId() == null && $location->getStationId() == null)
-            $location->structure_name = "In Space (" . $this->getSystemName($location->getSolarSystemId()) . ")";
-        else if ($location->getStructureId() != null)
-            $location->structure_name = $this->getStructureName($location->getStructureId());
-        else
-            $location->structure_name = $this->getStationName($location->getStationId());
+            if ($location->getStructureId() == null && $location->getStationId() == null)
+                $location->structure_name = "In Space (" . $this->getSystemName($location->getSolarSystemId()) . ")";
+            else if ($location->getStructureId() != null)
+                $location->structure_name = $this->getStructureName($location->getStructureId());
+            else
+                $location->structure_name = $this->getStationName($location->getStationId());
 
-        $ship = $locationModel->getCharactersCharacterIdShip($this->char_id, $this->char_id);
+            $ship = $locationModel->getCharactersCharacterIdShip($this->char_id, $this->char_id);
+        } catch(\Exception $e) {
+            $location = $ship = $attributes = null;
+        }
+
         $public_data = $this->eseye->invoke('get', '/characters/{character_id}/', [
             "character_id" => $this->char_id
         ]);
@@ -161,9 +169,9 @@ class EsiConnection
             'ancestry' => $this->getAncestry($public_data->ancestry_id),
             'bloodline' => $this->getBloodline($public_data->bloodline_id),
             'race' => $this->getRace($public_data->race_id),
-            'current_ship' => $ship->getShipName() . " (" . $this->getTypeName($ship->getShipTypeId()) . ")",
+            'current_ship' => ($ship != null) ? $ship->getShipName() . " (" . $this->getTypeName($ship->getShipTypeId()) . ")" : null,
             'security_status' => round($public_data->security_status, 4),
-            'region' => $this->getRegionName($location->getSolarSystemId()),
+            'region' => ($location != null) ? $this->getRegionName($location->getSolarSystemId()) : null,
             'attributes' => $attributes
         ];
     }
@@ -903,10 +911,9 @@ class EsiConnection
     }
 
     /**
-     * Get a character's skillpoints
+     * Get a user's skillpoints
      *
-     * @return int
-     * @throws \Swagger\Client\Eve\ApiException
+     * @return mixed|string
      */
     public function getSkillpoints()
     {
@@ -916,7 +923,12 @@ class EsiConnection
             return Cache::get($cache_key);
 
         $model = new SkillsApi(null, $this->config);
-        $sp = $model->getCharactersCharacterIdSkillsWithHttpInfo($this->char_id, $this->char_id);
+        try {
+            $sp = $model->getCharactersCharacterIdSkillsWithHttpInfo($this->char_id, $this->char_id);
+        } catch(ApiException $e) {
+            return null;
+        }
+
         $out = number_format($sp[0]->getTotalSp());
 
         Cache::add($cache_key, $out, $this->getCacheExpirationTime($sp));

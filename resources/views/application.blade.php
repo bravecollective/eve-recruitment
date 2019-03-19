@@ -17,6 +17,7 @@
     </div>
 @endif
 </div><br />
+@if($sp != null)
 <div class="row justify-content-center">
     <div class="col-12">
         <ul class="nav nav-pills justify-content-center">
@@ -83,12 +84,15 @@
         </ul>
     </div>
 </div><br />
+@endif
 <div id="errors"></div><br />
+@if($sp != null)
 <div class="row justify-content-center">
     <div class="col-auto">
         <button type="button" class="btn btn-primary" id="load-esi-button" onclick="loadEsiData();">Load ESI Data</button>
     </div>
 </div>
+@endif
 <hr class="my-4">
 <div class="tab-content" id="tab-content">
 @if(isset($application))
@@ -96,7 +100,7 @@
                                                'changelog' => $application->changelog,
                                                'comments' => $application->comments])
     <div class="tab-pane fade" id="tab-overview" role="tabpanel" aria-labelledby="tab-overview"></div>
-@else
+@elseif($sp != null)
     <div class="tab-pane fade show active" id="tab-overview" role="tabpanel" aria-labelledby="tab-overview">
         @include('parts/application/overview')
     </div>
@@ -185,10 +189,10 @@
             @endif
             loadPartial('/api/esi/' + char_id + '/skills', "tab-skills", 'skills');
             loadPartial('/api/esi/' + char_id + '/mail', "tab-mail", 'mail');
-            loadPartial('/api/esi/' + char_id + '/assets_journal', "tab-assets", 'assets', () => $("#journal-table").DataTable({"order": [[0, "desc"]]}));
+            loadPartial('/api/esi/' + char_id + '/assets_journal', "tab-assets", 'assets', () => $("#journal-table").DataTable({"order": [[0, "desc"]], "paging": false}));
             loadPartial('/api/esi/' + char_id + '/market', "tab-market", 'market');
             loadPartial('/api/esi/' + char_id + '/contracts', "tab-contracts", 'contracts');
-            loadPartial('/api/esi/' + char_id + '/notifications', "tab-notifications", 'notifications', () => $("#notifications-table").DataTable({"order": [[0, "desc"]]}));
+            loadPartial('/api/esi/' + char_id + '/notifications', "tab-notifications", 'notifications', () => $("#notifications-table").DataTable({"order": [[0, "desc"]], "paging": false}));
         }
 
     @if(isset($application))

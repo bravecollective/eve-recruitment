@@ -27,6 +27,7 @@
     </div>
 </div>
 <br />
+@if($sp != null)
 <div class="row justify-content-center">
     <div class="col-auto">
         <h5>{{ $sp }} Skillpoints</h5>
@@ -37,4 +38,9 @@
         <h5>{{ $isk }} isk</h5>
     </div>
 </div>
+@else
+<div class="row justify-content-center">
+    <h4><strong>Invalid ESI Token</strong></h4>
+</div>
+@endif
 <br />

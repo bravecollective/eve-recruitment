@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Connectors\CoreConnection;
 use App\Models\Application;
 use App\Models\ApplicationChangelog;
 use App\Connectors\EsiConnection;
@@ -24,7 +25,6 @@ class ApplicationController extends Controller
      * @param $id
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Swagger\Client\Eve\ApiException
      */
     function viewApplication($id)
     {
@@ -41,14 +41,62 @@ class ApplicationController extends Controller
         $warnings = Application::getWarnings($application);
         $esi = new EsiConnection($application->account->main_user_id);
 
+        $sp = $esi->getSkillpoints();
+        $isk = $esi->getWalletBalance();
+
         return view('application', [
             'alts' => $application->account->alts(),
             'character' => $application->account->main(),
             'application' => $application,
             'states' => Application::$state_names,
             'warnings' => $warnings,
-            'sp' => $esi->getSkillpoints(),
-            'isk' => $esi->getWalletBalance(),
+            'sp' => $sp,
+            'isk' => $isk,
+        ]);
+    }
+
+    /**
+     * View ESI for a corp member. The return value must be updated as viewApplication's return values are
+     *
+     * @param $char_id
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws \Swagger\Client\Eve\ApiException
+     */
+    public function viewCharacterEsi($char_id)
+    {
+        $char = User::find($char_id);
+
+        if (!$char)
+            return redirect('/')->with('error', 'Invalid character ID');
+
+        if (!AccountRole::recruiterCanViewEsi($char_id) && (!Auth::user()->hasRole($char->corporation_name . ' recruiter') && !Auth::user()->hasRole($char->corporation_name . ' director')))
+            return redirect('/')->with('error', 'Unauthorized');
+
+        $esi = new EsiConnection($char_id);
+
+        $char_info = $esi->getCharacterInfo();
+        $corp_history = $esi->getCorpHistory();
+
+        try {
+            $clones = $esi->getCloneInfo();
+            $contacts = $esi->getContacts();
+            $sp = $esi->getSkillpoints();
+            $isk = $esi->getWalletBalance();
+        } catch(\Exception $e) {
+            $clones = $contacts = $sp = $isk = null;
+        }
+
+        return view('application', [
+            'character' => $char,
+            'character_info' => $char_info,
+            'clones' => $clones,
+            'corp_history' => $corp_history,
+            'contacts' => $contacts,
+            'sp' => $sp,
+            'isk' => $isk,
         ]);
     }
 
@@ -56,10 +104,7 @@ class ApplicationController extends Controller
      * Load character overview (used on the application page)
      *
      * @param $char_id
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
-     * @throws \Swagger\Client\Eve\ApiException
      * @throws \Throwable
      */
     public function loadOverview($char_id)
@@ -71,6 +116,7 @@ class ApplicationController extends Controller
         $clones = $esi->getCloneInfo();
         $corp_history = $esi->getCorpHistory();
         $contacts = $esi->getContacts();
+
         $res = view('parts/application/overview', [
             'application' => true,
             'character_info' => $character_info,
@@ -219,7 +265,9 @@ class ApplicationController extends Controller
      * Check if a user can fly a fit
      *
      * @param $char_id
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
      */
     public function checkFit($char_id)
     {
@@ -252,7 +300,7 @@ class ApplicationController extends Controller
 
     /**
      * Check if a character meets a skillplan
-     * 
+     *
      * @param $char_id
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
      */
@@ -321,41 +369,6 @@ class ApplicationController extends Controller
 
         if (!AccountRole::recruiterCanViewEsi($char_id) && (!Auth::user()->hasRole($char->corporation_name . ' recruiter') && !Auth::user()->hasRole($char->corporation_name . ' director')))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
-    }
-
-    /**
-     * View ESI for a corp member. The return value must be updated as viewApplication's return values are
-     *
-     * @param $char_id
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
-     * @throws \Swagger\Client\Eve\ApiException
-     */
-    public function viewCharacterEsi($char_id)
-    {
-        $char = User::find($char_id);
-
-        if (!$char)
-            return redirect('/')->with('error', 'Invalid character ID');
-
-        if (!AccountRole::recruiterCanViewEsi($char_id) && (!Auth::user()->hasRole($char->corporation_name . ' recruiter') && !Auth::user()->hasRole($char->corporation_name . ' director')))
-            return redirect('/')->with('error', 'Unauthorized');
-
-        $esi = new EsiConnection($char_id);
-
-        $clones = $esi->getCloneInfo();
-
-        return view('application', [
-            'character' => $char,
-            'character_info' => $esi->getCharacterInfo(),
-            'clones' => $clones,
-            'corp_history' => $esi->getCorpHistory(),
-            'contacts' => $esi->getContacts(),
-            'sp' => $esi->getSkillpoints(),
-            'isk' => $esi->getWalletBalance(),
-        ]);
     }
 
     /**

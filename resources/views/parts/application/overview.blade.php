@@ -161,7 +161,11 @@
                         <div class="list-group-item bg-dark text-white">
                             Last Remap
                             <div class="float-right">
+                            @if($character_info['attributes']->getLastRemapDate() != null)
                                 {{ $character_info['attributes']->getLastRemapDate()->format('Y-m-d H:i') }}
+                            @else
+                                Never
+                            @endif
                             </div>
                         </div>
                     </div>
