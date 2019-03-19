@@ -67,8 +67,8 @@
                     <ul class="list-group">
                         @foreach($changelog->reverse() as $changelog)
                             <div class="list-group-item bg-dark text-white">
-                                <p>{{ \App\Models\Application::getStringForState($changelog->old_state) }} -> {{ \App\Models\Application::getStringForState($changelog->new_state) }}</p>
-                                <p><small>{{ $changelog->account->main()->name }} - {{ $changelog->created_at }}</small></p>
+                                {{ \App\Models\Application::getStringForState($changelog->old_state) }} -> {{ \App\Models\Application::getStringForState($changelog->new_state) }}<br />
+                                <small>{{ $changelog->account->main()->name }} - {{ $changelog->created_at }}</small>
                             </div>
                         @endforeach
                     </ul>
