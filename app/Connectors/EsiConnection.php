@@ -456,8 +456,7 @@ class EsiConnection
         {
             $out[] = [
                 'skill' => $this->getTypeName($skill->getSkillId()),
-                'end_level' => $skill->getFinishedLevel(),
-                'finishes' => $skill->getFinishDate()->format('Y-m-d H:i:s')
+                'end_level' => $skill->getFinishedLevel()
             ];
         }
 
