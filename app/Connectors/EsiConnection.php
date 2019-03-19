@@ -197,13 +197,12 @@ class EsiConnection
 
     /**
      * Determine if a character can fly a fit
-     * 
+     *
      * @param $item_id
      * @return bool
      * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
      * @throws \Seat\Eseye\Exceptions\UriDataMissingException
-     * @throws \Swagger\Client\Eve\ApiException
      */
     public function characterCanUseItem($item_id)
     {
@@ -225,11 +224,6 @@ class EsiConnection
             1288
         ];
         $requiredSkills = [];
-
-        static $skills = null;
-
-        if (!$skills)
-            $skills = $this->getSkills();
 
         $attributes = $this->eseye->invoke('get', '/universe/types/{type_id}/', [
             'type_id' => $item_id
@@ -259,30 +253,43 @@ class EsiConnection
 
         foreach ($requiredSkills as $requirement)
         {
-            $skillFound = false;
-
-            foreach ($skills as $category)
-            {
-                foreach ($category as $name => $theSkill)
-                {
-                    if ($name == $requirement['skill'])
-                    {
-                        if ($theSkill['level'] < $requirement['level'])
-                            return false;
-                        $skillFound = true;
-                        break;
-                    }
-                }
-
-                if ($skillFound == true)
-                    break;
-            }
-
-            if (!$skillFound)
+            if (!$this->userHasSkillLevel($requirement['skill'], $requirement['level']))
                 return false;
         }
 
         return true;
+    }
+
+    public function checkSkillplan($skillplan)
+    {
+        $missing = [];
+
+        foreach ($skillplan as $skill => $level)
+        {
+            if (!$this->userHasSkillLevel($skill, $level))
+                $missing[] = "$skill $level";
+        }
+
+        return $missing;
+    }
+
+    private function userHasSkillLevel($skill, $level)
+    {
+        static $skills = null;
+
+        if (!$skills)
+            $skills = $this->getSkills();
+
+        foreach ($skills as $category)
+        {
+            foreach ($category as $skillName => $attributes)
+            {
+                if ($skillName == $skill && $attributes['level'] >= $level)
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     /**

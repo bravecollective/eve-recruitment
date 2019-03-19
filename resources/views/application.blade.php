@@ -294,6 +294,35 @@
         return false;
     }
 
+        function checkSkillplan(f)
+        {
+            let skillplan = f[0].value;
+            if (!skillplan)
+                return false;
+
+            let data = {
+                _token: "{{ csrf_token() }}",
+                skillplan: skillplan
+            };
+
+            $.post('/api/esi/' + char_id + '/skillplan_check', data, function (e) {
+                e = JSON.parse(e);
+
+                if (e.success === true)
+                {
+                    let skills = e.message;
+                    if (skills.length > 0)
+                        showInfo('Missing skills:<pre>' + skills.join('\n') + '</pre>', 10000);
+                    else
+                        showInfo('Skill requirements met');
+                }
+                else
+                    showError(e.message);
+            });
+
+            return false;
+        }
+
         function toggleCollapse(anchor)
         {
             $('#' + anchor).collapse('toggle');

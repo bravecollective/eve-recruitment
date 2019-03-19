@@ -34,20 +34,20 @@
             </div>
         </div>
         <script type="text/javascript">
-            function showInfo(msg)
+            function showInfo(msg, timeout = 3000)
             {
                 let d = $("#inline-info");
-                d.text(msg);
+                d.html(msg);
                 d.fadeIn();
-                setTimeout(() => d.fadeOut(), 3000);
+                setTimeout(() => d.fadeOut(), timeout);
             }
 
-            function showError(msg)
+            function showError(msg, timeout = 3000)
             {
                 let d = $("#inline-error");
                 d.text("ERROR: " + msg);
                 d.fadeIn();
-                setTimeout(() => d.fadeOut(), 3000);
+                setTimeout(() => d.fadeOut(), timeout);
             }
 
             (function($){

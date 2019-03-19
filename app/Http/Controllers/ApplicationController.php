@@ -244,10 +244,67 @@ class ApplicationController extends Controller
             if ($itemID < 0)
                 continue;
             if (!$esi->characterCanUseItem($itemID))
-                die(json_encode(['success' => true, 'message' => 'Character cannot fly ship']));
+                die(json_encode(['success' => true, 'message' => 'Character can not fly ship']));
         }
 
         die(json_encode(['success' => true, 'message' => 'Character can fly ship']));
+    }
+
+    /**
+     * Check if a character meets a skillplan
+     * 
+     * @param $char_id
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     */
+    public function checkSkillplan($char_id)
+    {
+        $this->checkPermissions($char_id);
+        $esi = new EsiConnection($char_id);
+        $skillplan = Input::get('skillplan');
+        $levels = [];
+
+        if (!$skillplan)
+            die(json_encode(['success' => false, 'message' => 'Invalid fit']));
+
+        $skillplan = str_replace("\r\n", "\n", $skillplan);
+        $skills = explode("\n", $skillplan);
+
+        foreach ($skills as $skill)
+        {
+            $split = strrpos($skill, ' ');
+            $name = substr($skill, 0, $split);
+            $level = trim(substr($skill, $split));
+
+            if (!$name || !$level)
+                continue;
+
+            switch ($level)
+            {
+                case 'I':
+                    $level = 1;
+                    break;
+                case 'II':
+                    $level = 2;
+                    break;
+                case 'III':
+                    $level = 3;
+                    break;
+                case 'IV':
+                    $level = 4;
+                    break;
+                case 'V':
+                    $level = 5;
+                    break;
+                default:
+                    die(json_encode(['success' => false, 'message' => 'Invalid level found']));
+            }
+
+            if (!array_key_exists($name, $levels) || $levels[$name] < $level)
+                $levels[$name] = $level;
+        }
+
+        $res = $esi->checkSkillplan($levels);
+        die(json_encode(['success' => true, 'message' => $res]));
     }
 
     /**
