@@ -12,6 +12,7 @@
         <h4>Check Skillplan</h4>
         <form class="form" onsubmit="return checkSkillplan(this)">
             <textarea class="form-control" placeholder="Paste Skillplan..." rows="15"></textarea>
+            <small>Invalid skill names are ignored</small>
             <br />
             <button type="submit" class="btn btn-success">Check Skillplan</button>
         </form>

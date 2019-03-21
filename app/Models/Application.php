@@ -94,7 +94,7 @@ class Application extends Model
             $warnings[] = "User was previously denied";
 
         $users = User::where('account_id', $application->account_id)->get();
-        $hic = false;
+        $hic = $cyno = $cyno5 = false;
 
         foreach ($users as $user)
         {
@@ -108,20 +108,29 @@ class Application extends Model
                     foreach ($category as $name => $skill)
                     {
                         if ($name == "Heavy Interdiction Cruisers")
-                        {
                             $hic = true;
-                            break;
+                    }
+                }
+                else if ($catName == "Navigation")
+                {
+                    foreach ($category as $name => $skill)
+                    {
+                        if ($name == "Cynosural Field Theory")
+                        {
+                            $cyno = true;
+                            if ($skill['level'] == 5)
+                                $cyno5 = true;
                         }
                     }
                 }
-
-                if ($hic == true)
-                    break;
             }
-
-            if ($hic == true)
-                break;
         }
+
+        if ($cyno == true)
+            $warnings[] = "Cyno trained";
+
+        if ($cyno5 == true)
+            $warnings[] = "Cyno V trained";
 
         if ($hic == true)
             $warnings[] = "A character in this app can fly a HIC";
