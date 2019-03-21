@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Connectors\EsiConnection;
 use App\Models\FormResponse;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -91,6 +92,39 @@ class Application extends Model
 
         if ($previously_denied)
             $warnings[] = "User was previously denied";
+
+        $users = User::where('account_id', $application->account_id)->get();
+        $hic = false;
+
+        foreach ($users as $user)
+        {
+            $esi = new EsiConnection($user->character_id);
+            $skills = $esi->getSkills();
+
+            foreach ($skills as $catName => $category)
+            {
+                if ($catName == "Spaceship Command")
+                {
+                    foreach ($category as $name => $skill)
+                    {
+                        if ($name == "Heavy Interdiction Cruisers")
+                        {
+                            $hic = true;
+                            break;
+                        }
+                    }
+                }
+
+                if ($hic == true)
+                    break;
+            }
+
+            if ($hic == true)
+                break;
+        }
+
+        if ($hic == true)
+            $warnings[] = "A character in this app can fly a HIC";
 
         return $warnings;
     }
