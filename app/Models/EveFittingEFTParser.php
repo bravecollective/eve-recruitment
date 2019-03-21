@@ -87,7 +87,8 @@ class EveFittingEFTParser {
         $trimmed = substr( $firstLine, 1, -1 );
         // Extract the ship name and the fit name
         list( $shipName, $fitName ) = explode( ", ", $trimmed );
-        $shipID = EveFittingMapIDArray::EveFittingMapTypeID( $shipName );
+        $shipID = Type::where('typeName', $shipName)->first();
+        $shipID = ($shipID) ? $shipID->typeID : -1;
         $ids[] = $shipID;
 
         // Parse the items
@@ -110,7 +111,8 @@ class EveFittingEFTParser {
             if ( preg_match( "/(.+) x([\d+])$/",
                     $exploded[0], $matches ) == 1 ) {
                 // Drone
-                $droneID = EveFittingMapIDArray::EveFittingMapTypeID( $matches[1] );
+                $droneID = Type::where('typeName', $matches[1])->first();
+                $droneID = ($droneID) ? $droneID->typeID : -1;
                 $ids[] = $droneID;
                 $quantity = intval( $matches[2] );
                 // Add drones to the charges array
@@ -119,14 +121,15 @@ class EveFittingEFTParser {
                 }
             } else {
                 // Get the itemID for the item name and save it for later
-                $itemID = EveFittingMapIDArray::EveFittingMapTypeID( $exploded[0] );
+                $itemID = Type::where('typeName', $exploded[0])->first();
+                $itemID = ($itemID) ? $itemID->typeID : -1;
                 $ids[] = $itemID;
                 if ( $itemID >= 0 ) {
                     $current[] = $itemID;
                 }
                 // Save the charge for the end
                 if ( count( $exploded ) > 1 ) {
-                    $chargeID = EveFittingMapIDArray::EveFittingMapTypeID( $exploded[1] );
+                    $chargeID = Type::where('typeName', $exploded[1])->first();
                     $ids[] = $chargeID;
                     if ( $chargeID >= 0 ) {
                         $charges[] = $chargeID;

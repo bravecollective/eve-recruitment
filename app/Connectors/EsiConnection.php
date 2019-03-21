@@ -2,6 +2,7 @@
 
 namespace App\Connectors;
 
+use App\Models\EveGroup;
 use Swagger\Client\Eve\ApiException;
 use App\Models\Group;
 use App\Models\Type;
@@ -268,6 +269,16 @@ class EsiConnection
         return true;
     }
 
+    /**
+     * Check if a user meets skillplan requirements
+     *
+     * @param $skillplan
+     * @return array
+     * @throws ApiException
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     */
     public function checkSkillplan($skillplan)
     {
         $missing = [];
@@ -281,6 +292,17 @@ class EsiConnection
         return $missing;
     }
 
+    /**
+     * Given a skill name and level, check if the user has it
+     *
+     * @param $skill
+     * @param $level
+     * @return bool
+     * @throws ApiException
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     */
     private function userHasSkillLevel($skill, $level)
     {
         static $skills = null;
@@ -1317,67 +1339,36 @@ class EsiConnection
      *
      * @param $type_id
      * @return mixed
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
      */
     public function getTypeName($type_id)
     {
-        $dbItem = Type::find($type_id);
+        $dbItem = Type::where('typeID', $type_id)->first();
 
-        if ($dbItem)
-            return $dbItem->name;
+        if (!$dbItem)
+            return null;
 
-        $res = $this->eseye->invoke('get', '/universe/types/{type_id}/', [
-            'type_id' => $type_id
-        ]);
-
-        $dbItem = new Type();
-        $dbItem->id = $type_id;
-        $dbItem->name = $res->name;
-        $dbItem->group_id = $res->group_id;
-        $dbItem->save();
-
-        return $res->name;
+        return $dbItem->typeName;
     }
 
     /**
      * Get the name of a group, given an item ID
      *
-     * @param $id
+     * @param $typeId
      * @return Group|mixed
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
      */
-    public function getGroupName($itemId)
+    public function getGroupName($typeId)
     {
-        $item = Type::find($itemId);
+        $item = Type::where('typeID', $typeId)->first();
 
         if (!$item)
-        {
-            // Add it to the database
-            $this->getTypeName($itemId);
-            $item = Type::find($itemId);
-        }
+            return null;
 
-        $dbItem = Group::find($item->group_id);
+        $group = EveGroup::where('groupID', $item->groupID)->first();
 
-        if ($dbItem)
-            return $dbItem->name;
+        if (!$group)
+            return null;
 
-        $group_id = $item->group_id;
-
-        $res = $this->eseye->invoke('get', '/universe/groups/{group_id}/', [
-            'group_id' => $group_id
-        ]);
-
-        $dbItem = new Group();
-        $dbItem->id = $group_id;
-        $dbItem->name = $res->name;
-        $dbItem->save();
-
-        return $dbItem->name;
+        return $group->groupName;
     }
 
     /**
