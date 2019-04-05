@@ -148,10 +148,13 @@
             let res = $("#result-" + anchor);
             let errors = $("#errors");
 
+            res.html('<img width="22" src="/img/loading.webp" alt="Loading" />');
+
             $.ajax({
                 url: url,
                 type: 'GET',
                 success: function(e) {
+                    res.empty();
                     e = JSON.parse(e);
 
                     if (e.success === true)

@@ -591,7 +591,7 @@ class EsiConnection
         foreach ($assets as $asset)
         {
             // TODO: Nested container items
-            if (preg_match($pattern, $asset->getLocationFlag()) && $asset->getLocationId() == $item->getItemId())
+            if ($asset->getLocationId() == $item->getItemId() && preg_match($pattern, $asset->getLocationFlag()))
             {
                 $price = (int) $this->getMarketPrice($asset->getTypeId()) * $asset->getQuantity();
                 $tree['items'][] = [
