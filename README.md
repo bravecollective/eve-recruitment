@@ -22,4 +22,4 @@ The role `director` allows creation of group ads.
 * To add or remove application states, modify `app/Models/Application.php`. **WARNING**: Do not change existing state
   IDs after deployment, since the keys are used as the ID in the database.
 * To add custom application warnings, edit `app/Models/Application.php`. Any strings appended to the `$warnings` array
-  will be rendered on the application page as warnings.
+  in the `addWarnings()` function will be rendered on the application page as warnings.

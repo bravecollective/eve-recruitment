@@ -507,6 +507,9 @@ class EsiConnection
         $assets = $model->getCharactersCharacterIdAssetsWithHttpInfo($this->char_id, $this->char_id);
         $out = [];
 
+        for ($i = 2; $i <= $assets[2]['X-Pages'][0]; $i++)
+            $assets[0] += $model->getCharactersCharacterIdAssets($this->char_id, $this->char_id, null, $i);
+
         foreach ($assets[0] as $asset)
         {
             if (in_array($asset->getLocationFlag(), self::$stationContentLocationFlags))
