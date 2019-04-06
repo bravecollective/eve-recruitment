@@ -39,6 +39,14 @@ class Role extends Model
 
         $role->name = $new_name . ' recruiter';
         $role->save();
+
+        $role = Role::where('name', $old_name . ' manager')->first();
+
+        if (!$role)
+            return;
+
+        $role->name = $new_name . ' manager';
+        $role->save();
     }
 
     /**
@@ -73,7 +81,7 @@ class Role extends Model
      *
      * @param RecruitmentAd $ad_id The ad to create a role for
      */
-    public static function createRoleForAd($ad)
+    public static function createRoleForAd($ad, $type = 'corp')
     {
         $role = Role::where('recruitment_id', $ad->id)->where('slug', 'recruiter')->first();
 
@@ -87,15 +95,17 @@ class Role extends Model
         $role->recruitment_id = $ad->id;
         $role->save();
 
-        $role = Role::where('slug', 'director')->where('name', $ad->group_name . ' director')->first();
+        $slug = ($type == 'group') ? 'manager' : 'director';
+
+        $role = Role::where('slug', $slug)->where('name', $ad->group_name . " $slug")->first();
 
         if (!$role)
             $role = new Role();
 
         $name = ($ad->corp_id === null) ? $ad->group_name : User::where('corporation_id', $ad->corp_id)->first()->corporation_name;
 
-        $role->slug = 'director';
-        $role->name = $name . ' director';
+        $role->slug = $slug;
+        $role->name = $name . " $slug";
         $role->recruitment_id = $ad->id;
         $role->save();
     }

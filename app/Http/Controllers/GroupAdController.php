@@ -252,7 +252,7 @@ class GroupAdController extends Controller
         $ad->allow_listing = $allow_listing;
         $ad->save();
 
-        Role::createRoleForAd($ad);
+        Role::createRoleForAd($ad, 'group');
 
         if ($questions)
         {
