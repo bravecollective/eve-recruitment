@@ -106,10 +106,10 @@ class AccountRole extends Model
         $account_id = Auth::user()->id;
 
         // Get role IDs. Either recruiter or director
-        $role_ids = Role::where('slug', 'director');
+        $role_ids = Role::where('slug', 'LIKE', '%director');
 
         if ($corps === true)
-            $role_ids = $role_ids->orWhere('slug', 'recruiter');
+            $role_ids = $role_ids->orWhere('slug', 'LIKE', '%recruiter');
 
         $role_ids = $role_ids->get()->pluck('id')->toArray();
 
@@ -128,6 +128,7 @@ class AccountRole extends Model
         // 3. Get the corporations
         // TODO: Base this on ID instead of name.
         $ads = [];
+
         foreach ($roles as $role)
         {
             if ($role->name == "director" || $role->name == "recruiter")

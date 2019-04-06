@@ -40,7 +40,7 @@
                 </div>
             </li>
             @endif
-            @role('director')
+            @if(count($corp_ad) > 0)
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="corp_ads_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Corp Ads
@@ -51,6 +51,8 @@
                     @endforeach
                     </div>
                 </li>
+            @endif
+            @role('director')
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="management_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Group Ads
@@ -67,12 +69,9 @@
                     Admin
                 </a>
                 <div class="dropdown-menu" aria-labelledby="admin_dropdown">
-                    <a class="dropdown-item" href="/admin/ads">Global Ad Management</a>
                     <a class="dropdown-item" href="/admin/roles">Global Roles</a>
                     <a class="dropdown-item" href="/admin/roles/auto">Auto Assigned Roles</a>
                     <a class="dropdown-item" href="/admin/coregroups">Known Core Groups</a>
-                    <a class="dropdown-item" href="/group/ads/orphaned">Orphaned Group Ads</a>
-                    <a class="dropdown-item" href="/admin/system">System Configuration</a>
                 </div>
             </li>
             @endrole
