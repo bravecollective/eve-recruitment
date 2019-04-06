@@ -2,7 +2,6 @@
 
 namespace App\Connectors;
 
-use App\Models\EveGroup;
 use Swagger\Client\Eve\ApiException;
 use App\Models\Group;
 use App\Models\Type;
@@ -1366,7 +1365,7 @@ class EsiConnection
         if (!$item)
             return null;
 
-        $group = EveGroup::where('groupID', $item->groupID)->first();
+        $group = Group::where('groupID', $item->groupID)->first();
 
         if (!$group)
             return null;

@@ -6,6 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Group extends Model
 {
-    protected $table = 'eve_group';
+    protected $table = 'invGroups';
     public $timestamps = false;
 }
