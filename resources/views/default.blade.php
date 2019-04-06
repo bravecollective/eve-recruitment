@@ -33,6 +33,10 @@
             <div class="jumbotron text-white">
             @yield('content')
             </div>
+            <footer class="text-white">
+                <small>Copyright &copy; {{ date('Y') }} Brave Collective</small><br />
+                <small>All EVE related materials are property of <a href="https://www.ccpgames.com" target="_blank">CCP Games</a></small>
+            </footer>
         </div>
         <script type="text/javascript">
             function showInfo(msg, timeout = 3000)
