@@ -42,6 +42,16 @@ trait HasPermissionTrait
     }
 
     /**
+     * Check if a user has a role using the SQL LIKE syntax
+     * @param $role
+     * @return mixed
+     */
+    public function hasRoleLike($role)
+    {
+        return $this->roles->contains(Role::where('name', 'LIKE', $role)->first());
+    }
+
+    /**
      * Give an account roles
      *
      * @param mixed ...$roles

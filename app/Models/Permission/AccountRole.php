@@ -2,7 +2,6 @@
 
 namespace App\Models\Permission;
 
-use App\Models\Account;
 use App\Models\Application;
 use App\Models\Permissions\Role;
 use App\Models\RecruitmentAd;
@@ -106,10 +105,10 @@ class AccountRole extends Model
         $account_id = Auth::user()->id;
 
         // Get role IDs. Either recruiter or director
-        $role_ids = Role::where('slug', 'LIKE', '%director');
+        $role_ids = Role::where('slug', 'director');
 
         if ($corps === true)
-            $role_ids = $role_ids->orWhere('slug', 'LIKE', '%recruiter');
+            $role_ids = $role_ids->orWhere('slug', 'recruiter');
 
         $role_ids = $role_ids->get()->pluck('id')->toArray();
 
@@ -147,6 +146,47 @@ class AccountRole extends Model
         return array_unique($ads, SORT_REGULAR);
     }
 
+    public static function getGroupAdsUsercanView()
+    {
+        $account_id = Auth::user()->id;
+
+        // Get role IDs. Either recruiter or director
+        $role_ids = Role::where('slug', 'recruiter')->orWhere('slug', 'manager');
+        $role_ids = $role_ids->get()->pluck('id')->toArray();
+
+        // Get the account roles
+        $account_recruitments = AccountRole::whereIn('role_id', $role_ids)->where('account_id', $account_id)->get();
+
+        if (!$account_recruitments)
+            return null;
+
+        // Get the roles
+        $roles = Role::whereIn('id', $account_recruitments->pluck('role_id')->toArray())->get();
+
+        if (!$roles)
+            return null;
+
+        // 3. Get the corporations
+        $ads = [];
+
+        foreach ($roles as $role)
+        {
+            if ($role->name == "recruiter")
+                continue; // No group associated with this one
+
+            $corp = preg_split("/\s+(?=\S*+$)/", $role->name)[0]; // Split at last space. Everything before 'director' or 'recruiter'
+            $ad = RecruitmentAd::where('group_name', $corp)->first();
+            $ads[] = $ad;
+        }
+
+        $owned_ads = RecruitmentAd::where('created_by', Auth::user()->id)->where('corp_id', null)->get();
+        foreach ($owned_ads as $ad)
+            $ads[] = $ad;
+
+        // array_unique is needed to avoid returning duplicates when the user has both director and recruiter permissions
+        return array_unique($ads, SORT_REGULAR);
+    }
+
     public static function userCanEditAd($type, $id)
     {
         switch ($type)
@@ -161,8 +201,9 @@ class AccountRole extends Model
 
                 $group_ad = RecruitmentAd::where('id', $id)->first();
                 $group_name = $group_ad->group_name;
-                $role_id = Role::where('name', $group_name . ' director')->first()->id;
-                return $group_ad->created_by == Auth::user()->id || AccountRole::where('account_id', Auth::user()->id)->where('role_id', $role_id)->exists();
+                $role_id = Role::where('name', $group_name . ' manager')->first()->id;
+                $role = AccountRole::where('account_id', Auth::user()->id)->where('role_id', $role_id)->first();
+                return ($group_ad->created_by == Auth::user()->id || !!$role);
             default:
                 break;
         }

@@ -33,7 +33,7 @@ class PermissionsController extends Controller
         if (!Auth::user()->hasRole('admin'))
             return redirect('/')->with('error', 'Unauthorized');
 
-        $roles = Role::all();
+        $roles = Role::orderBy('name')->get();
 
         return view('permissions', ['roles' => $roles]);
     }

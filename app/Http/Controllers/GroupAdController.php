@@ -25,7 +25,7 @@ class GroupAdController extends Controller
     {
         $dbAd = RecruitmentAd::find($ad_id);
 
-        if ($dbAd->corporation_id == null && $dbAd->created_by != Auth::user()->id)
+        if ($dbAd->corporation_id == null && !AccountRole::userCanEditAd('group', $dbAd->id))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
         $corp_name = ($dbAd->corporation_id != null) ? User::where('corporation_id', $dbAd->corporation_id)->first()->coropration_name : null;
@@ -53,7 +53,7 @@ class GroupAdController extends Controller
     {
         $dbAd = RecruitmentAd::find($ad_id);
 
-        if ($dbAd->corporation_id == null && $dbAd->created_by != Auth::user()->id)
+        if ($dbAd->corporation_id == null && !AccountRole::userCanEditAd('group', $ad_id))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
         $corp_name = ($dbAd->corporation_id != null) ? User::where('corporation_id', $dbAd->corporation_id)->first()->coropration_name : null;
@@ -78,10 +78,10 @@ class GroupAdController extends Controller
      */
     public function listAds()
     {
-        if (!Auth::user()->hasRole('group admin'))
+        if (!Auth::user()->hasRole('group admin') && !Auth::user()->hasRoleLike('%manager'))
             return redirect('/')->with('error', 'Unauthorized');
 
-        $ads = RecruitmentAd::where('created_by', Auth::user()->id)->where('corp_id', null)->get();
+        $ads = AccountRole::getGroupAdsUsercanView();
 
         return view('group_ads', ['ads' => $ads]);
     }
@@ -93,10 +93,10 @@ class GroupAdController extends Controller
      */
     public function listAdsForPermissions()
     {
-        if (!Auth::user()->hasRole('group admin'))
+        if (!Auth::user()->hasRole('group admin') && !Auth::user()->hasRoleLike('%manager'))
             return redirect('/')->with('error', 'Unauthorized');
 
-        $ads = RecruitmentAd::where('created_by', Auth::user()->id)->where('corp_id', null)->get();
+        $ads = AccountRole::getGroupAdsUsercanView();
 
         return view('group_ads', ['ads' => $ads, 'permissions' => true]);
     }
@@ -114,7 +114,7 @@ class GroupAdController extends Controller
         if (!$ad || $ad->corp_id != null)
             return redirect('/')->with('error', 'Invalid ad ID');
 
-        if (!Auth::user()->hasRole('group admin') || $ad->created_by != Auth::user()->id)
+        if (!AccountRole::userCanEditAd('group', $ad->id))
             return redirect('/')->with('error', 'Unauthorized');
 
         return view('group_permissions', [
@@ -132,7 +132,7 @@ class GroupAdController extends Controller
         if (!$ad)
             die(json_encode(['success' => false, 'message' => 'Invalid ad ID']));
 
-        if (!Auth::user()->hasRole('group admin') || $ad->created_by != Auth::user()->id)
+        if (!AccountRole::userCanEditAd('group', $ad->id))
             return redirect('/')->with('error', 'Unauthorized');
 
         (new PermissionsController())->saveUserRoles();
@@ -150,7 +150,7 @@ class GroupAdController extends Controller
         if (!$ad)
             die(json_encode(['success' => false, 'message' => 'Invalid ad ID']));
 
-        if (!Auth::user()->hasRole('group admin') || $ad->created_by != Auth::user()->id)
+        if (!AccountRole::userCanEditAd('group', $ad_id))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
         $user_id = Input::get('user_id');
@@ -183,16 +183,13 @@ class GroupAdController extends Controller
      */
     public function manageAd($id)
     {
-        if (!Auth::user()->hasRole('group admin'))
+        if (!AccountRole::userCanEditAd('group', $id))
             return redirect('/')->with('error', 'Unauthorized');
 
         $ad = RecruitmentAd::find($id);
 
         if ($ad == null && $id > 0)
             return redirect('/group/ads')->with('error', 'Invalid ad ID');
-
-        if ($ad != null && $ad->created_by !== Auth::user()->id)
-            return redirect('/')->with('error', 'Unauthorized');
 
         $ad = ($ad == null) ? new RecruitmentAd() : $ad;
 
@@ -210,12 +207,15 @@ class GroupAdController extends Controller
      */
     public function saveAd(Request $r)
     {
-        if (!Auth::user()->hasRole('group admin'))
+        $ad_id = $r->input('ad_id');
+
+        if (!$ad_id && !Auth::user()->hasRole('group admin'))
+            return redirect('/')->with('error', 'Unauthorized');
+        else if(!AccountRole::userCanEditAd('group', $ad_id))
             return redirect('/')->with('error', 'Unauthorized');
 
         $slug = $r->input('slug');
         $text = $r->input('text');
-        $ad_id = $r->input('ad_id');
         $questions = $r->input('questions');
         $requirements = $r->input('requirements');
         $allow_listing = ($r->input('allow_listing') === null) ? 0 : 1;

@@ -52,7 +52,7 @@
                     </div>
                 </li>
             @endif
-            @role('group admin')
+            @if(Auth::user()->hasRole('group admin') || Auth::user()->hasRoleLike('%manager'))
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="management_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Group Ads
@@ -62,7 +62,7 @@
                     <a class="dropdown-item" href="/group/permissions">Group Permissions</a>
                 </div>
             </li>
-            @endrole
+            @endif
             @role('admin')
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="admin_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
