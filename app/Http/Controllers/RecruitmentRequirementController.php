@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Permission\AccountRole;
 use App\Models\RecruitmentRequirement;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,9 +14,9 @@ class RecruitmentRequirementController extends Controller
      *
      * @throws \Throwable
      */
-    public function getTemplate()
+    public function getTemplate($type, $ad_id)
     {
-        if (!Auth::user()->hasRole('director') || !Auth::user()->hasRole('recruiter'))
+        if (!AccountRole::userCanEditAd($type, $ad_id))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
         $requirements = RecruitmentRequirement::getPossibleRequirements(0);

@@ -24,7 +24,7 @@ Route::post('/api/character/search', 'SearchController@characterSearch');
 Route::post('/api/character/roles', 'PermissionsController@loadUserRoles');
 Route::post('/api/character/roles/save', 'PermissionsController@saveUserRoles');
 Route::post('/api/admin/roles/auto/save', 'PermissionsController@saveAutoRoles');
-Route::get('/api/requirements/template', 'RecruitmentRequirementController@getTemplate');
+Route::get('/api/{type}/{id}/requirements/template', 'RecruitmentRequirementController@getTemplate');
 Route::get('/api/auto_roles/template', 'PermissionsController@getAutoRoleTemplate');
 Route::post('/api/auto_roles/delete', 'PermissionsController@deleteAutoRole');
 Route::delete('/api/recruitments/{ad_id}/questions/{question_id}', 'GroupAdController@deleteQuestion');

@@ -1,10 +1,8 @@
 @extends('default')
 @section('content')
     <h1>{{ $title }} Recruitment Ad</h1>
-    @if($title == 'Group')
     <form onsubmit="return saveAd(this);" id="corpAdForm">
-    @else
-    <form onsubmit="return saveAd(this);" id="corpAdForm">
+    @if($title != 'Group')
         <input type="hidden" id="corpId" value="{{ $corp_id }}" />
     @endif
         <input type="hidden" value="{{ $ad->id }}" id="ad_id" name="ad_id" />
@@ -73,12 +71,18 @@
         let counter = $(".questions").children().length + 1;
         let requirement = null;
         let newQuestionCounter = -1;
+        let ad_id = $("#ad_id").val();
 
-        $.get('/api/requirements/template', (e) => requirement = '<div class="input-group" style="margin-bottom: 1em;">' + e + '</div>');
+    @if($title != 'Group')
+        $.get('/api/corp/' + {{ $corp_id }} + '/requirements/template', (e) => requirement = '<div class="input-group" style="margin-bottom: 1em;">' + e + '</div>');
+    @elseif($ad->id)
+        $.get('/api/group/' + {{ $ad->id }} + '/requirements/template', (e) => requirement = '<div class="input-group" style="margin-bottom: 1em;">' + e + '</div>');
+    @else
+        $.get('/api/group/0/requirements/template', (e) => requirement = '<div class="input-group" style="margin-bottom: 1em;">' + e + '</div>');
+    @endif
 
         function deleteRequirement(requirement_id)
         {
-            let ad_id = $("#ad_id").val();
             let url = '/api/recruitments/'+ ad_id +'/requirements/' + requirement_id;
 
             if (!confirm("Are you sure you wish to delete this requirement?"))

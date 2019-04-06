@@ -126,7 +126,6 @@ class AccountRole extends Model
             return null;
 
         // 3. Get the corporations
-        // TODO: Base this on ID instead of name.
         $ads = [];
 
         foreach ($roles as $role)
@@ -146,6 +145,29 @@ class AccountRole extends Model
 
         // array_unique is needed to avoid returning duplicates when the user has both director and recruiter permissions
         return array_unique($ads, SORT_REGULAR);
+    }
+
+    public static function userCanEditAd($type, $id)
+    {
+        switch ($type)
+        {
+            case 'corp':
+                $corp_name = User::where('corporation_id', $id)->first()->corporation_name;
+                $role_id = Role::where('name', $corp_name . ' director')->first()->id;
+                return AccountRole::where('account_id', Auth::user()->id)->where('role_id', $role_id)->exists();
+            case 'group':
+                if ($id == 0)
+                    return Auth::user()->hasRole('director');
+
+                $group_ad = RecruitmentAd::where('id', $id)->first();
+                $group_name = $group_ad->group_name;
+                $role_id = Role::where('name', $group_name . ' director')->first()->id;
+                return $group_ad->created_by == Auth::user()->id || AccountRole::where('account_id', Auth::user()->id)->where('role_id', $role_id)->exists();
+            default:
+                break;
+        }
+
+        return false;
     }
 
     /**
