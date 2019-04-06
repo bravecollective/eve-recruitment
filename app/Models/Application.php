@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Connectors\EsiConnection;
-use App\Models\FormResponse;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -50,7 +49,7 @@ class Application extends Model
         if (!array_key_exists($state, self::$state_names))
             return "UNKNOWN STATE";
 
-        if (!Auth::user()->hasRole('recruiter') && !Auth::user()->hasRole('director') && array_key_exists($state, self::$state_names_overrides))
+        if (!Auth::user()->hasRole('recruiter') && !Auth::user()->hasRole('group admin') && array_key_exists($state, self::$state_names_overrides))
             return self::$state_names_overrides[$state];
 
         return self::$state_names[$state];

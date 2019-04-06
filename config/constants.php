@@ -5,7 +5,7 @@ return [
     // These are seeded through artisan
    'roles' => [
         'recruiter',
-        'director',
+        'group admin',
         'admin',
    ]
 ];

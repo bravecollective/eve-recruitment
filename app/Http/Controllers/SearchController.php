@@ -19,8 +19,6 @@ class SearchController extends Controller
     {
         if (Auth::user()->hasRole('admin'))
             $scope = 'global';
-        else if (Auth::user()->hasRole('director'))
-            $scope = 'corp';
         else
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 

@@ -78,7 +78,7 @@ class GroupAdController extends Controller
      */
     public function listAds()
     {
-        if (!Auth::user()->hasRole('director'))
+        if (!Auth::user()->hasRole('group admin'))
             return redirect('/')->with('error', 'Unauthorized');
 
         $ads = RecruitmentAd::where('created_by', Auth::user()->id)->where('corp_id', null)->get();
@@ -93,7 +93,7 @@ class GroupAdController extends Controller
      */
     public function listAdsForPermissions()
     {
-        if (!Auth::user()->hasRole('director'))
+        if (!Auth::user()->hasRole('group admin'))
             return redirect('/')->with('error', 'Unauthorized');
 
         $ads = RecruitmentAd::where('created_by', Auth::user()->id)->where('corp_id', null)->get();
@@ -114,7 +114,7 @@ class GroupAdController extends Controller
         if (!$ad || $ad->corp_id != null)
             return redirect('/')->with('error', 'Invalid ad ID');
 
-        if (!Auth::user()->hasRole('director') || $ad->created_by != Auth::user()->id)
+        if (!Auth::user()->hasRole('group admin') || $ad->created_by != Auth::user()->id)
             return redirect('/')->with('error', 'Unauthorized');
 
         return view('group_permissions', [
@@ -132,7 +132,7 @@ class GroupAdController extends Controller
         if (!$ad)
             die(json_encode(['success' => false, 'message' => 'Invalid ad ID']));
 
-        if (!Auth::user()->hasRole('director') || $ad->created_by != Auth::user()->id)
+        if (!Auth::user()->hasRole('group admin') || $ad->created_by != Auth::user()->id)
             return redirect('/')->with('error', 'Unauthorized');
 
         (new PermissionsController())->saveUserRoles();
@@ -150,7 +150,7 @@ class GroupAdController extends Controller
         if (!$ad)
             die(json_encode(['success' => false, 'message' => 'Invalid ad ID']));
 
-        if (!Auth::user()->hasRole('director') || $ad->created_by != Auth::user()->id)
+        if (!Auth::user()->hasRole('group admin') || $ad->created_by != Auth::user()->id)
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
         $user_id = Input::get('user_id');
@@ -183,7 +183,7 @@ class GroupAdController extends Controller
      */
     public function manageAd($id)
     {
-        if (!Auth::user()->hasRole('director'))
+        if (!Auth::user()->hasRole('group admin'))
             return redirect('/')->with('error', 'Unauthorized');
 
         $ad = RecruitmentAd::find($id);
@@ -210,7 +210,7 @@ class GroupAdController extends Controller
      */
     public function saveAd(Request $r)
     {
-        if (!Auth::user()->hasRole('director'))
+        if (!Auth::user()->hasRole('group admin'))
             return redirect('/')->with('error', 'Unauthorized');
 
         $slug = $r->input('slug');

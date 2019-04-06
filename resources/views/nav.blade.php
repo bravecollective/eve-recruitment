@@ -52,7 +52,7 @@
                     </div>
                 </li>
             @endif
-            @role('director')
+            @role('group admin')
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="management_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Group Ads

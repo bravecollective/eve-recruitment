@@ -130,7 +130,7 @@ class AccountRole extends Model
 
         foreach ($roles as $role)
         {
-            if ($role->name == "director" || $role->name == "recruiter")
+            if ($role->name == "recruiter")
                 continue; // No corp associated with this one
 
             $corp = preg_split("/\s+(?=\S*+$)/", $role->name)[0]; // Split at last space. Everything before 'director' or 'recruiter'
@@ -157,7 +157,7 @@ class AccountRole extends Model
                 return AccountRole::where('account_id', Auth::user()->id)->where('role_id', $role_id)->exists();
             case 'group':
                 if ($id == 0)
-                    return Auth::user()->hasRole('director');
+                    return Auth::user()->hasRole('group admin');
 
                 $group_ad = RecruitmentAd::where('id', $id)->first();
                 $group_name = $group_ad->group_name;
