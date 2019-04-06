@@ -12,6 +12,7 @@
         <link rel="stylesheet" href="/css/font-awesome.min.css">
         <link rel="stylesheet" href="/css/bootstrap.min.css" />
         <link rel="stylesheet" href="/css/app.css" />
+        <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico" />
         @yield('styles')
     </head>
     <body>
