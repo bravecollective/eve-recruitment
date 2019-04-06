@@ -57,7 +57,7 @@ class AuthController extends Controller
         // Insert/update core groups in database
         AccountGroup::updateGroupsForUser($main->id);
 
-        $dbAccount = User::where('character_id', $main->id)->first()->account;
+        $dbAccount = Account::where('main_user_id', $main->id)->first();
 
         // Delete not persistent roles
         AccountRole::deleteNotPersistentRoles($dbAccount->id);
@@ -70,6 +70,6 @@ class AuthController extends Controller
 
         Auth::login($dbAccount);
 
-        return redirect('/');
+        return redirect()->intended('/');
     }
 }

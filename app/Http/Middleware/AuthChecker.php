@@ -23,7 +23,7 @@ class AuthChecker
     public function handle($request, Closure $next)
     {
         if (!Auth::check() && !in_array($request->route()->getName(), $this->publicRoutes))
-            return redirect('/');
+            return redirect()->guest('/login');
 
         return $next($request);
     }
