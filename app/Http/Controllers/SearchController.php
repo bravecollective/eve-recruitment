@@ -17,23 +17,12 @@ class SearchController extends Controller
      */
     public function characterSearch(Request $r)
     {
-        if (Auth::user()->hasRole('admin'))
-            $scope = 'global';
-        else
+        $user = Auth::user();
+
+        if (!$user->hasRole('admin') && !$user->hasRoleLike('%manager'))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
         $res = User::where('name', 'like', '%' . Input::get('search') . '%');
-
-        switch ($scope)
-        {
-            case 'corp':
-                $res->where('corporation_id', Auth::user()->getMainUser()->corporation_id);
-                break;
-
-            case 'global':
-            default:
-                break;
-        }
 
         die(json_encode(['success' => true, 'message' => $res->get()]));
     }

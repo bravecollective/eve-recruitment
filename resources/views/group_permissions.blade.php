@@ -98,6 +98,8 @@
                     $("#" + f.role_id).attr('checked', true);
                     if (f.set === 1)
                         $("#persistent-" + f.role_id).attr('checked', true);
+                    else
+                        $("#persistent-" + f.role_id).attr('checked', false);
                 });
                 list.hide();
                 roles.show();

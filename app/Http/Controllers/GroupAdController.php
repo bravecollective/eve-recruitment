@@ -133,9 +133,9 @@ class GroupAdController extends Controller
             die(json_encode(['success' => false, 'message' => 'Invalid ad ID']));
 
         if (!AccountRole::userCanEditAd('group', $ad->id))
-            return redirect('/')->with('error', 'Unauthorized');
+            die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
-        (new PermissionsController())->saveUserRoles();
+        (new PermissionsController())->saveUserRoles($ad->group_name . ' manager');
         die(json_encode(['success' => true, 'message' => 'Roles updated']));
     }
 
@@ -208,6 +208,7 @@ class GroupAdController extends Controller
     public function saveAd(Request $r)
     {
         $ad_id = $r->input('ad_id');
+        $new = false;
 
         if (!$ad_id && !Auth::user()->hasRole('group admin'))
             return redirect('/')->with('error', 'Unauthorized');
@@ -235,6 +236,7 @@ class GroupAdController extends Controller
         if (!$ad_id) {
             $ad = new RecruitmentAd();
             $ad->created_by = Auth::user()->id;
+            $new = true;
         } else
             $ad = RecruitmentAd::find($ad_id);
 
@@ -253,6 +255,9 @@ class GroupAdController extends Controller
         $ad->save();
 
         Role::createRoleForAd($ad, 'group');
+
+        if ($new)
+            Auth::user()->giveRoles($name . ' manager', $name . ' recruiter');
 
         if ($questions)
         {

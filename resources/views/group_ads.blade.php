@@ -12,6 +12,7 @@
         @endforeach
         </ul>
     </div>
-
+@role('group admin')
     <a href="/group/ad/create"><button type="button" class="btn btn-primary">Create Ad</button></a>
+@endrole
 @endsection
