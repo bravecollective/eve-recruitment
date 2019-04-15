@@ -2,6 +2,7 @@
 
 namespace App\Connectors;
 
+use GuzzleHttp\Client;
 use Swagger\Client\Eve\ApiException;
 use App\Models\Group;
 use App\Models\Type;
@@ -51,6 +52,13 @@ class EsiConnection
      */
     private $eseye;
 
+    /**
+     * Guzzle client
+     *
+     * @var Client
+     */
+    private $client;
+
     private static $stationContentLocationFlags = [
         "AssetSafety",
         "Deliveries",
@@ -77,6 +85,8 @@ class EsiConnection
         $this->eseye = new Eseye();
         $this->config = $config;
         $this->char_id = $char_id;
+
+        $this->client = new Client(['timeout' => 0]);
     }
 
     /**
@@ -86,7 +96,7 @@ class EsiConnection
      */
     public function getWalletBalance()
     {
-        $model = new WalletApi(null, $this->config);
+        $model = new WalletApi($this->client, $this->config);
 
         try {
             $balance = number_format($model->getCharactersCharacterIdWallet($this->char_id, $this->char_id));
@@ -140,35 +150,26 @@ class EsiConnection
     public function getCharacterInfo()
     {
         try {
-            $locationModel = new LocationApi(null, $this->config);
-            $locationAsync = $locationModel->getCharactersCharacterIdLocationAsync($this->char_id, $this->char_id);
-            $location = null;
+            $locationModel = new LocationApi($this->client, $this->config);
+            $location = $locationModel->getCharactersCharacterIdLocation($this->char_id, $this->char_id);
 
-            $locationAsync->then(function ($r) use (&$location) {
-                $location = $r;
-
-                if ($location->getStructureId() == null && $location->getStationId() == null)
-                    $location->structure_name = "In Space (" . $this->getSystemName($location->getSolarSystemId()) . ")";
-                else if ($location->getStructureId() != null)
-                    $location->structure_name = $this->getStructureName($location->getStructureId());
-                else
-                    $location->structure_name = $this->getStationName($location->getStationId());
-            });
-
-            $skillsModel = new SkillsApi(null, $this->config);
+            $skillsModel = new SkillsApi($this->client, $this->config);
             $attributes = $skillsModel->getCharactersCharacterIdAttributes($this->char_id, $this->char_id);
+
+            if ($location->getStructureId() == null && $location->getStationId() == null)
+                $location->structure_name = "In Space (" . $this->getSystemName($location->getSolarSystemId()) . ")";
+            else if ($location->getStructureId() != null)
+                $location->structure_name = $this->getStructureName($location->getStructureId());
+            else
+                $location->structure_name = $this->getStationName($location->getStationId());
 
             $ship = $locationModel->getCharactersCharacterIdShip($this->char_id, $this->char_id);
         } catch(\Exception $e) {
             $location = $ship = $attributes = null;
         }
-
         $public_data = $this->eseye->invoke('get', '/characters/{character_id}/', [
             "character_id" => $this->char_id
         ]);
-
-        $locationAsync->wait();
-
         return [
             'location' => $location,
             'birthday' => explode('T', $public_data->birthday)[0],
@@ -194,7 +195,7 @@ class EsiConnection
      */
     public function getCloneInfo()
     {
-        $model = new ClonesApi(null, $this->config);
+        $model = new ClonesApi($this->client, $this->config);
 
         $implants = $model->getCharactersCharacterIdImplants($this->char_id, $this->char_id);
         foreach ($implants as $idx => $implant)
@@ -341,7 +342,7 @@ class EsiConnection
     {
         $mailCacheKey = "mail_{$this->char_id}";
         $mailBodyCacheKey = "mail_body_";
-        $model = new MailApi(null, $this->config);
+        $model = new MailApi($this->client, $this->config);
 
         if (Cache::has($mailCacheKey))
             $mail = Cache::get($mailCacheKey);
@@ -422,7 +423,7 @@ class EsiConnection
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
 
-        $model = new SkillsApi(null, $this->config);
+        $model = new SkillsApi($this->client, $this->config);
         $skills = $model->getCharactersCharacterIdSkillsWithHttpInfo($this->char_id, $this->char_id);
         $unprocessed_skills = $skills[0]->getSkills();
         $out = [];
@@ -476,7 +477,7 @@ class EsiConnection
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
 
-        $model = new SkillsApi(null, $this->config);
+        $model = new SkillsApi($this->client, $this->config);
         $queue = $model->getCharactersCharacterIdSkillqueueWithHttpInfo($this->char_id, $this->char_id);
         $out = [];
 
@@ -510,7 +511,7 @@ class EsiConnection
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
 
-        $model = new AssetsApi(null, $this->config);
+        $model = new AssetsApi($this->client, $this->config);
         $assets = $model->getCharactersCharacterIdAssetsWithHttpInfo($this->char_id, $this->char_id);
         $out = [];
 
@@ -585,7 +586,7 @@ class EsiConnection
      */
     private function constructAssetTreeForItem($item, &$assets)
     {
-        $model = new AssetsApi(null, $this->config);
+        $model = new AssetsApi($this->client, $this->config);
 
         // These locations are part of a ship, container, etc
         $shipContentLocationFlags = [
@@ -688,7 +689,7 @@ class EsiConnection
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
 
-        $model = new WalletApi(null, $this->config);
+        $model = new WalletApi($this->client, $this->config);
         $res = $model->getCharactersCharacterIdWalletTransactionsWithHttpInfo($this->char_id, $this->char_id);
         $out = [];
 
@@ -712,9 +713,6 @@ class EsiConnection
      * Get a character's market orders
      *
      * @return array|mixed
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
      * @throws \Swagger\Client\Eve\ApiException
      */
     public function getMarketOrders()
@@ -724,7 +722,7 @@ class EsiConnection
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
 
-        $model = new MarketApi(null, $this->config);
+        $model = new MarketApi($this->client, $this->config);
         $res = $model->getCharactersCharacterIdOrdersWithHttpInfo($this->char_id, $this->char_id);
         $out = [];
 
@@ -762,7 +760,7 @@ class EsiConnection
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
 
-        $model = new CharacterApi(null, $this->config);
+        $model = new CharacterApi($this->client, $this->config);
         $notifications = $model->getCharactersCharacterIdNotificationsWithHttpInfo($this->char_id, $this->char_id);
         $out = [];
 
@@ -814,7 +812,7 @@ class EsiConnection
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
 
-        $model = new ContractsApi(null, $this->config);
+        $model = new ContractsApi($this->client, $this->config);
         $contracts = $model->getCharactersCharacterIdContractsWithHttpInfo($this->char_id, $this->char_id);
         $out = [];
 
@@ -943,7 +941,7 @@ class EsiConnection
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
 
-        $model = new WalletApi(null, $this->config);
+        $model = new WalletApi($this->client, $this->config);
         $journal = $model->getCharactersCharacterIdWalletJournalWithHttpInfo($this->char_id, $this->char_id, null, $page);
 
         for ($i = 2; $i <= $journal[2]['X-Pages'][0]; $i++)
@@ -979,7 +977,7 @@ class EsiConnection
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
 
-        $model = new SkillsApi(null, $this->config);
+        $model = new SkillsApi($this->client, $this->config);
         try {
             $sp = $model->getCharactersCharacterIdSkillsWithHttpInfo($this->char_id, $this->char_id);
         } catch(ApiException $e) {
@@ -1091,7 +1089,7 @@ class EsiConnection
      */
     public function getContacts()
     {
-        $model = new ContactsApi(null, $this->config);
+        $model = new ContactsApi($this->client, $this->config);
         $contacts = $model->getCharactersCharacterIdContacts($this->char_id, $this->char_id);
 
         foreach ($contacts as $contact)
@@ -1141,17 +1139,15 @@ class EsiConnection
     {
         $cache_key = "mailing_list_";
 
-        if (Cache::has($cache_key))
-            return Cache::get($cache_key);
+        if (Cache::has($cache_key . $mailing_list_id))
+            return Cache::get($cache_key . $mailing_list_id);
 
-        $model = new MailApi(null, $this->config);
+        $model = new MailApi($this->client, $this->config);
         $lists = $model->getCharactersCharacterIdMailListsWithHttpInfo($this->char_id, $this->char_id);
 
         foreach ($lists[0] as $list)
-        {
             if (!Cache::has($cache_key . $list->getMailingListId()))
                 Cache::add($cache_key . $list->getMailingListId(), $list->getName(), $this->getCacheExpirationTime($lists));
-        }
 
         return Cache::get($cache_key . $mailing_list_id);
     }
@@ -1283,7 +1279,7 @@ class EsiConnection
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
 
-        $model = new UniverseApi(null, $this->config);
+        $model = new UniverseApi($this->client, $this->config);
         $res = $model->getUniverseStructuresStructureId($structure_id, $this->char_id)->getName();
 
         Cache::add($cache_key, $res, env('CACHE_TIME', 3264));
