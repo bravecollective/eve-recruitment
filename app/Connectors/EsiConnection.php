@@ -141,17 +141,22 @@ class EsiConnection
     {
         try {
             $locationModel = new LocationApi(null, $this->config);
-            $location = $locationModel->getCharactersCharacterIdLocation($this->char_id, $this->char_id);
+            $locationAsync = $locationModel->getCharactersCharacterIdLocationAsync($this->char_id, $this->char_id);
+            $location = null;
+
+            $locationAsync->then(function ($r) use (&$location) {
+                $location = $r;
+
+                if ($location->getStructureId() == null && $location->getStationId() == null)
+                    $location->structure_name = "In Space (" . $this->getSystemName($location->getSolarSystemId()) . ")";
+                else if ($location->getStructureId() != null)
+                    $location->structure_name = $this->getStructureName($location->getStructureId());
+                else
+                    $location->structure_name = $this->getStationName($location->getStationId());
+            });
 
             $skillsModel = new SkillsApi(null, $this->config);
             $attributes = $skillsModel->getCharactersCharacterIdAttributes($this->char_id, $this->char_id);
-
-            if ($location->getStructureId() == null && $location->getStationId() == null)
-                $location->structure_name = "In Space (" . $this->getSystemName($location->getSolarSystemId()) . ")";
-            else if ($location->getStructureId() != null)
-                $location->structure_name = $this->getStructureName($location->getStructureId());
-            else
-                $location->structure_name = $this->getStationName($location->getStationId());
 
             $ship = $locationModel->getCharactersCharacterIdShip($this->char_id, $this->char_id);
         } catch(\Exception $e) {
@@ -161,6 +166,8 @@ class EsiConnection
         $public_data = $this->eseye->invoke('get', '/characters/{character_id}/', [
             "character_id" => $this->char_id
         ]);
+
+        $locationAsync->wait();
 
         return [
             'location' => $location,
@@ -498,6 +505,7 @@ class EsiConnection
     public function getAssets()
     {
         $cache_key = "assets_{$this->char_id}";
+        $names_to_fetch = [];
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
@@ -514,6 +522,7 @@ class EsiConnection
             if (in_array($asset->getLocationFlag(), self::$stationContentLocationFlags))
             {
                 $location = $this->getLocationName($asset->getLocationId());
+                $names_to_fetch[] = $asset->getItemId();
 
                 if (!array_key_exists($location, $out))
                     $out[$location] = [
@@ -533,9 +542,35 @@ class EsiConnection
             $out[$location]['value'] = number_format($location_price);
         }
 
+        $names = $model->postCharactersCharacterIdAssetsNames($this->char_id, json_encode($names_to_fetch), $this->char_id);
+
+        foreach ($out as &$items)
+            foreach ($items['items'] as &$item)
+                $item['item_name'] = $this->getAssetNameFromArray($names, $item['id']);
+
         Cache::add($cache_key, $out, $this->getCacheExpirationTime($assets));
 
         return $out;
+    }
+
+    /**
+     * Get an asset name from a nested array
+     *
+     * @param $items
+     * @param $item_id
+     * @return string
+     */
+    private function getAssetNameFromArray($items, $item_id)
+    {
+        foreach ($items as $key => $item)
+            if ($item->getItemId() == $item_id)
+            {
+                $ret = $item->getName();
+                unset($items[$key]);
+                return $ret;
+            }
+
+        return 'None';
     }
 
     /**
@@ -548,7 +583,7 @@ class EsiConnection
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
      * @throws \Seat\Eseye\Exceptions\UriDataMissingException
      */
-    private function constructAssetTreeForItem($item, $assets)
+    private function constructAssetTreeForItem($item, &$assets)
     {
         $model = new AssetsApi(null, $this->config);
 
@@ -574,7 +609,6 @@ class EsiConnection
             "DroneBay"
         ];
         $pattern = "/(" . implode('|', $shipContentLocationFlags) .")/";
-        $name = $model->postCharactersCharacterIdAssetsNames($this->char_id, json_encode([$item->getItemId()]), $this->char_id);
 
         $tree = [];
         $tree['name'] = $this->getTypeName($item->getTypeId());
@@ -585,9 +619,8 @@ class EsiConnection
         $tree['price'] = number_format((int) $this->getMarketPrice($item->getTypeId()) * $item->getQuantity(), 0);
         $tree['total_price'] = $this->getMarketPrice($item->getTypeId()) * $item->getQuantity();
         $tree['items'] = [];
-        $tree['item_name'] = $name[0]->getName();
 
-        foreach ($assets as $asset)
+        foreach ($assets as $idx => $asset)
         {
             // TODO: Nested container items
             if ($asset->getLocationId() == $item->getItemId() && preg_match($pattern, $asset->getLocationFlag()))
@@ -602,6 +635,7 @@ class EsiConnection
                 ];
 
                 $tree['total_price'] += $price;
+                unset($assets[$idx]);
             }
         }
 
