@@ -21,7 +21,7 @@
                                 <td>{{ $notification['timestamp'] }}</td>
                                 <td>{{ $notification['sender'] }}</td>
                                 <td>{{ $notification['type'] }}</td>
-                                <td>{{ $notification['variables'] }}</td>
+                                <td>{!! nl2br(e($notification['variables'])) !!}</td>
                             </tr>
                         @endforeach
                         </tbody>

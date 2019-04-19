@@ -21,6 +21,7 @@ use Swagger\Client\Eve\Api\SkillsApi;
 use Swagger\Client\Eve\Api\UniverseApi;
 use Swagger\Client\Eve\Api\WalletApi;
 use Swagger\Client\Eve\Configuration;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Handles the connection between the recruitment site and core
@@ -783,10 +784,12 @@ class EsiConnection
                     break;
             }
 
+            //dd(Yaml::dump(Yaml::parse($notification->getText())));
+
             $out[] = [
                 'sender' => $name,
                 'type' => $notification->getType(),
-                'variables' => $notification->getText(),
+                'variables' => Yaml::dump(Yaml::parse($notification->getText())),
                 'timestamp' => $notification->getTimestamp()->format('Y-m-d H:i')
             ];
         }
