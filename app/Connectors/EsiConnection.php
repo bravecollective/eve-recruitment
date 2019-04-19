@@ -1137,19 +1137,22 @@ class EsiConnection
      */
     public function getMailingListName($mailing_list_id)
     {
-        $cache_key = "mailing_list_";
+        $cache_key_base = "mailing_list_";
+        $cache_key = "mailing_list_$mailing_list_id";
 
-        if (Cache::has($cache_key . $mailing_list_id))
-            return Cache::get($cache_key . $mailing_list_id);
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
 
         $model = new MailApi($this->client, $this->config);
         $lists = $model->getCharactersCharacterIdMailListsWithHttpInfo($this->char_id, $this->char_id);
 
         foreach ($lists[0] as $list)
-            if (!Cache::has($cache_key . $list->getMailingListId()))
-                Cache::add($cache_key . $list->getMailingListId(), $list->getName(), $this->getCacheExpirationTime($lists));
+        {
+            if (!Cache::has($cache_key_base . $list->getMailingListId()))
+                Cache::add($cache_key_base . $list->getMailingListId(), $list->getName(), $this->getCacheExpirationTime($lists));
+        }
 
-        return Cache::get($cache_key . $mailing_list_id);
+        return Cache::get($cache_key);
     }
 
     /**

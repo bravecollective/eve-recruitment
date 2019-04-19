@@ -173,7 +173,7 @@
                 },
                 error: function(e) {
                     res.empty();
-                    errors.append('<div class="row justify-content-center">Loading of ' + name + ' failed: ' + e.statusText + '</div>');
+                    errors.append('<div class="row justify-content-center">Loading of ' + name + ' failed: ' + e.responseJSON.message + '</div>');
                     res.addClass('fa-times');
                 }
             });
