@@ -1,5 +1,5 @@
 <div class="row">
-    <div class="col-4">
+    <div class="col-12 col-xl-4">
         <div class="card bg-dark text-white">
             <div class="card-body">
                 <div class="card-header">
@@ -64,7 +64,7 @@
             </div>
         </div>
     </div>
-    <div class="col-8">
+    <div class="col-12 col-xl-8">
         <div class="card bg-dark text-white">
             <div class="card-body">
                 <div class="card-header">

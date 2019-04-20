@@ -3,12 +3,12 @@
     <h1>Global Roles Manager</h1>
     <hr class="my-4">
     <div class="row">
-        <div class="col-lg-4 form-group">
+        <div class="col-xl-4 form-group">
             <h2><label for="search">Character Search</label></h2>
             <input type="text" class="form-control" id="search" name="search" placeholder="Search..." onkeyup="search(this);" />
             <ul class="list-group search-result"></ul>
         </div>
-        <div class="col-lg-2 form-group">
+        <div class="col-xl-2 col-12 form-group">
             <h2>Roles</h2>
             <input type="hidden" id="character_id" value="" />
         @foreach($roles as $role)

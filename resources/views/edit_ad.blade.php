@@ -24,7 +24,7 @@
         </div>
         <div class="form-group">
             <div class="row">
-                <div class="col-4">
+                <div class="col-6 col-xl-4">
                     <label>Form Questions</label>
                     <div class="questions">
                         @foreach($questions as $question)
@@ -38,7 +38,7 @@
                     </div>
                     <button type="button" class="btn btn-success" onClick="addQuestion();"><span class="fa fa-plus"></span></button>
                 </div>
-                <div class="col-4">
+                <div class="col-6 col-xl-4">
                     <label>Application Requirements</label>
                     <div class="requirements">
                         @foreach($requirements as $requirement)

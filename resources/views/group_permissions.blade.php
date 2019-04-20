@@ -2,7 +2,7 @@
 @section('content')
 <h1>{{ $ad->group_name }} Permissions</h1>
 <div class="row">
-    <div class="col-4">
+    <div class="col-12 col-md-6 col-xl-4">
         <h2>Permissions</h2>
         <div class="row">
             <div class="col-10 form-group">
@@ -28,7 +28,7 @@
             <button type="button" class="btn btn-primary" onclick="saveRoles();">Save</button>
         </div>
     </div>
-    <div class="col-4">
+    <div class="col-12 col-md-6 col-xl-4">
         <div class="row">
             <h2>{{ $ad->group_name }} Recruiters</h2>
         </div>

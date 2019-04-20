@@ -1,5 +1,5 @@
 <div class="row">
-    <div class="col-7 card-columns">
+    <div class="col-12 col-lg-7 card-columns">
         @foreach($skills as $category => $skill)
         @php($escaped_cat = str_replace(' ', '-', $category))
         <div class="accordion" id="{{ $escaped_cat }}">
@@ -41,7 +41,7 @@
         </div>
         @endforeach
     </div>
-    <div class="col-3">
+    <div class="col-12 col-lg-3">
         <div class="card bg-dark text-white">
             <div class="card-body">
                 <div class="card-header">

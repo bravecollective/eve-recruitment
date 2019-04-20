@@ -4,7 +4,7 @@
 @include('parts/application/character_header', ['character' => $character])
 <div class="row justify-content-center">
 @if(isset($application))
-    <div class="col-2">
+    <div class="col-12 col-lg-3 col-md-5">
         <select style="width: 100%;" class="custom-select" style="width: 15%; margin-top: 1em;" autocomplete="off" onchange="updateStatus(this);">
             @foreach($states as $id => $state)
                 @if($application->status == $id)
