@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Exception;
+use Http\Client\Exception\HttpException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 
 class Handler extends ExceptionHandler
@@ -47,5 +48,14 @@ class Handler extends ExceptionHandler
     public function render($request, Exception $exception)
     {
         return parent::render($request, $exception);
+    }
+
+    protected function renderHttpException(\Symfony\Component\HttpKernel\Exception\HttpException $e)
+    {
+        if ($e->getStatusCode() === 500 && env('APP_DEBUG') === true) {
+            // Display Laravel's default error message with appropriate error information
+            return $this->convertExceptionToResponse($e);
+        }
+        return parent::renderHttpException($e); // Continue as normal
     }
 }

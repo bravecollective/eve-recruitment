@@ -49,31 +49,31 @@
         </div>
         </div>
             <div class="col-xl-6 col-12">
-            <div class="card bg-dark">
-            <div class="card-body">
-                <div class="card-header">
-                    Corporation History
-                </div>
-                <ul class="list-group">
-                @foreach($corp_history as $corp)
-                    <div class="list-group-item bg-dark text-white">
-                        <p>
-                            <img src="https://image.eveonline.com/Corporation/{{ $corp->corporation_id }}_32.png" />
-                            {{ $corp->corporation_name }}
-                        </p>
-                        @if ($corp->alliance_id != null)
-                            <p>
-                                <img src="https://image.eveonline.com/Alliance/{{ $corp->alliance_id }}_32.png" />
-                                {{ $corp->alliance_name }}
-                            </p>
-                        @endif
-                        Joined: {{ $corp->start_date }}
+                <div class="card bg-dark">
+                    <div class="card-body">
+                        <div class="card-header">
+                            Corporation History
+                        </div>
+                        <ul class="list-group">
+                        @foreach($corp_history as $corp)
+                            <div class="list-group-item bg-dark text-white">
+                                <p>
+                                    <img src="https://image.eveonline.com/Corporation/{{ $corp->corporation_id }}_32.png" />
+                                    {{ $corp->corporation_name }}
+                                </p>
+                                @if ($corp->alliance_id != null)
+                                    <p>
+                                        <img src="https://image.eveonline.com/Alliance/{{ $corp->alliance_id }}_32.png" />
+                                        {{ $corp->alliance_name }}
+                                    </p>
+                                @endif
+                                Joined: {{ $corp->start_date }}
+                            </div>
+                        @endforeach
+                        </ul>
                     </div>
-                @endforeach
-                </ul>
+                </div>
             </div>
-        </div>
-        </div>
         </div>
         <div class="row">
             <div class="col-xl-6 col-lg-6 col-12">
@@ -167,6 +167,15 @@
                                 Never
                             @endif
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-6 col-lg-6 col-12">
+                <div class="card bg-dark text-white">
+                    <div class="card-body">
+                        <div class="card-header">
+                            Core Character Removals
                         </div>
                     </div>
                 </div>
