@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Connectors\CoreConnection;
 use Illuminate\Database\Eloquent\Model;
 
 class User extends Model
@@ -9,6 +10,29 @@ class User extends Model
     protected $table = 'user';
     protected $primaryKey = 'character_id';
     public $incrementing = false;
+
+    /**
+     * Update account when ESI is viewed
+     *
+     * @param $char_id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public static function updateUsersOnApplicationLoad($char_id)
+    {
+        $core_users = CoreConnection::getCharactersForUser($char_id);
+        $main = null;
+
+        foreach ($core_users as $user)
+        {
+            if ($user->main == true)
+                $main = $user;
+
+            if ($user->validToken == false)
+                return redirect('/')->with('error', 'One or more of your characters has an invalid ESI token in Core. Please re-authorize all of your characters.');
+        }
+
+        self::addUsersToDatabase($core_users, $main);
+    }
 
     /**
      * Insert or update users in the database

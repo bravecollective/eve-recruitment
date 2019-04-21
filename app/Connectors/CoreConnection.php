@@ -50,4 +50,16 @@ class CoreConnection
         $output = self::generateWebRequest('/api/app/v2/groups/' . $userId);
         return $output;
     }
+
+    /**
+     * Get users removed from a core account
+     *
+     * @param $characterId
+     * @return array|null
+     */
+    public static function getRemovedCharacters($characterId)
+    {
+        $output = self::generateWebRequest('/api/app/v1/removed-characters/' . $characterId);
+        return $output;
+    }
 }

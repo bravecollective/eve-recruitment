@@ -177,6 +177,14 @@
                         <div class="card-header">
                             Core Character Removals
                         </div>
+                    @foreach($deleted_characters as $character)
+                        <div class="list-group-item bg-dark text-white">
+                            {{ $character->characterName }}
+                            <div class="float-right">
+                                {{ $character->reason }}
+                            </div>
+                        </div>
+                    @endforeach
                     </div>
                 </div>
             </div>

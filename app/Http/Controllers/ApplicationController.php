@@ -38,6 +38,7 @@ class ApplicationController extends Controller
         if (!AccountRole::canViewApplications($ad))
             return redirect('/')->with('error', 'Unauthorized');
 
+        User::updateUsersOnApplicationLoad($application->account->main_user_id);
         $warnings = Application::getWarnings($application);
         $esi = new EsiConnection($application->account->main_user_id);
 
@@ -63,7 +64,6 @@ class ApplicationController extends Controller
      * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
      * @throws \Seat\Eseye\Exceptions\UriDataMissingException
-     * @throws \Swagger\Client\Eve\ApiException
      */
     public function viewCharacterEsi($char_id)
     {
@@ -75,10 +75,12 @@ class ApplicationController extends Controller
         if (!AccountRole::recruiterCanViewEsi($char_id) && (!Auth::user()->hasRole($char->corporation_name . ' recruiter') && !Auth::user()->hasRole($char->corporation_name . ' director')))
             return redirect('/')->with('error', 'Unauthorized');
 
+        User::updateUsersOnApplicationLoad($char_id);
         $esi = new EsiConnection($char_id);
 
         $char_info = $esi->getCharacterInfo();
         $corp_history = $esi->getCorpHistory();
+        $deleted_chars = CoreConnection::getRemovedCharacters($char_id);
 
         try {
             $clones = $esi->getCloneInfo();
@@ -97,6 +99,7 @@ class ApplicationController extends Controller
             'contacts' => $contacts,
             'sp' => $sp,
             'isk' => $isk,
+            'deleted_characters' => $deleted_chars
         ]);
     }
 
@@ -116,13 +119,15 @@ class ApplicationController extends Controller
         $clones = $esi->getCloneInfo();
         $corp_history = $esi->getCorpHistory();
         $contacts = $esi->getContacts();
+        $deleted_chars = CoreConnection::getRemovedCharacters($char_id);
 
         $res = view('parts/application/overview', [
             'application' => true,
             'character_info' => $character_info,
             'clones' => $clones,
             'corp_history' => $corp_history,
-            'contacts' => $contacts
+            'contacts' => $contacts,
+            'deleted_characters' => $deleted_chars
         ])->render();
 
         die(json_encode(['success' => true, 'message' => $res]));
