@@ -148,7 +148,7 @@
             let res = $("#result-" + anchor);
             let errors = $("#errors");
 
-            res.html('<img width="22" src="/img/loading.webp" alt="Loading" />');
+            res.html('<img width="22" src="/img/loading.webp" />');
 
             $.ajax({
                 url: url,
@@ -173,7 +173,7 @@
                 },
                 error: function(e) {
                     res.empty();
-                    errors.append('<div class="row justify-content-center">Loading of ' + name + ' failed: <pre>' + e.responseJSON.message + '</pre></div>');
+                    errors.append('<div class="row justify-content-center">Loading of ' + name + ' failed:</div><div class="row justify-content-center"><pre style="color: white;"><xmp>' + e.responseJSON.message.split("response")[0] + '</xmp></pre></div>');
                     res.addClass('fa-times');
                 }
             });
