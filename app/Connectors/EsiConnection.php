@@ -517,7 +517,7 @@ class EsiConnection
         $out = [];
 
         for ($i = 2; $i <= $assets[2]['X-Pages'][0]; $i++)
-            $assets[0] += $model->getCharactersCharacterIdAssets($this->char_id, $this->char_id, null, $i);
+            $assets[0] = array_merge($assets[0], $model->getCharactersCharacterIdAssets($this->char_id, $this->char_id, null, $i));
 
         foreach ($assets[0] as $asset)
         {
@@ -533,15 +533,12 @@ class EsiConnection
                     ];
 
                 $out[$location]['items'][] = $this->constructAssetTreeForItem($asset, $assets[0]);
-            }
-        }
 
-        foreach ($out as $location => $tree)
-        {
-            $location_price = 0;
-            foreach ($out[$location]['items'] as $item)
-                $location_price += $item['total_price'];
-            $out[$location]['value'] = number_format($location_price);
+                $location_price = 0;
+                foreach ($out[$location]['items'] as $item)
+                    $location_price += $item['total_price'];
+                $out[$location]['value'] = number_format($location_price);
+            }
         }
 
         $names = $model->postCharactersCharacterIdAssetsNames($this->char_id, json_encode($names_to_fetch), $this->char_id);
@@ -948,7 +945,7 @@ class EsiConnection
         $journal = $model->getCharactersCharacterIdWalletJournalWithHttpInfo($this->char_id, $this->char_id, null, $page);
 
         for ($i = 2; $i <= $journal[2]['X-Pages'][0]; $i++)
-            $journal[0] += $model->getCharactersCharacterIdWallet($this->char_id, $this->char_id, null, $i);
+            $journal[0] = array_merge($journal[0], $model->getCharactersCharacterIdWallet($this->char_id, $this->char_id, null, $i));
 
         foreach ($journal[0] as $entry)
         {
