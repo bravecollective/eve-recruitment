@@ -344,6 +344,7 @@ class EsiConnection
         $mailCacheKey = "mail_{$this->char_id}";
         $mailBodyCacheKey = "mail_body_";
         $model = new MailApi($this->client, $this->config);
+        $ids = [];
 
         if (Cache::has($mailCacheKey))
             $mail = Cache::get($mailCacheKey);
@@ -374,36 +375,59 @@ class EsiConnection
                     case 'character':
                         $m->recipients[] = [
                             'type' => 'character',
-                            'name' => $this->getCharacterName($recipient->getRecipientId())
+                            'id' => $recipient->getRecipientId(),
+                            'name' => null
                         ];
                         break;
 
                     case 'corporation':
                         $m->recipients[] = [
                             'type' => 'corporation',
-                            'name' => $this->getCorporationName($recipient->getRecipientId())
+                            'id' => $recipient->getRecipientId(),
+                            'name' => null
                         ];
                         break;
 
                     case 'alliance':
                         $m->recipients[] = [
                             'type' => 'alliance',
-                            'name' => $this->getAllianceName($recipient->getRecipientId())
+                            'id' => $recipient->getRecipientId(),
+                            'name' => null
                         ];
                         break;
 
                     case 'mailing_list':
                         $m->recipients[] = [
                             'type' => 'mailing list',
-                            'name' => $this->getMailingListName($recipient->getRecipientId())
+                            'name' => $this->getMailingListName($recipient->getRecipientId()),
+                            'id' => null
                         ];
                         break;
 
                     default:
                         break;
                 }
+
+                if (in_array($recipient->getRecipientType(), ['character', 'corporation', 'alliance']) && !in_array($recipient->getRecipientId(), $ids))
+                    $ids[] = $recipient->getRecipientId();
             }
         }
+
+        $res = $this->eseye->setBody($ids)->invoke('post', '/universe/names/');
+
+        if (!$res)
+            return null;
+
+        $data = json_decode($res->raw, true);
+        $new_ids = [];
+
+        foreach ($data as $d)
+            $new_ids[$d['id']] = $d['name'];
+
+        foreach ($mail as $m)
+            foreach ($m->recipients as $recipient)
+                if ($recipient['name'] == null)
+                    $recipient['name'] = $new_ids[$recipient['id']];
 
         return $mail;
     }
@@ -412,9 +436,6 @@ class EsiConnection
      * Get a character's skills
      *
      * @return array|mixed
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
      * @throws \Swagger\Client\Eve\ApiException
      */
     public function getSkills()
