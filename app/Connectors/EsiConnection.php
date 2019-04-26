@@ -802,8 +802,6 @@ class EsiConnection
                     break;
             }
 
-            //dd(Yaml::dump(Yaml::parse($notification->getText())));
-
             $out[] = [
                 'sender' => $name,
                 'type' => $notification->getType(),

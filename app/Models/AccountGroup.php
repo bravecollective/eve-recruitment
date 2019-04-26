@@ -31,9 +31,10 @@ class AccountGroup extends Model
             {
                 $dbGroup = new CoreGroup();
                 $dbGroup->id = $group->id;
-                $dbGroup->name = $group->name;
-                $dbGroup->save();
             }
+
+            $dbGroup->name = $group->name;
+            $dbGroup->save();
 
             // Update user groups
             $userGroup = new AccountGroup();
