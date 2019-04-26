@@ -425,9 +425,15 @@ class EsiConnection
             $new_ids[$d['id']] = $d['name'];
 
         foreach ($mail as $m)
-            foreach ($m->recipients as $recipient)
-                if ($recipient['name'] == null)
+        {
+            foreach ($m->recipients as &$recipient)
+            {
+                if ($recipient['name'] == null && array_key_exists($recipient['id'], $new_ids))
                     $recipient['name'] = $new_ids[$recipient['id']];
+                else
+                    $recipient['name'] = 'Unknown recipient';
+            }
+        }
 
         return $mail;
     }
@@ -1167,8 +1173,9 @@ class EsiConnection
 
         foreach ($lists[0] as $list)
         {
-            if (!Cache::has($cache_key_base . $list->getMailingListId()))
-                Cache::add($cache_key_base . $list->getMailingListId(), $list->getName(), $this->getCacheExpirationTime($lists));
+            $temp_key = $cache_key_base . $list->getMailingListId();
+            if (!Cache::has($temp_key))
+                Cache::add($temp_key, $list->getName(), $this->getCacheExpirationTime($lists));
         }
 
         return Cache::get($cache_key);
