@@ -428,10 +428,8 @@ class EsiConnection
         {
             foreach ($m->recipients as &$recipient)
             {
-                if ($recipient['name'] == null && array_key_exists($recipient['id'], $new_ids))
-                    $recipient['name'] = $new_ids[$recipient['id']];
-                else
-                    $recipient['name'] = 'Unknown recipient';
+                if ($recipient['name'] == null)
+                        $recipient['name'] = array_key_exists($recipient['id'], $new_ids) ? $new_ids[$recipient['id']] : 'Unknown recipient';
             }
         }
 
