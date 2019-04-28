@@ -130,6 +130,7 @@ class EveFittingEFTParser {
                 // Save the charge for the end
                 if ( count( $exploded ) > 1 ) {
                     $chargeID = Type::where('typeName', $exploded[1])->first();
+                    $chargeID = ($chargeID) ? $chargeID->typeID : -1;
                     $ids[] = $chargeID;
                     if ( $chargeID >= 0 ) {
                         $charges[] = $chargeID;

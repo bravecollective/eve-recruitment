@@ -60,6 +60,9 @@
                                 <p>
                                     <img src="https://image.eveonline.com/Corporation/{{ $corp->corporation_id }}_32.png" />
                                     {{ $corp->corporation_name }}
+                                @if($corp->corporation_id > 1000000 && $corp->corporation_id < 2000000)
+                                    (NPC)
+                                @endif
                                 </p>
                                 @if ($corp->alliance_id != null)
                                     <p>
@@ -238,6 +241,9 @@
                         <div class="media-body">
                             <h5 class="mt-0">{{ $contact->contact_name }}</h5>
                             <span class="badge badge-pill {{ $class }}">Standing: {{ $contact->getStanding() }}</span>
+                        @if($contact->getContactId() > 3000000 && $contact->getContactId() < 4000000)
+                            <span class="badge badge-pill badge-primary">NPC</span>
+                        @endif
                         </div>
                     </div>
                 </a>
