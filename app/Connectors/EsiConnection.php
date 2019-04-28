@@ -186,6 +186,32 @@ class EsiConnection
     }
 
     /**
+     * Get user titles
+     *
+     * @return array|mixed
+     * @throws ApiException
+     */
+    public function getTitles()
+    {
+        $cache_key = "character_titles_{$this->char_id}";
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
+
+        $model = new CharacterApi($this->client, $this->config);
+        $titles = $model->getCharactersCharacterIdTitlesWithHttpInfo($this->char_id, $this->char_id);
+        $out = [];
+
+        foreach ($titles[0] as $title)
+            $out[] = strip_tags($title->getName());
+
+        $out = implode(', ', $out);
+
+        Cache::add($cache_key, $out, $this->getCacheExpirationTime($titles));
+        return $out;
+    }
+
+    /**
      * Get a character's clone information
      *
      * @return array

@@ -38,6 +38,11 @@
         <h5>{{ $isk }} isk</h5>
     </div>
 </div>
+<div class="row justify-content-center">
+    <div class="col-auto">
+        Titles: {{ $titles }}
+    </div>
+</div>
 @else
 <div class="row justify-content-center">
     <h4><strong>Invalid ESI Token</strong></h4>

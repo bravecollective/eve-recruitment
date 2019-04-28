@@ -25,6 +25,7 @@ class ApplicationController extends Controller
      * @param $id
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Swagger\Client\Eve\ApiException
      */
     function viewApplication($id)
     {
@@ -42,8 +43,13 @@ class ApplicationController extends Controller
         $warnings = Application::getWarnings($application);
         $esi = new EsiConnection($application->account->main_user_id);
 
-        $sp = $esi->getSkillpoints();
-        $isk = $esi->getWalletBalance();
+        try {
+            $sp = $esi->getSkillpoints();
+            $isk = $esi->getWalletBalance();
+            $titles = $esi->getTitles();
+        } catch(\Exception $e) {
+            $sp = $isk = $titles = null;
+        }
 
         return view('application', [
             'alts' => $application->account->alts(),
@@ -53,6 +59,7 @@ class ApplicationController extends Controller
             'warnings' => $warnings,
             'sp' => $sp,
             'isk' => $isk,
+            'titles' => $titles
         ]);
     }
 
@@ -87,8 +94,9 @@ class ApplicationController extends Controller
             $contacts = $esi->getContacts();
             $sp = $esi->getSkillpoints();
             $isk = $esi->getWalletBalance();
+            $titles = $esi->getTitles();
         } catch(\Exception $e) {
-            $clones = $contacts = $sp = $isk = null;
+            $clones = $contacts = $sp = $isk = $titles = null;
         }
 
         return view('application', [
@@ -99,7 +107,8 @@ class ApplicationController extends Controller
             'contacts' => $contacts,
             'sp' => $sp,
             'isk' => $isk,
-            'deleted_characters' => $deleted_chars
+            'deleted_characters' => $deleted_chars,
+            'titles' => $titles
         ]);
     }
 
@@ -137,9 +146,7 @@ class ApplicationController extends Controller
      * Load user skills
      *
      * @param $char_id
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
      * @throws \Swagger\Client\Eve\ApiException
      * @throws \Throwable
      */

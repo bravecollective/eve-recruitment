@@ -22,6 +22,9 @@ class User extends Model
         $core_users = CoreConnection::getCharactersForUser($char_id);
         $main = null;
 
+        if ($core_users == null)
+            return;
+
         foreach ($core_users as $user)
         {
             if ($user->main == true)
