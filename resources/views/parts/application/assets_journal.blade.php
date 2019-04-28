@@ -10,7 +10,7 @@
                     <div class="card bg-dark text-white" id="location-{{ $location_info['id'] }}">
                         <div class="card-header" id="parent-{{ $location_info['id'] }}">
                             <button class="btn btn-link text-white" type="button" data-toggle="collapse" data-target="#children-{{ $location_info['id'] }}" aria-expanded="false" aria-controls="children-{{ $location_info['id'] }}">
-                                {{ $location }}
+                                {{ $location_info['name'] }}
                             </button>
                             <div class="float-right">
                                 {{ $location_info['value'] }} isk

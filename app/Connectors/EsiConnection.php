@@ -550,20 +550,22 @@ class EsiConnection
             {
                 $location = $this->getLocationName($asset->getLocationId());
                 $names_to_fetch[] = $asset->getItemId();
+                $location_id = $asset->getLocationId();
 
-                if (!array_key_exists($location, $out))
-                    $out[$location] = [
-                        'id' => $asset->getLocationId(),
+                if (!array_key_exists($location_id, $out))
+                    $out[$location_id] = [
+                        'id' => $location_id,
+                        'name' => $location,
                         'items' => []
                     ];
 
-                $out[$location]['items'][] = $this->constructAssetTreeForItem($asset, $assets[0]);
+                $out[$location_id]['items'][] = $this->constructAssetTreeForItem($asset, $assets[0]);
 
                 $location_price = 0;
-                foreach ($out[$location]['items'] as $item)
+                foreach ($out[$location_id]['items'] as $item)
                     $location_price += (int) filter_var($item['value'], FILTER_SANITIZE_NUMBER_INT);
 
-                $out[$location]['value'] = number_format($location_price);
+                $out[$location_id]['value'] = number_format($location_price);
             }
         }
 
