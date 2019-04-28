@@ -189,9 +189,6 @@ class EsiConnection
      * Get a character's clone information
      *
      * @return array
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
      * @throws \Swagger\Client\Eve\ApiException
      */
     public function getCloneInfo()
@@ -204,19 +201,31 @@ class EsiConnection
 
         $clones = $model->getCharactersCharacterIdClones($this->char_id, $this->char_id);
         $home = $clones->getHomeLocation();
-        $home->location_name = $this->getLocationBasedOnStationType($home->getLocationType(), $home->getLocationId());
+
+        try {
+            $home->location_name = $this->getLocationBasedOnStationType($home->getLocationType(), $home->getLocationId());
+        } catch(\Exception $e) {
+            $home->location_name = "Unknown Location";
+        }
 
         foreach ($clones->getJumpClones() as $clone)
-            $clone->location_name = $this->getLocationBasedOnStationType($clone->getLocationType(), $clone->getLocationId());
+        {
+            try {
+                $clone->location_name = $this->getLocationBasedOnStationType($clone->getLocationType(), $clone->getLocationId());
+            } catch(\Exception $e) {
+                $clone->location_name = "Unknown Location";
+            }
+        }
 
         return ['implants' => $implants, 'clones' => $clones];
     }
 
     /**
-     * Determine if a character can fly a fit
+     * Determine if a character ID can fly a fit
      *
      * @param $item_id
      * @return bool
+     * @throws ApiException
      * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
      * @throws \Seat\Eseye\Exceptions\UriDataMissingException
@@ -283,9 +292,6 @@ class EsiConnection
      * @param $skillplan
      * @return array
      * @throws ApiException
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
      */
     public function checkSkillplan($skillplan)
     {
@@ -307,9 +313,6 @@ class EsiConnection
      * @param $level
      * @return bool
      * @throws ApiException
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
      */
     private function userHasSkillLevel($skill, $level)
     {
@@ -491,9 +494,6 @@ class EsiConnection
      * Get a character's skillqueue
      *
      * @return array|mixed
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
      * @throws \Swagger\Client\Eve\ApiException
      */
     public function getSkillQueue()
@@ -556,13 +556,21 @@ class EsiConnection
                     $out[$location_id] = [
                         'id' => $location_id,
                         'name' => $location,
-                        'items' => []
+                        'items' => [],
+                        'containers' => []
                     ];
 
-                $out[$location_id]['items'][] = $this->constructAssetTreeForItem($asset, $assets[0]);
+                $tmp = $this->constructAssetTreeForItem($asset, $assets[0]);
+
+                if ($tmp['container'])
+                    $out[$location_id]['containers'][] = $tmp;
+                else
+                    $out[$location_id]['items'][] = $tmp;
 
                 $location_price = 0;
                 foreach ($out[$location_id]['items'] as $item)
+                    $location_price += (int) filter_var($item['value'], FILTER_SANITIZE_NUMBER_INT);
+                foreach ($out[$location_id]['containers'] as $item)
                     $location_price += (int) filter_var($item['value'], FILTER_SANITIZE_NUMBER_INT);
 
                 $out[$location_id]['value'] = number_format($location_price);
@@ -571,26 +579,29 @@ class EsiConnection
 
         $names = $model->postCharactersCharacterIdAssetsNames($this->char_id, json_encode($names_to_fetch), $this->char_id);
 
-        foreach ($out as &$items)
+        foreach ($out as $location => &$items)
+        {
             foreach ($items['items'] as &$item)
                 $item['item_name'] = $this->getAssetNameFromArray($names, $item['id']);
 
-        uasort($out, "self::cmp_assets");
+            foreach ($items['containers'] as &$item)
+            {
+                $item['item_name'] = $this->getAssetNameFromArray($names, $item['id']);
+                uasort($item['items'], "self::sort_locations");
+            }
 
-        foreach ($out as $location => &$location_details)
-        {
-            uasort($location_details['items'], "self::cmp_assets");
-            foreach ($location_details['items'] as &$location_items)
-                if (count($location_items['items']) > 0)
-                    uasort($location_items['items'], "self::cmp_assets");
+            uasort($items['items'], "self::sort_locations");
+            uasort($items['containers'], "self::sort_locations");
         }
+
+        uasort($out, "self::sort_locations");
 
         Cache::add($cache_key, $out, $this->getCacheExpirationTime($assets));
 
         return $out;
     }
 
-    private static function cmp_assets ($a, $b) {
+    private static function sort_locations ($a, $b) {
         $v1 = (int) filter_var($a['value'], FILTER_SANITIZE_NUMBER_INT);
         $v2 = (int) filter_var($b['value'], FILTER_SANITIZE_NUMBER_INT);
 
@@ -640,11 +651,11 @@ class EsiConnection
         $tree['type_id'] = $item->getTypeId();
         $tree['price'] = number_format((int) $this->getMarketPrice($item->getTypeId()) * $item->getQuantity(), 0);
         $tree['value'] = $this->getMarketPrice($item->getTypeId()) * $item->getQuantity();
+        $tree['container'] = false;
         $tree['items'] = [];
 
         foreach ($assets as $idx => $asset)
         {
-
             // TODO: Nested container items
             if ($asset->getLocationId() == $item->getItemId())
             {
@@ -663,6 +674,7 @@ class EsiConnection
         }
 
         $tree['value'] = number_format($tree['value']);
+        $tree['container'] = count($tree['items']) > 0;
 
         return $tree;
     }
