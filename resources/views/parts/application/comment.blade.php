@@ -8,6 +8,6 @@
         </div>
     </div>
     <div class="card-body">
-        {{ $comment->comment }}
+        {!! nl2br(e($comment->comment)) !!}
     </div>
 </div>
