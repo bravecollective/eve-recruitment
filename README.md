@@ -16,7 +16,7 @@ Each recruitment ad (either corporation or group) has two roles associated with 
 director`. The former allows seeing corp members (for corps), and applications. The latter allows managing the ad.
 
 The role `admin` is incredibly powerful, and can assign any role to any character registered on the website.
-The role `director` allows creation of group ads.
+The role `group admin` allows creation of group ads.
 
 ## Code Modification Options
 * To add or remove application states, modify `app/Models/Application.php`. **WARNING**: Do not change existing state

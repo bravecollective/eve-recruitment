@@ -11,6 +11,12 @@
                         <div class="row">
                             <div class="col-xl-3 col-lg-3 col-md-3 col-sm-5 col-12">
                                 <strong>Sender:</strong> {{ $mail->sender }}
+                        @foreach($mail->recipients as $recipient)
+                            @if ($recipient['type'] != 'character' && $recipient['type'] != 'mailing list')
+                                ({{ $recipient['type'] }})
+                                @break
+                            @endif
+                        @endforeach
                             </div>
                             <div class="col-xl-7 col-lg-7 col-md-7 col-sm-5 col-12">
                                 <strong>Subject:</strong> {{ $mail->getSubject() }}

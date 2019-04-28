@@ -38,7 +38,7 @@
                                     @endif
                                     </a>
                                     <div class="float-right">
-                                        {{ $asset['price'] }} ISK
+                                        {{ $asset['value'] }} ISK
                                     </div>
                                     <div class="collapse" data-parent="#location-{{ $location_info['id'] }}" id="items-{{ $asset['id'] }}">
                                         <div class="list-group">
@@ -47,7 +47,7 @@
                                                 <img src="https://image.eveonline.com/Type/{{ $item['type_id'] }}_32.png" />
                                                 {{ $item['name'] }} - {{ $item['quantity'] }}
                                                 <div class="float-right">
-                                                    {{ $item['price'] }} ISK
+                                                    {{ $item['value'] }} ISK
                                                 </div>
                                             </div>
                                         @endforeach

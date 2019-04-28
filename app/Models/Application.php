@@ -17,6 +17,7 @@ class Application extends Model
     const CLOSED = 6;
     const BLACKLISTED = 7;
     const TRIAL = 8;
+    const IN_PROGRESS = 9;
 
     // Map states to names
     public static $state_names = [
@@ -28,6 +29,7 @@ class Application extends Model
         self::CLOSED => "Closed",
         self::BLACKLISTED => "Blacklisted",
         self::TRIAL => "Trial",
+        self::IN_PROGRESS => "In Progress",
     ];
 
     // Override what the user sees

@@ -561,7 +561,8 @@ class EsiConnection
 
                 $location_price = 0;
                 foreach ($out[$location]['items'] as $item)
-                    $location_price += $item['total_price'];
+                    $location_price += (int) filter_var($item['value'], FILTER_SANITIZE_NUMBER_INT);
+
                 $out[$location]['value'] = number_format($location_price);
             }
         }
@@ -572,9 +573,29 @@ class EsiConnection
             foreach ($items['items'] as &$item)
                 $item['item_name'] = $this->getAssetNameFromArray($names, $item['id']);
 
+        uasort($out, "self::cmp_assets");
+
+        foreach ($out as $location => &$location_details)
+        {
+            uasort($location_details['items'], "self::cmp_assets");
+            foreach ($location_details['items'] as &$location_items)
+                if (count($location_items['items']) > 0)
+                    uasort($location_items['items'], "self::cmp_assets");
+        }
+
         Cache::add($cache_key, $out, $this->getCacheExpirationTime($assets));
 
         return $out;
+    }
+
+    private static function cmp_assets ($a, $b) {
+        $v1 = (int) filter_var($a['value'], FILTER_SANITIZE_NUMBER_INT);
+        $v2 = (int) filter_var($b['value'], FILTER_SANITIZE_NUMBER_INT);
+
+        if ($v1 == $v2)
+            return 0;
+
+        return ($v1 > $v2) ? -1 : 1;
     }
 
     /**
@@ -609,31 +630,6 @@ class EsiConnection
      */
     private function constructAssetTreeForItem($item, &$assets)
     {
-        $model = new AssetsApi($this->client, $this->config);
-
-        // These locations are part of a ship, container, etc
-        $shipContentLocationFlags = [
-            "Cargo",
-            "BoosterBay",
-            "AutoFit",
-            "CorpseBay",
-            "FighterTube[0-9]",
-            "HiSlot[0-9]",
-            "LoSlot[0-9]",
-            "FighterBay*",
-            "FleetHangar",
-            "MedSlot[0-9]",
-            "QuafeBay",
-            "RigSlot[0-9]",
-            "ShipHangar",
-            "Specialized(Ammo|CommandCenter|Gas|IndustrialShip|LargeShip|MediumShip|Mineral|Ore|PlanetaryCommodities|Salvage|Ship|SmallShip)Hold",
-            "Specialized(Fuel|Material)Bay",
-            "SubSystemBay",
-            "SubSystemSlot[0-9]",
-            "DroneBay"
-        ];
-        $pattern = "/(" . implode('|', $shipContentLocationFlags) .")/";
-
         $tree = [];
         $tree['name'] = $this->getTypeName($item->getTypeId());
         $tree['location'] = $this->getLocationName($item->getLocationId());
@@ -641,27 +637,30 @@ class EsiConnection
         $tree['id'] = $item->getItemId();
         $tree['type_id'] = $item->getTypeId();
         $tree['price'] = number_format((int) $this->getMarketPrice($item->getTypeId()) * $item->getQuantity(), 0);
-        $tree['total_price'] = $this->getMarketPrice($item->getTypeId()) * $item->getQuantity();
+        $tree['value'] = $this->getMarketPrice($item->getTypeId()) * $item->getQuantity();
         $tree['items'] = [];
 
         foreach ($assets as $idx => $asset)
         {
+
             // TODO: Nested container items
-            if ($asset->getLocationId() == $item->getItemId() && preg_match($pattern, $asset->getLocationFlag()))
+            if ($asset->getLocationId() == $item->getItemId())
             {
                 $price = (int) $this->getMarketPrice($asset->getTypeId()) * $asset->getQuantity();
                 $tree['items'][] = [
                     'name' => $this->getTypeName($asset->getTypeId()),
                     'quantity' => number_format($asset->getQuantity()),
                     'type_id' => $asset->getTypeId(),
-                    'price' => number_format($price),
+                    'value' => number_format($price),
                     'items' => []
                 ];
 
-                $tree['total_price'] += $price;
+                $tree['value'] += $price;
                 unset($assets[$idx]);
             }
         }
+
+        $tree['value'] = number_format($tree['value']);
 
         return $tree;
     }
@@ -876,15 +875,15 @@ class EsiConnection
 
             $assignee = null;
 
-            try {
-                $assignee = $this->getCharacterName($contract->getAssigneeId());
-            } catch (\Exception $e) { }
+            $assignee = $this->getCharacterName($contract->getAssigneeId());
 
-            if ($assignee == null)
+            if ($assignee == "Unknown Character")
             {
                 try {
                     $assignee = $this->getCorporationName($contract->getAssigneeId());
-                } catch (\Exception $e) { }
+                } catch (\Exception $e) {
+                    $assignee = "Unknown Assignee";
+                }
             }
 
             $assignee = ($assignee == null) ? "Unknown" : $assignee;
