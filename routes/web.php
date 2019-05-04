@@ -55,6 +55,10 @@ Route::post('/application/{id}/comments/delete', 'CommentController@deleteCommen
 Route::get('/character/{id}', 'ApplicationController@viewCharacterEsi');
 Route::get('/applications', 'ApplicationController@getAvailableApplications');
 
+// Stats Routes
+Route::get('/stats/{id}', 'StatsController@loadStatsPage');
+Route::post('/stats', 'StatsController@lookupStats');
+
 // ESI AJAX routes
 Route::get('/api/esi/{char_id}/overview', 'ApplicationController@loadOverview');
 Route::get('/api/esi/{char_id}/skills', 'ApplicationController@loadSkills');

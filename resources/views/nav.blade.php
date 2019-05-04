@@ -63,6 +63,18 @@
                 </div>
             </li>
             @endif
+            @if(count($recruitment_ads) > 0)
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="stats" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Stats
+                </a>
+                <div class="dropdown-menu" aria-labelledby="stats">
+                    @foreach($recruitment_ads as $ad)
+                        <a class="dropdown-item" href="/stats/{{ $ad->id }}">{{ $ad->corp_name === null ? $ad->group_name : $ad->corp_name }}</a>
+                    @endforeach
+                </div>
+            </li>
+            @endif
             @role('admin')
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="admin_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

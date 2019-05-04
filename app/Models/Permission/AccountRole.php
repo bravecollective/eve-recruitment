@@ -192,8 +192,19 @@ class AccountRole extends Model
         switch ($type)
         {
             case 'corp':
-                $corp_name = User::where('corporation_id', $id)->first()->corporation_name;
-                $role_id = Role::where('name', $corp_name . ' director')->first()->id;
+                $corp_name = User::where('corporation_id', $id)->first();
+
+                if (!$corp_name)
+                    return false;
+
+                $corp_name = $corp_name->corporation_name;
+                $role_id = Role::where('name', $corp_name . ' director')->first();
+
+                if (!$role_id)
+                    return false;
+
+                $role_id = $role_id->id;
+
                 return AccountRole::where('account_id', Auth::user()->id)->where('role_id', $role_id)->exists();
             case 'group':
                 if ($id == 0)
@@ -201,7 +212,12 @@ class AccountRole extends Model
 
                 $group_ad = RecruitmentAd::where('id', $id)->first();
                 $group_name = $group_ad->group_name;
-                $role_id = Role::where('name', $group_name . ' manager')->first()->id;
+                $role_id = Role::where('name', $group_name . ' manager')->first();
+
+                if (!$role_id)
+                    return false;
+
+                $role_id = $role_id->id;
                 $role = AccountRole::where('account_id', Auth::user()->id)->where('role_id', $role_id)->first();
                 return ($group_ad->created_by == Auth::user()->id || !!$role);
             default:

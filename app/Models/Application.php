@@ -21,15 +21,15 @@ class Application extends Model
 
     // Map states to names
     public static $state_names = [
-        self::OPEN => "Open",
-        self::ON_HOLD => "On Hold",
         self::ACCEPTED => "Accepted",
-        self::DENIED => "Denied",
-        self::REVIEW_REQUESTED => "Review Requested",
-        self::CLOSED => "Closed",
         self::BLACKLISTED => "Blacklisted",
-        self::TRIAL => "Trial",
+        self::CLOSED => "Closed",
+        self::DENIED => "Denied",
         self::IN_PROGRESS => "In Progress",
+        self::ON_HOLD => "On Hold",
+        self::OPEN => "Open",
+        self::REVIEW_REQUESTED => "Review Requested",
+        self::TRIAL => "Trial",
     ];
 
     // Override what the user sees
