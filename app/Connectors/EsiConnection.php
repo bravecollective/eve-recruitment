@@ -611,7 +611,10 @@ class EsiConnection
             }
         }
 
-        $names = $model->postCharactersCharacterIdAssetsNames($this->char_id, json_encode($names_to_fetch), $this->char_id);
+        $names = [];
+
+        foreach (array_chunk($names_to_fetch, 900) as $chunk)
+            $names = array_merge($names, $model->postCharactersCharacterIdAssetsNames($this->char_id, json_encode($chunk), $this->char_id));
 
         foreach ($out as $location => &$items)
         {

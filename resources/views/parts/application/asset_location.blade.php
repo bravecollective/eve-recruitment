@@ -1,4 +1,4 @@
-@if(count($asset['items']) == 0)
+@if(!$asset['container'])
     <div class="list-group-item bg-dark text-white">
         <img src="https://image.eveonline.com/Type/{{ $asset['type_id'] }}_32.png" />
         {{ $asset['name'] }} - {{ $asset['quantity'] }}
