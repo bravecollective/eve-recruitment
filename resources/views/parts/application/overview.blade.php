@@ -57,20 +57,22 @@
                         <ul class="list-group">
                         @foreach($corp_history as $corp)
                             <div class="list-group-item bg-dark text-white">
-                                <p>
+                                <h5>
+                                @if ($corp->alliance_id != null)
+                                    <div style="display: inline-block;" data-toggle="tooltip" title="{{ $corp->alliance_name }}">
+                                        <img src="https://image.eveonline.com/Alliance/{{ $corp->alliance_id }}_32.png" />
+                                        [{{ $corp->alliance_ticker }}]
+                                    </div>
+                                @endif
                                     <img src="https://image.eveonline.com/Corporation/{{ $corp->corporation_id }}_32.png" />
                                     {{ $corp->corporation_name }}
                                 @if($corp->corporation_id > 1000000 && $corp->corporation_id < 2000000)
                                     (NPC)
                                 @endif
-                                </p>
-                                @if ($corp->alliance_id != null)
-                                    <p>
-                                        <img src="https://image.eveonline.com/Alliance/{{ $corp->alliance_id }}_32.png" />
-                                        {{ $corp->alliance_name }}
-                                    </p>
-                                @endif
-                                Joined: {{ $corp->start_date }}
+                                </h5>
+                                <p class="mb-0">Joined: {{ $corp->formatted_start_date }}</p>
+                                <p class="mb-0">Left: {{ $corp->formatted_end_date }}</p>
+                                <p class="mb-0">Duration: {{ $corp->duration }}</p>
                             </div>
                         @endforeach
                         </ul>

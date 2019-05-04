@@ -189,7 +189,7 @@
             esiLoaded = true;
 
             @if(isset($application))
-                loadPartial('/api/esi/' + char_id + '/overview', 'tab-overview', 'overview');
+                loadPartial('/api/esi/' + char_id + '/overview', 'tab-overview', 'overview', () =>  $('[data-toggle="tooltip"]').tooltip());
             @endif
             loadPartial('/api/esi/' + char_id + '/skills', "tab-skills", 'skills');
             loadPartial('/api/esi/' + char_id + '/mail', "tab-mail", 'mail');

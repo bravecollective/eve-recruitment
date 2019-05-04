@@ -125,7 +125,7 @@ class EsiConnection
         $data = json_decode($history->raw);
 
         // Get corporation names and alliance information
-        foreach ($data as $d)
+        foreach ($data as $idx => $d)
         {
             $corp_info = $this->eseye->invoke('get', '/corporations/{corporation_id}/', [
                 'corporation_id' => $d->corporation_id
@@ -134,7 +134,15 @@ class EsiConnection
 
             $alliance_id = (isset($corp_info->alliance_id)) ? $corp_info->alliance_id : null;
             $d->alliance_id = $alliance_id;
+            $d->alliance_ticker = $this->getAllianceTicker($alliance_id);
             $d->alliance_name = $this->getAllianceName($alliance_id);
+
+            $start = new \DateTime($d->start_date);
+            $end = ($idx != 0) ? new \DateTime($data[$idx - 1]->start_date) : null;
+
+            $d->formatted_start_date = $start->format("m-d-Y");
+            $d->formatted_end_date = ($end != null) ? $end->format("m-d-Y") : null;
+            $d->duration = ($end != null) ? $start->diff($end)->format('%a days') : $start->diff(new \DateTime())->format('%a days');
         }
 
         return $data;
@@ -1244,6 +1252,34 @@ class EsiConnection
         Cache::add($cache_key, $alliance_info->name, env('CACHE_TIME', 3264));
 
         return $alliance_info->name;
+    }
+
+    /**
+     * Get the ticker for an alliance
+     *
+     * @param $alliance_id
+     * @return mixed|null
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     */
+    public function getAllianceTicker($alliance_id)
+    {
+        if ($alliance_id == null)
+            return null;
+
+        $cache_key = "alliance_ticker_{$alliance_id}";
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
+
+        $alliance_info = $this->eseye->invoke('get', '/alliances/{alliance_id}/', [
+            'alliance_id' => $alliance_id
+        ]);
+
+        Cache::add($cache_key, $alliance_info->ticker, env('CACHE_TIME', 3264));
+
+        return $alliance_info->ticker;
     }
 
     /**
