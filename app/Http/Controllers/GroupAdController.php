@@ -221,7 +221,6 @@ class GroupAdController extends Controller
         $requirements = $r->input('requirements');
         $allow_listing = ($r->input('allow_listing') === null) ? 0 : 1;
 
-        // TODO: No colons or underscores allowed in the name
         $name = $r->input('name');
 
         if (!$slug || !$text || !$name)

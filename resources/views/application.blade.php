@@ -292,11 +292,7 @@
 
         $.post('/api/esi/' + char_id + '/fit_check', data, function (e) {
             e = JSON.parse(e);
-
-            if (e.success === true)
-                showInfo(e.message);
-            else
-                showError(e.message);
+            $(".checker-output").text(e.message);
         });
 
         return false;
@@ -320,12 +316,12 @@
                 {
                     let skills = e.message;
                     if (skills.length > 0)
-                        showInfo('Missing skills:<pre>' + skills.join('\n') + '</pre>', 10000);
+                        $(".checker-output").html('Missing skills:<pre class="text-white">' + skills.join('\n') + '</pre>', 10000);
                     else
-                        showInfo('Skill requirements met');
+                        $(".checker-output").text('Skill requirements met');
                 }
                 else
-                    showError(e.message);
+                    $(".checker-output").text(e.message);
             });
 
             return false;

@@ -1,3 +1,6 @@
+<div class="row justify-content-center text-center">
+    <div class="col-12 checker-output"></div>
+</div>
 <div class="row justify-content-center">
     <div class="col-12 col-xl-3">
         <h4>Check Fitting</h4>
