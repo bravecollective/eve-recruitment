@@ -29,9 +29,6 @@ class User extends Model
         {
             if ($user->main == true)
                 $main = $user;
-
-            if ($user->validToken == false)
-                return redirect('/')->with('error', 'One or more of your characters has an invalid ESI token in Core. Please re-authorize all of your characters.');
         }
 
         self::addUsersToDatabase($core_users, $main);

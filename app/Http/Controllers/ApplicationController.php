@@ -40,15 +40,15 @@ class ApplicationController extends Controller
             return redirect('/')->with('error', 'Unauthorized');
 
         User::updateUsersOnApplicationLoad($application->account->main_user_id);
-        $warnings = Application::getWarnings($application);
         $esi = new EsiConnection($application->account->main_user_id);
 
         try {
             $sp = $esi->getSkillpoints();
             $isk = $esi->getWalletBalance();
             $titles = $esi->getTitles();
+            $warnings = Application::getWarnings($application);
         } catch(\Exception $e) {
-            $sp = $isk = $titles = null;
+            $sp = $isk = $titles = $warnings = null;
         }
 
         return view('application', [
