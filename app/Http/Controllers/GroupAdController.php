@@ -53,7 +53,7 @@ class GroupAdController extends Controller
     {
         $dbAd = RecruitmentAd::find($ad_id);
 
-        if ($dbAd->corporation_id == null && !AccountRole::userCanEditAd('group', $ad_id))
+        if ($dbAd->corp_id == null && !AccountRole::userCanEditAd('group', $ad_id))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
         $corp_name = ($dbAd->corporation_id != null) ? User::where('corporation_id', $dbAd->corporation_id)->first()->coropration_name : null;
