@@ -425,10 +425,10 @@ class ApplicationController extends Controller
         if (!AccountRole::canViewApplications($ad))
             return redirect('/')->with('error', 'Unauthorized');
 
-        $open_apps = Application::where('status', Application::OPEN)->where('recruitment_id', $id)->get();
-        $on_hold_apps = Application::where('status', Application::ON_HOLD)->where('recruitment_id', $id)->get();
-        $accepted_apps = Application::where('status', Application::ACCEPTED)->where('recruitment_id', $id)->get();
-        $closed_apps = Application::whereIn('status', [Application::CLOSED, Application::DENIED])->where('recruitment_id', $id)->get();
+        $open_apps = Application::where('status', Application::OPEN)->where('recruitment_id', $id)->orderBy('updated_at', 'asc')->get();
+        $on_hold_apps = Application::where('status', Application::ON_HOLD)->where('recruitment_id', $id)->orderBy('updated_at', 'asc')->get();
+        $accepted_apps = Application::where('status', Application::ACCEPTED)->where('recruitment_id', $id)->orderBy('updated_at', 'asc')->get();
+        $closed_apps = Application::whereIn('status', [Application::CLOSED, Application::DENIED])->where('recruitment_id', $id)->orderBy('updated_at', 'asc')->get();
 
         return view('applications',  ['ad' => $ad,
                                             'open_apps' => $open_apps,
@@ -468,7 +468,6 @@ class ApplicationController extends Controller
      */
     public function apply($recruitment_id)
     {
-        die(json_encode(['success' => true, 'message' => 'Application submitted']));
         $ad = RecruitmentAd::find($recruitment_id);
 
         if (!$ad)
