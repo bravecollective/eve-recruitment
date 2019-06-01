@@ -63,7 +63,7 @@
                 </div>
             </li>
             @endif
-            @if(count($recruitment_ads) > 0)
+            @if(Auth::user()->hasRoleLike('%manager') || Auth::user()->hasRoleLike('%director'))
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="stats" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Stats
