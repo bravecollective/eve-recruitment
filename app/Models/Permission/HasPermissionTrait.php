@@ -48,7 +48,15 @@ trait HasPermissionTrait
      */
     public function hasRoleLike($role)
     {
-        return $this->roles->contains(Role::where('name', 'LIKE', $role)->first());
+        $roles = Role::where('name', 'LIKE', $role)->get();
+
+        foreach ($roles as $role)
+        {
+            if ($this->roles->contains($role))
+                return true;
+        }
+
+        return false;
     }
 
     /**
