@@ -83,12 +83,12 @@ class Role extends Model
      */
     public static function createRoleForAd($ad, $type = 'corp')
     {
-        $role = Role::where('recruitment_id', $ad->id)->where('slug', 'recruiter')->first();
+        $name = ($ad->corp_id === null) ? $ad->group_name : User::where('corporation_id', $ad->corp_id)->first()->corporation_name;
+
+        $role = Role::where('name', $name . ' recruiter')->first();
 
         if (!$role)
             $role = new Role();
-
-        $name = ($ad->corp_id === null) ? $ad->group_name : User::where('corporation_id', $ad->corp_id)->first()->corporation_name;
 
         $role->slug = 'recruiter';
         $role->name = $name . ' recruiter';
@@ -97,7 +97,7 @@ class Role extends Model
 
         $slug = ($type == 'group') ? 'manager' : 'director';
 
-        $role = Role::where('slug', $slug)->where('name', $ad->group_name . " $slug")->first();
+        $role = Role::where('name', $name . ' ' . $slug)->first();
 
         if (!$role)
             $role = new Role();

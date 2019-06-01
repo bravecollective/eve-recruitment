@@ -25,10 +25,10 @@ class GroupAdController extends Controller
     {
         $dbAd = RecruitmentAd::find($ad_id);
 
-        if ($dbAd->corporation_id == null && !AccountRole::userCanEditAd('group', $dbAd->id))
+        if ($dbAd->corp_id == null && !AccountRole::userCanEditAd('group', $dbAd->id))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
-        $corp_name = ($dbAd->corporation_id != null) ? User::where('corporation_id', $dbAd->corporation_id)->first()->coropration_name : null;
+        $corp_name = ($dbAd->corp_id != null) ? User::where('corporation_id', $dbAd->corp_id)->first()->coropration_name : null;
 
         if ($corp_name != null && !Auth::user()->hasRole($corp_name . ' director'))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
@@ -56,7 +56,7 @@ class GroupAdController extends Controller
         if ($dbAd->corp_id == null && !AccountRole::userCanEditAd('group', $ad_id))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
-        $corp_name = ($dbAd->corporation_id != null) ? User::where('corporation_id', $dbAd->corporation_id)->first()->coropration_name : null;
+        $corp_name = ($dbAd->corp_id != null) ? User::where('corporation_id', $dbAd->corp_id)->first()->coropration_name : null;
 
         if ($corp_name != null && !Auth::user()->hasRole($corp_name . ' director'))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));

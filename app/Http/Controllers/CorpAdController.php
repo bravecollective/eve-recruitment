@@ -49,13 +49,16 @@ class CorpAdController extends Controller
         if (!$dbAd)
             die(json_encode(['success' => false, 'message' => 'Invalid question ID']));
 
-        if ($dbAd->corporation_id == null && $dbAd->created_by != Auth::user()->id)
+        if ($dbAd->corp_id == null && $dbAd->created_by != Auth::user()->id)
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
-        $corp_name = ($dbAd->corporation_id != null) ? User::where('corporation_id', $dbAd->corporation_id)->first()->coropration_name : null;
+        $corp_name = ($dbAd->corp_id != null) ? User::where('corporation_id', $dbAd->corp_id)->first()->coropration_name : null;
 
         if ($corp_name != null && !Auth::user()->hasRole($corp_name . ' director'))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
+
+        if ($dbAd->corp_id == null)
+            Role::where('recruitment_id', $id)->delete();
 
         $dbAd->delete();
 
