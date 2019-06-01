@@ -44,7 +44,7 @@ class AuthController extends Controller
             if ($user->main == true)
                 $main = $user;
 
-            if ($user->validToken == false)
+            if ($user->validToken === false)
                 return redirect('/')->with('error', 'One or more of your characters has an invalid ESI token in Core. Please re-authorize all of your characters.');
         }
 
