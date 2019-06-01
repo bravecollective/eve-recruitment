@@ -468,6 +468,7 @@ class ApplicationController extends Controller
      */
     public function apply($recruitment_id)
     {
+        die(json_encode(['success' => true, 'message' => 'Application submitted']));
         $ad = RecruitmentAd::find($recruitment_id);
 
         if (!$ad)

@@ -16,7 +16,8 @@
     @endforeach
     </form>
 @endif
-<button type="button" class="btn btn-success" onclick="apply()">Apply</button>
+<button type="button" class="btn btn-success" id="apply-button" onclick="apply()">Apply</button>
+<div class="d-inline-block align-middle" id="application-submitted" style="display: none !important;"><span class="fa fa-check"></span> Application submitted</div>
 @endsection
 @section('scripts')
     <script type="text/javascript">
@@ -32,7 +33,10 @@
             $.post('/recruitments/' + $("#recruitment_id").val() + '/apply', responses, function (e) {
                 e = JSON.parse(e);
                 if (e.success === true)
-                    showInfo(e.message);
+                {
+                    $("#application-submitted").show();
+                    $("#apply-button").hide();
+                }
                 else
                     showError(e.message);
             });
