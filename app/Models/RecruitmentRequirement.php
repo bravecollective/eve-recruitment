@@ -95,7 +95,7 @@ class RecruitmentRequirement extends Model
      * @param $setId
      * @return object
      */
-    public static function getPossibleRequirements($id = 0)
+    public static function getPossibleRequirements($id = -1)
     {
         $output = [];
         $alliance_whitelist = explode(',', env('ALLIANCE_WHITELIST'));

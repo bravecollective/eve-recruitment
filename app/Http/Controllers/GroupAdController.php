@@ -63,10 +63,11 @@ class GroupAdController extends Controller
 
         $requirement = RecruitmentRequirement::find($requirement_id);
 
-        if (!$requirement)
+        if (!$requirement && $requirement_id >= 0)
             die(json_encode(['success' => false, 'message' => 'Invalid requirement ID']));
 
-        $requirement->delete();
+        if ($requirement_id >= 0)
+            $requirement->delete();
 
         die(json_encode(['success' => true, 'message' => 'Requirement deleted']));
     }

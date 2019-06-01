@@ -19,7 +19,7 @@ class RecruitmentRequirementController extends Controller
         if (!AccountRole::userCanEditAd($type, $ad_id))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
-        $requirements = RecruitmentRequirement::getPossibleRequirements(0);
+        $requirements = RecruitmentRequirement::getPossibleRequirements(-1);
 
         die(view('parts/recruitment_requirement', ['requirements' => $requirements])->render());
     }
