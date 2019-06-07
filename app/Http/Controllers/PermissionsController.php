@@ -183,14 +183,9 @@ class PermissionsController extends Controller
             $persistent = ($role['persistent'] === "true") ? 1 : 0;
 
             if ($role['active'] == "true" && !$account->hasRole($dbRole->name))
-                $account->giveRoles($dbRole->name);
+                $account->giveRoles($persistent, $dbRole->name);
             else if ($role['active'] == "false" && $account->hasRole($dbRole->name))
                 $account->deleteRoles($dbRole->name);
-
-            $accountRole = AccountRole::getAccountRole($account->id, $dbRole->id);
-
-            if (!$accountRole || $persistent != $accountRole->set)
-                AccountRole::setPersistent($account->id, $dbRole->id, $persistent);
         }
 
         die(json_encode(['success' => true, 'message' => 'Permissions updated']));

@@ -16,7 +16,7 @@ trait HasPermissionTrait
      */
     public function giveAllRoles()
     {
-        return $this->giveRoles(...Role::all()->pluck('name')->toArray());
+        return $this->giveRoles(0, ...Role::all()->pluck('name')->toArray());
     }
 
     /**
@@ -62,10 +62,11 @@ trait HasPermissionTrait
     /**
      * Give an account roles
      *
+     * @param int $set If the role should be persistent
      * @param mixed ...$roles
      * @return $this
      */
-    public function giveRoles(...$roles)
+    public function giveRoles($set, ...$roles)
     {
         $roles = $this->getAllRoles($roles);
 
@@ -75,7 +76,7 @@ trait HasPermissionTrait
         foreach ($roles as $role)
         {
             if (!$this->hasRole($role->name))
-                $this->roles()->attach($role);
+                $this->roles()->attach($role, ['set' => $set]);
         }
 
         return $this;

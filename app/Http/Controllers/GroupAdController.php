@@ -257,7 +257,7 @@ class GroupAdController extends Controller
         Role::createRoleForAd($ad, 'group');
 
         if ($new)
-            Auth::user()->giveRoles($name . ' manager', $name . ' recruiter');
+            Auth::user()->giveRoles(1, $name . ' manager', $name . ' recruiter');
 
         if ($questions)
         {
