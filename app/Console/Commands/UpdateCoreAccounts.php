@@ -57,7 +57,7 @@ class UpdateCoreAccounts extends Command
         foreach ($accounts as $account)
         {
             $user = User::where('account_id', $account->id)->first();
-            $account->core_account_id = CoreConnection::getCharacterAccount($user->character_id);
+            $account->core_account_id = $user->core_account_id;
             $account->save();
             $count++;
         }
