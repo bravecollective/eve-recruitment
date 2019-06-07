@@ -10,6 +10,9 @@
 1. Update `config/constants.php` to include any additional permissions
 1. Run database seeder: `php artisan db:seed`
 1. Ensure php's `max_execution_time` is set to at least 300
+1. Add the following to your crontab:
+
+```* * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1```
 
 ## Roles
 Each recruitment ad (either corporation or group) has two roles associated with it: `{name} recruiter`, and `{name}
