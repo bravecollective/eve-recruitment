@@ -43,6 +43,10 @@
         $("form").on("submit", function (e) {
             e.preventDefault();
             let form = $(this).serialize();
+            let stats_results = $("#stats-data");
+
+            stats_results.empty();
+
             $.post('/stats', form, function (e) {
                 e = JSON.parse(e);
 
@@ -53,7 +57,10 @@
                     let changes = JSON.parse(e.message);
                     let keys = Object.keys(changes);
 
-                    keys.forEach((e) => $("#stats-data").append(e + ": " + changes[e] + "<br />"))
+                    if (keys.length == 0)
+                        stats_results.text('No results found');
+                    else
+                        keys.forEach((e) => stats_results.append(e + ": " + changes[e] + "<br />"));
                 }
             });
         });
