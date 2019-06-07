@@ -12,23 +12,28 @@
                 <ul class="list-group search-result"></ul>
             </div>
         </div>
-    @foreach($roles as $role)
-        <div class="role row" style="margin-left: 0.1em;">
-            <div class="col-5 form-check form-check-inline">
-                <input autocomplete="off" type="checkbox" class="form-check-input role-checkbox" id="{{ $role->id }}" />
-                <label class="text-white form-check-label" for="{{ $role->id }}">{{ $role->name }}</label>
-            </div>
-            <div class="col-1 form-check form-check-inline">
-                <input autocomplete="off" type="checkbox" class="form-check-input" id="persistent-{{ $role->id }}" />
-                <label class="text-white form-check-label" for="persistent-{{ $role->id }}">Persistent</label>
-            </div>
-        </div>
-    @endforeach
         <div class="row" style="margin-left: 0.1em;">
             <button type="button" class="btn btn-primary" onclick="saveRoles();">Save</button>
         </div>
     </div>
-    <div class="col-12 col-md-6 col-xl-4">
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="row">
+            <h2>Permissions</h2>
+        </div>
+        @foreach($roles as $role)
+            <div class="role row" style="margin-left: 0.1em;">
+                <div class="col-5 form-check form-check-inline">
+                    <input autocomplete="off" type="checkbox" class="form-check-input role-checkbox" id="{{ $role->id }}" />
+                    <label class="text-white form-check-label" for="{{ $role->id }}">{{ $role->name }}</label>
+                </div>
+                <div class="col-1 form-check form-check-inline">
+                    <input autocomplete="off" type="checkbox" class="form-check-input persistent-checkbox" id="persistent-{{ $role->id }}" />
+                    <label class="text-white form-check-label" for="persistent-{{ $role->id }}">Persistent</label>
+                </div>
+            </div>
+        @endforeach
+    </div>
+    <div class="col-12 col-md-6 col-xl-2">
         <div class="row">
             <h2>{{ $ad->group_name }} Recruiters</h2>
         </div>
@@ -50,6 +55,13 @@
         let list = $(".list-group");
         let roles = $(".role");
         let roles_checkboxes = $('.role-checkbox');
+        let persistent_checkboxes = $('.persistent-checkbox');
+
+        function clearCheckboxes()
+        {
+            roles_checkboxes.prop('checked', false);
+            persistent_checkboxes.prop('checked', false);
+        }
 
         function saveRoles()
         {
@@ -77,6 +89,8 @@
 
         function loadUserRoles(user_id)
         {
+            clearCheckboxes();
+
             let data = {
                 "_token": "{{ csrf_token() }}",
                 "user_id": user_id,
@@ -86,6 +100,8 @@
             $("#character_id").val(user_id);
 
             $.post('/api/groups/roles', data, function (e) {
+                list.hide();
+
                 e = JSON.parse(e);
 
                 if (e.success === false)
@@ -95,21 +111,19 @@
                 }
 
                 e.message.forEach(function (f) {
-                    $("#" + f.role_id).attr('checked', true);
+                    $("#" + f.role_id).prop('checked', true);
+                    console.log('checking ' + f.role_id);
                     if (f.set === 1)
-                        $("#persistent-" + f.role_id).attr('checked', true);
+                        $("#persistent-" + f.role_id).prop('checked', true);
                     else
-                        $("#persistent-" + f.role_id).attr('checked', false);
+                        $("#persistent-" + f.role_id).prop('checked', false);
                 });
-                list.hide();
-                roles.show();
             });
         }
 
         function search(i)
         {
             let data = $(i).serializeObject();
-            roles.hide();
 
             if (data.search.length <= 3)
                 return;

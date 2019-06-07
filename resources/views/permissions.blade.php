@@ -18,7 +18,7 @@
                     <label class="text-white form-check-label" for="{{ $role->id }}">{{ $role->name }}</label>
                 </div>
                 <div class="col-1 form-check form-check-inline">
-                    <input autocomplete="off" type="checkbox" class="form-check-input" id="persistent-{{ $role->id }}" />
+                    <input autocomplete="off" type="checkbox" class="form-check-input persistent-checkbox" id="persistent-{{ $role->id }}" />
                     <label class="text-white form-check-label" for="persistent-{{ $role->id }}">Persistent</label>
                 </div>
             </div>
@@ -35,6 +35,7 @@
 @section('scripts')
 <script type="text/javascript">
     let roles_checkboxes = $('.role-checkbox');
+    let persistent_checkboxes = $('.persistent-checkbox');
     let searchbox = $('#search');
 
     $("#character_id").val('');
@@ -45,6 +46,7 @@
     function clearCheckboxes()
     {
         roles_checkboxes.prop('checked', false);
+        persistent_checkboxes.prop('checked', false);
     }
 
     function saveRoles()
@@ -86,13 +88,18 @@
             e = JSON.parse(e);
 
             if (e.success === false)
+            {
+                showError(e.message);
                 return;
+            }
 
             e.message.forEach(function (e) {
                 let item = $("#" + e.id);
                 item.prop('checked', true);
                 if (e.set === 1)
                     $("#persistent-" + e.id).prop('checked', true);
+                else
+                    $("#persistent-" + e.id).prop('checked', false);
             });
 
             roles_checkboxes.removeAttr('disabled');
