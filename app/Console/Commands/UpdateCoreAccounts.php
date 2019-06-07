@@ -42,18 +42,26 @@ class UpdateCoreAccounts extends Command
     {
         $users = User::all();
         $accounts = Account::all();
+        $count = 0;
 
         foreach ($users as $user)
         {
             $user->core_account_id = CoreConnection::getCharacterAccount($user->character_id);
             $user->save();
+            $count++;
         }
+
+        echo "Updated $count characters\n";
+        $count = 0;
 
         foreach ($accounts as $account)
         {
             $user = User::where('account_id', $account->id)->first();
             $account->core_account_id = CoreConnection::getCharacterAccount($user->character_id);
             $account->save();
+            $count++;
         }
+
+        echo "Updated $count accounts\n";
     }
 }
