@@ -9,29 +9,6 @@ class Account extends Authenticatable
     use HasPermissionTrait;
 
     protected $table = 'account';
-    /**
-     * given an array of users, get the account ID
-     *
-     * @param $users
-     * @return User|null
-     */
-    public static function getAccountIdForUsers($users)
-    {
-        $account_id = null;
-
-        foreach ($users as $user)
-        {
-            $id = User::getAccountIdForUserId($user->id);
-
-            if ($id != null)
-            {
-                $account_id = $id;
-                break;
-            }
-        }
-
-        return $account_id;
-    }
 
     /**
      * Entity relationship

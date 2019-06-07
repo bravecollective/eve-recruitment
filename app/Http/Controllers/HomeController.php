@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Connectors\CoreConnection;
 use App\Models\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

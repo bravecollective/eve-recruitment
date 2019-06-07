@@ -41,6 +41,17 @@ class CoreConnection
     }
 
     /**
+     * Get the account ID for a character
+     * @param $userId int The ID of the user
+     * @return int The account ID
+     */
+    public static function getCharacterAccount($userId)
+    {
+        $output = self::generateWebRequest('/api/app/v1/player/' . $userId);
+        return $output->id;
+    }
+
+    /**
      * Get the core groups associated with a userID
      * @param $userId int The ID of the user
      * @return array|null JSON array of groups, or null if none were found
@@ -61,5 +72,17 @@ class CoreConnection
     {
         $output = self::generateWebRequest('/api/app/v1/removed-characters/' . $characterId);
         return $output;
+    }
+
+    /**
+     * Get the main from the core account based on character ID
+     *
+     * @param $characterId
+     * @return array|null
+     */
+    public static function getMainFromCharacterID($characterId)
+    {
+        $output = self::generateWebRequest('/api/app/v2/main/' . $characterId);
+        return $output->id;
     }
 }

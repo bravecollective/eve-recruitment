@@ -57,7 +57,8 @@ class AuthController extends Controller
         // Insert/update core groups in database
         AccountGroup::updateGroupsForUser($main->id);
 
-        $dbAccount = Account::where('main_user_id', $main->id)->first();
+        $coreAccountID = CoreConnection::getCharacterAccount($main->id);
+        $dbAccount = Account::where('core_account_id', $coreAccountID)->first();
 
         // Delete not persistent roles
         AccountRole::deleteNotPersistentRoles($dbAccount->id);

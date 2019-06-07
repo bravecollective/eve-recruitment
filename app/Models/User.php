@@ -15,7 +15,6 @@ class User extends Model
      * Update account when ESI is viewed
      *
      * @param $char_id
-     * @return \Illuminate\Http\RedirectResponse
      */
     public static function updateUsersOnApplicationLoad($char_id)
     {
@@ -41,16 +40,16 @@ class User extends Model
      */
     public static function addUsersToDatabase($users, $main)
     {
-        // Find the account ID
-        $account_id = Account::getAccountIdForUsers($users);
-        $new_user_ids = [];
+        $core_account_id = CoreConnection::getCharacterAccount($users[0]->id);
 
-        if ($account_id == null)
-            $account = new Account();
-        else
-            $account = Account::find($account_id);
+        $account = Account::where('core_account_id', $core_account_id)->first();
+        $account = ($account == null) ? new Account() : $account;
+
+        $new_user_ids = [];
+        $old_accounts = [];
 
         $account->main_user_id = $main->id;
+        $account->core_account_id = $core_account_id;
         $account->save();
 
         foreach ($users as $user)
@@ -58,9 +57,12 @@ class User extends Model
             $dbUser = User::where('character_id', $user->id)->first();
 
             if (!$dbUser)
-                $dbUser = new User(); // New character
+                $dbUser = new User();
+            else if ($dbUser->core_account_id != $account->core_account_id)
+                $old_accounts[] = $dbUser->core_account_id; // Used to check for orphaned accounts. This char switched accounts
 
             $dbUser->account_id = $account->id;
+            $dbUser->core_account_id = $core_account_id;
             $dbUser->name = $user->name;
             $dbUser->character_id = $user->id;
             $dbUser->corporation_id = $user->corporation->id;
@@ -76,8 +78,23 @@ class User extends Model
             $new_user_ids[] = $dbUser->character_id;
         }
 
-        // Delete old characters
-        User::where('account_id', $account_id)->whereNotIn('character_id', $new_user_ids)->delete();
+        // Delete old characters from this account
+        User::where('core_account_id', $account->core_account_id)->whereNotIn('character_id', $new_user_ids)->delete();
+
+        // Delete potentially orphaned accounts
+        foreach ($old_accounts as $old_account_id)
+        {
+            $users = User::where('core_account_id', $old_account_id)->get();
+
+            if (count($users) == 0)
+                Account::where('core_account_id', $old_account_id)->delete();
+            else
+            {
+                $account = Account::where('core_account_id', $old_account_id)->first();
+                $account->main_user_id = 0;
+                $account->save();
+            }
+        }
     }
 
     /**
