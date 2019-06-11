@@ -155,7 +155,7 @@
 
         function saveAd(f)
         {
-           f = $(f).serializeObject();
+           f = $(f).serializeArray();
            let c = $("#corpId").val();
            let url = (c !== undefined) ? '/corporations/' + c + '/ad/save' : '/group/ad/save';
 

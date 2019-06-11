@@ -148,7 +148,7 @@ class CorpAdController extends Controller
                     $rec_id = $data[0];
                     $type = $data[1];
 
-                    $dbRequirement = ($id == 0) ? new RecruitmentRequirement() : RecruitmentRequirement::find($id);
+                    $dbRequirement = ($id == -1) ? new RecruitmentRequirement() : RecruitmentRequirement::find($id);
                     $dbRequirement->type = $type;
                     $dbRequirement->requirement_id = $rec_id;
                     $dbRequirement->recruitment_id = $ad->id;
