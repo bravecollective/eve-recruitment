@@ -16,6 +16,17 @@
         </ul>
         <ul class="nav navbar-nav navbar-right">
         @auth
+            @if(Auth::user()->hasRoleLike('%recruiter') || Auth::user()->hasRoleLike('%director') || Auth::user()->hasRoleLike('admin'))
+                <form class="form-inline mb-0" method="POST" action="/character/search">
+                    <div class="input-group">
+                        <input type="hidden" name="_token" value="{{ csrf_token() }}" />
+                        <input class="form-control" name="search" type="text" placeholder="Character search..." />
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-outline-secondary"><span class="fa fa-search"></span></button>
+                        </div>
+                    </div>
+                </form>
+            @endif
             @if(count($recruitment_ads) > 0)
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="applications" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

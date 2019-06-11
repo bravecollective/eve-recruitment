@@ -111,7 +111,7 @@
     {
         let data = $(i).serializeObject();
 
-        if (data.search.length <= 3)
+        if (data.search.length < 3)
             return;
 
         $.post('/api/character/search', data, function (e) {

@@ -21,6 +21,7 @@ Route::get('/group/ad/{id}/permissions', 'GroupAdController@groupPermissions');
 
 // Ajax routes
 Route::post('/api/character/search', 'SearchController@characterSearch');
+Route::post('/character/search', 'SearchController@navbarCharacterSearch');
 Route::post('/api/character/roles', 'PermissionsController@loadUserRoles');
 Route::post('/api/character/roles/save', 'PermissionsController@saveUserRoles');
 Route::post('/api/admin/roles/auto/save', 'PermissionsController@saveAutoRoles');
