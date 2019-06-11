@@ -450,6 +450,9 @@ class EsiConnection
             }
         }
 
+        if (count($ids) == 0)
+            return null;
+
         $res = $this->eseye->setBody($ids)->invoke('post', '/universe/names/');
 
         if (!$res)
@@ -1018,7 +1021,14 @@ class EsiConnection
         $journal = $model->getCharactersCharacterIdWalletJournalWithHttpInfo($this->char_id, $this->char_id, null, $page);
 
         for ($i = 2; $i <= $journal[2]['X-Pages'][0]; $i++)
-            $journal[0] = array_merge($journal[0], $model->getCharactersCharacterIdWallet($this->char_id, $this->char_id, null, $i));
+        {
+            $second = $model->getCharactersCharacterIdWallet($this->char_id, $this->char_id, null, $i);
+
+            if (!is_array($second))
+                continue;
+
+            $journal[0] = array_merge($journal[0], $second);
+        }
 
         foreach ($journal[0] as $entry)
         {
