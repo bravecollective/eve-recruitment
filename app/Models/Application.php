@@ -15,14 +15,12 @@ class Application extends Model
     const DENIED = 4;
     const REVIEW_REQUESTED = 5;
     const CLOSED = 6;
-    const BLACKLISTED = 7;
     const TRIAL = 8;
     const IN_PROGRESS = 9;
 
     // Map states to names
     public static $state_names = [
         self::ACCEPTED => "Accepted",
-        self::BLACKLISTED => "Blacklisted",
         self::CLOSED => "Closed",
         self::DENIED => "Denied",
         self::IN_PROGRESS => "In Progress",
@@ -34,7 +32,6 @@ class Application extends Model
 
     // Override what the user sees
     public static $state_names_overrides = [
-        self::BLACKLISTED => "Closed",
         self::REVIEW_REQUESTED => "Open",
     ];
 
@@ -160,10 +157,11 @@ class Application extends Model
     {
         // States that prohibit the user from re-applying
         $cantReapplyStates = [
-            self::BLACKLISTED,
+            self::DENIED,
             self::ON_HOLD,
             self::REVIEW_REQUESTED,
             self::ACCEPTED,
+            self::TRIAL,
             self::OPEN
         ];
 
