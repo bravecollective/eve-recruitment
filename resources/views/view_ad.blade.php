@@ -11,7 +11,7 @@
     @foreach($questions as $question)
         <div class="form-group">
             <label for="{{ $question->id }}">{{ $question->question }}</label>
-            <input type="text" class="form-control" id="{{ $question->id }}" />
+            <input type="text" class="form-control question_response" id="{{ $question->id }}" />
         </div>
     @endforeach
     </form>
@@ -23,7 +23,7 @@
     <script type="text/javascript">
         function apply()
         {
-            let questions = $("input[type=text]");
+            let questions = $(".question_response");
             let responses = {
                 _token: "{{ csrf_token() }}",
                 questions: []
