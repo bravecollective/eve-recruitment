@@ -5,15 +5,16 @@
 <div class="row justify-content-center">
 @if(isset($application))
     <div class="col-12 col-lg-3 col-md-5">
-        <select style="width: 100%;" class="custom-select" style="width: 15%; margin-top: 1em;" autocomplete="off" onchange="updateStatus(this);">
-            @foreach($states as $id => $state)
-                @if($application->status == $id)
-                    <option value="{{ $id }}" selected>{{ $state }}</option>
-                @else
-                    <option value="{{ $id }}">{{ $state }}</option>
-                @endif
-            @endforeach
+        <select style="width: 95%;" class="custom-select" style="width: 15%; margin-top: 1em;" autocomplete="off" onchange="updateStatus(this);">
+    @foreach($states as $id => $state)
+        @if($application->status == $id)
+            <option value="{{ $id }}" selected>{{ $state }}</option>
+        @else
+            <option value="{{ $id }}">{{ $state }}</option>
+        @endif
+    @endforeach
         </select>
+        <span class="fa fa-info-circle" data-toggle="tooltip" data-html="true" title="{{ $state_tooltip }}"></span>
     </div>
 @endif
 </div><br />
@@ -142,6 +143,10 @@
         document.title = "{{ $character->name }} - " + document.title;
         let esiLoaded = false;
         let char_id = "{{ $character->character_id }}";
+
+        $(document).ready(function(){
+            $('[data-toggle="tooltip"]').tooltip();
+        });
 
         function loadPartial(url, anchor, name, additionalFunction = null)
         {

@@ -18,6 +18,12 @@ class Application extends Model
     const TRIAL = 8;
     const IN_PROGRESS = 9;
 
+    /**
+     * NOTE: $state_names is the base for the tooltips
+     * If a key exists in $state_names that doesn't exist in $tooltips (and vice versa), it will be
+     * ignored.
+     */
+
     // Map states to names
     public static $state_names = [
         self::ACCEPTED => "Accepted",
@@ -28,6 +34,18 @@ class Application extends Model
         self::OPEN => "Open",
         self::REVIEW_REQUESTED => "Review Requested",
         self::TRIAL => "Trial",
+    ];
+
+    // Tooltips to show on the application page
+    public static $tooltips = [
+        self::ACCEPTED => "Accept the application (cannot re-apply)",
+        self::CLOSED => "Close the application (can re-apply)",
+        self::DENIED => "Deny the application (cannot re-apply)",
+        self::IN_PROGRESS => "Indicates someone is working on the application (cannot re-apply)",
+        self::ON_HOLD => "Tell the applicant that they need to provide more information (cannot re-apply)",
+        self::OPEN => "New application (cannot re-apply)",
+        self::REVIEW_REQUESTED => "Request review from another recruiter (cannot re-apply)",
+        self::TRIAL => "Trial applicant (cannot re-apply)",
     ];
 
     // Override what the user sees
@@ -162,7 +180,8 @@ class Application extends Model
             self::REVIEW_REQUESTED,
             self::ACCEPTED,
             self::TRIAL,
-            self::OPEN
+            self::OPEN,
+            self::IN_PROGRESS
         ];
 
         if (Application::where('account_id', $account->id)

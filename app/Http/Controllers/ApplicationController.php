@@ -25,7 +25,6 @@ class ApplicationController extends Controller
      * @param $id
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Swagger\Client\Eve\ApiException
      */
     function viewApplication($id)
     {
@@ -51,6 +50,19 @@ class ApplicationController extends Controller
             $sp = $isk = $titles = $warnings = null;
         }
 
+        $tooltips = [];
+
+        foreach (Application::$state_names as $id => $name)
+        {
+            if (!array_key_exists($id, Application::$tooltips))
+                continue;
+
+            $tooltip = Application::$tooltips[$id];
+            $tooltips[] = "$name: $tooltip";
+        }
+
+        $tooltips = implode("<br>", $tooltips);
+
         return view('application', [
             'alts' => $application->account->alts(),
             'character' => $application->account->main(),
@@ -59,7 +71,8 @@ class ApplicationController extends Controller
             'warnings' => $warnings,
             'sp' => $sp,
             'isk' => $isk,
-            'titles' => $titles
+            'titles' => $titles,
+            'state_tooltip' => $tooltips,
         ]);
     }
 
