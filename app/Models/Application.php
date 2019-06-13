@@ -26,7 +26,7 @@ class Application extends Model
         self::CLOSED => "Closed",
         self::DENIED => "Denied",
         self::IN_PROGRESS => "In Progress",
-        self::ON_HOLD => "On Hold",
+        self::ON_HOLD => "Awaiting Information",
         self::OPEN => "Open",
         self::REVIEW_REQUESTED => "Review Requested",
         self::TRIAL => "Trial",

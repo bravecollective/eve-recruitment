@@ -7,7 +7,7 @@
             <a class="nav-link active" id="open-tab" data-toggle="tab" role="tab" aria-controls="open" aria-selected="true" href="#open">Open</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" id="hold-tab" data-toggle="tab" role="tab" aria-controls="hold" aria-selected="false" href="#hold">On Hold</a>
+            <a class="nav-link" id="hold-tab" data-toggle="tab" role="tab" aria-controls="hold" aria-selected="false" href="#hold">Awaiting Information</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" id="accepted-tab" data-toggle="tab" role="tab" aria-controls="accepted" aria-selected="false" href="#accepted">Accepted</a>
