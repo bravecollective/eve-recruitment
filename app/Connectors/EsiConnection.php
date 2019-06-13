@@ -1022,7 +1022,7 @@ class EsiConnection
 
         for ($i = 2; $i <= $journal[2]['X-Pages'][0]; $i++)
         {
-            $second = $model->getCharactersCharacterIdWallet($this->char_id, $this->char_id, null, $i);
+            $second = $model->getCharactersCharacterIdWalletJournal($this->char_id, $this->char_id, null, $i);
 
             if (!is_array($second))
                 continue;
