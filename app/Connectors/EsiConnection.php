@@ -548,7 +548,8 @@ class EsiConnection
         {
             $out[] = [
                 'skill' => $this->getTypeName($skill->getSkillId()),
-                'end_level' => $skill->getFinishedLevel()
+                'end_level' => $skill->getFinishedLevel(),
+                'paused' => (!method_exists($skill, 'getFinishDate') || $skill->getFinishDate() == null) ? true : false,
             ];
         }
 

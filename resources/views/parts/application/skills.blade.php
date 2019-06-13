@@ -46,6 +46,9 @@
             <div class="card-body">
                 <div class="card-header">
                     Skill Queue
+                @if(count($queue) > 0 && $queue[0]['paused'] == true)
+                    (PAUSED)
+                @endif
                 </div>
                 <ul class="list-group">
                 @foreach($queue as $skill)
