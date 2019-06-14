@@ -49,6 +49,10 @@ body {
     color: white;
 }
 
+table {
+    color: white;
+}
+
 /* Fix for DataTables with full width showing scrollbar */
 @media only screen and (min-width: 768px) {
     .table-responsive {

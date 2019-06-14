@@ -161,7 +161,15 @@ class Application extends Model
      */
     public static function getUserApplications()
     {
-        return self::where('account_id', Auth::user()->id)->get();
+        $applications = self::where('account_id', Auth::user()->id)->get();
+
+        foreach ($applications as $application)
+        {
+            $last_update = ApplicationChangelog::where('application_id', $application->id)->latest('updated_at')->first();
+            $application->last_update = ($last_update) ? $last_update->updated_at : $application->updated_at;
+        }
+
+        return $applications;
     }
 
     /**
