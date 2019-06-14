@@ -1,6 +1,5 @@
 @extends('default')
 @section('content')
-
 @include('parts/application/character_header', ['character' => $character])
 <div class="row justify-content-center">
 @if(isset($application))
@@ -14,7 +13,7 @@
         @endif
     @endforeach
         </select>
-        <span class="fa fa-info-circle" data-toggle="tooltip" data-html="true" title="{{ $state_tooltip }}"></span>
+        <span style="cursor: pointer;" class="fa fa-info-circle" data-toggle="modal" data-target="#state-modal"></span>
     </div>
 @endif
 </div><br />
@@ -113,6 +112,25 @@
     <div class="tab-pane fade" id="tab-contracts" role="tabpanel" aria-labelledby="tab-contracts"></div>
     <div class="tab-pane fade" id="tab-notifications" role="tabpanel" aria-labelledby="tab-notifications"></div>
     <div class="tab-pane fade" id="tab-utilities" role="tabpanel" aria-labelledby="tab-utilities">@include('parts/application/utilities')</div>
+
+    <div class="modal" id="state-modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header">
+                    <h5 class="modal-title">Application state information</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>{!! $state_tooltip !!}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 @section('styles')
     <style>
@@ -143,10 +161,6 @@
         document.title = "{{ $character->name }} - " + document.title;
         let esiLoaded = false;
         let char_id = "{{ $character->character_id }}";
-
-        $(document).ready(function(){
-            $('[data-toggle="tooltip"]').tooltip();
-        });
 
         function loadPartial(url, anchor, name, additionalFunction = null)
         {

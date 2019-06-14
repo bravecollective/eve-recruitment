@@ -27,10 +27,10 @@ class Application extends Model
     // Map states to names
     public static $state_names = [
         self::ACCEPTED => "Accepted",
+        self::ON_HOLD => "Awaiting Information",
         self::CLOSED => "Closed",
         self::DENIED => "Denied",
         self::IN_PROGRESS => "In Progress",
-        self::ON_HOLD => "Awaiting Information",
         self::OPEN => "Open",
         self::REVIEW_REQUESTED => "Review Requested",
         self::TRIAL => "Trial",
@@ -39,10 +39,10 @@ class Application extends Model
     // Tooltips to show on the application page
     public static $tooltips = [
         self::ACCEPTED => "Accept the application (cannot re-apply)",
+        self::ON_HOLD => "Tell the applicant that they need to provide more information (cannot re-apply)",
         self::CLOSED => "Close the application (can re-apply)",
         self::DENIED => "Deny the application (cannot re-apply)",
         self::IN_PROGRESS => "Indicates someone is working on the application (cannot re-apply)",
-        self::ON_HOLD => "Tell the applicant that they need to provide more information (cannot re-apply)",
         self::OPEN => "New application (cannot re-apply)",
         self::REVIEW_REQUESTED => "Request review from another recruiter (cannot re-apply)",
         self::TRIAL => "Trial applicant (cannot re-apply)",
