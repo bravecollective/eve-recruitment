@@ -456,12 +456,12 @@ class EsiConnection
         }
 
         if (count($ids) == 0)
-            return null;
+            return [];
 
         $res = $this->eseye->setBody($ids)->invoke('post', '/universe/names/');
 
         if (!$res)
-            return null;
+            return [];
 
         $data = json_decode($res->raw, true);
         $new_ids = [];
