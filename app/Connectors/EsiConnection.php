@@ -165,17 +165,22 @@ class EsiConnection
             $skillsModel = new SkillsApi($this->client, $this->config);
             $attributes = $skillsModel->getCharactersCharacterIdAttributes($this->char_id, $this->char_id);
 
+            $ship = $locationModel->getCharactersCharacterIdShip($this->char_id, $this->char_id);
+        } catch(\Exception $e) {
+            $ship = $attributes = null;
+        }
+
+        try {
             if ($location->getStructureId() == null && $location->getStationId() == null)
                 $location->structure_name = "In Space (" . $this->getSystemName($location->getSolarSystemId()) . ")";
             else if ($location->getStructureId() != null)
                 $location->structure_name = $this->getStructureName($location->getStructureId());
             else
                 $location->structure_name = $this->getStationName($location->getStationId());
-
-            $ship = $locationModel->getCharactersCharacterIdShip($this->char_id, $this->char_id);
         } catch(\Exception $e) {
-            $location = $ship = $attributes = null;
+            $location->structure_name = "- Undockable Structure -";
         }
+
         $public_data = $this->eseye->invoke('get', '/characters/{character_id}/', [
             "character_id" => $this->char_id
         ]);
