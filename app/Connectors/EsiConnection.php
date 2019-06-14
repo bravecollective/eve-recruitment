@@ -67,6 +67,9 @@ class EsiConnection
         "HangarAll"
     ];
 
+    // The maximum number of mails to load from ESI
+    const MAX_MAILS_TO_LOAD = 100;
+
     /**
      * EsiModel constructor
      *
@@ -392,9 +395,22 @@ class EsiConnection
             $mail = Cache::get($mailCacheKey);
         else
         {
-            $mail = $model->getCharactersCharacterIdMailWithHttpInfo($this->char_id, $this->char_id);
-            Cache::add($mailCacheKey, $mail[0], $this->getCacheExpirationTime($mail));
-            $mail = $mail[0];
+            $mail_http = $model->getCharactersCharacterIdMailWithHttpInfo($this->char_id, $this->char_id);
+            $mail = $mail_http[0];
+
+            while (true)
+            {
+                $last_mail_id = end($mail)->getMailId();
+                reset($mail);
+                $temp = $model->getCharactersCharacterIdMail($this->char_id, $this->char_id, null, null, $last_mail_id);
+
+                $mail = array_merge($mail, $temp);
+
+                if (count($mail) >= self::MAX_MAILS_TO_LOAD)
+                    break;
+            }
+
+            Cache::add($mailCacheKey, $mail, $this->getCacheExpirationTime($mail_http));
         }
 
         foreach ($mail as $m)
