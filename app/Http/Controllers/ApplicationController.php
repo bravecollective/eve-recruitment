@@ -439,15 +439,21 @@ class ApplicationController extends Controller
             return redirect('/')->with('error', 'Unauthorized');
 
         $open_apps = Application::where('status', Application::OPEN)->where('recruitment_id', $id)->orderBy('updated_at', 'asc')->get();
+        $review_requested_apps = Application::where('status', Application::REVIEW_REQUESTED)->where('recruitment_id', $id)->orderBy('updated_at', 'asc')->get();
         $on_hold_apps = Application::where('status', Application::ON_HOLD)->where('recruitment_id', $id)->orderBy('updated_at', 'asc')->get();
+        $trial = Application::where('status', Application::TRIAL)->where('recruitment_id', $id)->orderBy('updated_at', 'asc')->get();
         $accepted_apps = Application::where('status', Application::ACCEPTED)->where('recruitment_id', $id)->orderBy('updated_at', 'asc')->get();
         $closed_apps = Application::whereIn('status', [Application::CLOSED, Application::DENIED])->where('recruitment_id', $id)->orderBy('updated_at', 'asc')->get();
+        $in_progress = Application::where('status', Application::IN_PROGRESS)->where('recruitment_id', $id)->orderBy('updated_at', 'asc')->get();
 
         return view('applications',  ['ad' => $ad,
                                             'open_apps' => $open_apps,
+                                            'review_requested_apps' => $review_requested_apps,
                                             'on_hold_apps' => $on_hold_apps,
+                                            'trial_apps' => $trial,
                                             'accepted_apps' => $accepted_apps,
-                                            'closed_apps' => $closed_apps]);
+                                            'closed_apps' => $closed_apps,
+                                            'in_progress_apps' => $in_progress]);
     }
 
     /**

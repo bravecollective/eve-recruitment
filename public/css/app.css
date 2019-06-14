@@ -41,6 +41,14 @@ body {
     max-width: 500px;
 }
 
+.nav-link {
+    color: white;
+}
+
+.nav-link:hover {
+    color: white;
+}
+
 /* Fix for DataTables with full width showing scrollbar */
 @media only screen and (min-width: 768px) {
     .table-responsive {
