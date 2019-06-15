@@ -205,19 +205,19 @@
             @foreach($contacts as $contact)
                 @switch($contact->getContactType())
                     @case("character")
-                    @php($zkill_link = "https://zkillboard.com/character/" . $contact->getContactId())
+                    @php($evewho_link = "https://evewho.com/pilot/" . str_replace(' ', '+', $contact->contact_name))
                     @php($img_link = "https://image.eveonline.com/Character/" . $contact->getContactId() . "_64.jpg")
                     @break
                     @case("corporation")
-                    @php($zkill_link = "https://zkillboard.com/corporation/" . $contact->getContactId())
+                    @php($evewho_link = "https://evewho.com/corp/" . str_replace(' ', '+', $contact->contact_name))
                     @php($img_link = "https://image.eveonline.com/Corporation/" . $contact->getContactId() . "_64.png")
                     @break
                     @case("alliance")
-                    @php($zkill_link = "https://zkillboard.com/alliance/" . $contact->getContactId())
+                    @php($evewho_link = "https://evewho.com/alli/" . str_replace(' ', '+', $contact->contact_name))
                     @php($img_link = "https://image.eveonline.com/Alliance/" . $contact->getContactId() . "_64.png")
                     @break
                     @case("faction")
-                    @php($zkill_link = "")
+                    @php($evewho_link = "")
                     @php($img_link = "")
                     @break
                 @endswitch
@@ -241,7 +241,7 @@
                     @php($class = null)
                     @break
                 @endswitch
-                <a class="list-group-item bg-dark text-white" href="{{ $zkill_link }}" target="_blank">
+                <a class="list-group-item bg-dark text-white" href="{{ $evewho_link }}" target="_blank">
                     <div class="media">
                         @if($contact->getContactType() != "faction")
                         <img class="mr-3 rounded img-fluid" src="{{ $img_link }}" />
