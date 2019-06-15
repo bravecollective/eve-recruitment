@@ -216,6 +216,10 @@
                     @php($zkill_link = "https://zkillboard.com/alliance/" . $contact->getContactId())
                     @php($img_link = "https://image.eveonline.com/Alliance/" . $contact->getContactId() . "_64.png")
                     @break
+                    @case("faction")
+                    @php($zkill_link = "")
+                    @php($img_link = "")
+                    @break
                 @endswitch
                 @switch($contact->getStanding())
                     @case(-10)
@@ -239,9 +243,17 @@
                 @endswitch
                 <a class="list-group-item bg-dark text-white" href="{{ $zkill_link }}" target="_blank">
                     <div class="media">
+                        @if($contact->getContactType() != "faction")
                         <img class="mr-3 rounded img-fluid" src="{{ $img_link }}" />
+                        @endif
                         <div class="media-body">
-                            <h5 class="mt-0">{{ $contact->contact_name }}</h5>
+                            <h5 class="mt-0">
+                            @if($contact->getContactType() != "faction")
+                                {{ $contact->contact_name }}
+                            @else
+                                (Faction)
+                            @endif
+                            </h5>
                             <span class="badge badge-pill {{ $class }}">Standing: {{ $contact->getStanding() }}</span>
                         @if($contact->getContactId() > 3000000 && $contact->getContactId() < 4000000)
                             <span class="badge badge-pill badge-primary">NPC</span>
