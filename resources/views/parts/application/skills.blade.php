@@ -48,13 +48,21 @@
         <div class="card bg-dark text-white">
             <div class="card-body">
                 <div class="card-header">
-                    Skill Queue
-                @if(count($queue) > 0 && $queue[0]['paused'] == true)
-                    (PAUSED)
-                @endif
+                    <div class="float-left">
+                        Skill Queue
+                    @if(count($queue) > 0 && $queue[0]['paused'] == true)
+                        (PAUSED)
+                    @endif
+                    </div>
+                    <div class="text-right">
+                        Est. Completion: {{ $queue['queue_end'] }}
+                    </div>
                 </div>
                 <ul class="list-group">
-                @foreach($queue as $skill)
+                @foreach($queue as $key => $skill)
+                    @if($key == "queue_end")
+                        @continue
+                    @endif
                     <div class="list-group-item bg-dark text-white">
                         {{ $skill['skill'] }}
                         <div class="float-right">

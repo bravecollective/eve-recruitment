@@ -579,6 +579,9 @@ class EsiConnection
             ];
         }
 
+        $out['queue_end'] = end($queue[0])->getFinishDate()->format('Y-m-d H:i');
+        reset($queue[0]);
+
         Cache::add($cache_key, $out, $this->getCacheExpirationTime($queue));
 
         return $out;
