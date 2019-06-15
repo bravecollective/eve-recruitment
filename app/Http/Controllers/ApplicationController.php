@@ -137,6 +137,8 @@ class ApplicationController extends Controller
         $this->checkPermissions($char_id);
         $esi = new EsiConnection($char_id);
 
+        $char = User::find($char_id);
+
         $character_info = $esi->getCharacterInfo();
         $clones = $esi->getCloneInfo();
         $corp_history = $esi->getCorpHistory();
@@ -145,6 +147,7 @@ class ApplicationController extends Controller
 
         $res = view('parts/application/overview', [
             'application' => true,
+            'character' => $char,
             'character_info' => $character_info,
             'clones' => $clones,
             'corp_history' => $corp_history,
