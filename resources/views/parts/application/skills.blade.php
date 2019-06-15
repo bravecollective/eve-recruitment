@@ -6,9 +6,12 @@
             <div class="card bg-dark text-white">
                 <div class="card-body">
                     <div class="card-header" id="header-{{ $escaped_cat }}">
-                        <button class="btn btn-link text-white" type="button" data-toggle="collapse" data-target="#collapse-{{ $escaped_cat }}" aria-expanded="false" aria-controls="collapse-{{ $escaped_cat }}">
+                        <button class="btn btn-link text-white float-left" style="padding: 0;" type="button" data-toggle="collapse" data-target="#collapse-{{ $escaped_cat }}" aria-expanded="false" aria-controls="collapse-{{ $escaped_cat }}">
                             {{ $category }}
                         </button>
+                        <div class="text-right">
+                            {{ number_format($skill['skillpoints']) }} SP
+                        </div>
                     </div>
                     <div id="collapse-{{ $escaped_cat }}" class="collapse" aria-labelledby="header-{{ $escaped_cat }}" data-parent="#{{ $escaped_cat }}">
                         <ul class="list-group">

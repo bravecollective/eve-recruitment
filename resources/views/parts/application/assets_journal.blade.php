@@ -53,7 +53,7 @@
                         </thead>
                         <tbody>
                         @foreach($journal as $entry)
-                            <tr>
+                            <tr @if($entry['type'] == 'Player Donation' || $entry['type'] == 'Player Trading') style="background-color: #8a4141;" @endif>
                                 <td>{{ $entry['date'] }}</td>
                                 <td>{{ $entry['balance'] }} ISK</td>
                                 <td>{{ $entry['type'] }}</td>

@@ -521,8 +521,13 @@ class EsiConnection
             $skill_category = $this->getGroupName($skill->getSkillId());
 
             if (!array_key_exists($skill_category, $out))
+            {
                 $out[$skill_category] = [];
+                $out[$skill_category]['skillpoints'] = 0;
+            }
 
+
+            $out[$skill_category]['skillpoints'] += $skill->getSkillpointsInSkill();
             $out[$skill_category][$skill_name] = [
                 'skillpoints' => $skill->getSkillpointsInSkill(),
                 'level' => $skill->getActiveSkillLevel()
