@@ -113,7 +113,7 @@
     <div class="tab-pane fade" id="tab-notifications" role="tabpanel" aria-labelledby="tab-notifications"></div>
     <div class="tab-pane fade" id="tab-utilities" role="tabpanel" aria-labelledby="tab-utilities">@include('parts/application/utilities')</div>
 
-    <div class="modal" id="state-modal" tabindex="-1" role="dialog">
+    <div class="modal fade" id="state-modal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content bg-dark text-white">
                 <div class="modal-header">
