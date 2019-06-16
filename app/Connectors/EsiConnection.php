@@ -563,8 +563,8 @@ class EsiConnection
     {
         $cache_key = "skill_queue_{$this->char_id}";
 
-        if (Cache::has($cache_key))
-            return Cache::get($cache_key);
+        //if (Cache::has($cache_key))
+        //    return Cache::get($cache_key);
 
         $model = new SkillsApi($this->client, $this->config);
         $queue = $model->getCharactersCharacterIdSkillqueueWithHttpInfo($this->char_id, $this->char_id);
@@ -579,8 +579,15 @@ class EsiConnection
             ];
         }
 
-        $out['queue_end'] = end($queue[0])->getFinishDate()->format('Y-m-d H:i');
-        reset($queue[0]);
+        $out['queue_end'] = null;
+
+        if (count($queue[0]) > 0)
+        {
+            $queue_end_date = end($queue[0])->getFinishDate();
+            $out['queue_end'] = ($queue_end_date) ? $queue_end_date->format('Y-m-d H:i') : null;
+            reset($queue[0]);
+        }
+
 
         Cache::add($cache_key, $out, $this->getCacheExpirationTime($queue));
 

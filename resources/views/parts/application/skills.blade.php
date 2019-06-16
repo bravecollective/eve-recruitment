@@ -50,12 +50,13 @@
                 <div class="card-header">
                     <div class="float-left">
                         Skill Queue
-                    @if(count($queue) > 0 && $queue[0]['paused'] == true)
+                    @if(count($queue) > 1 /* $queue always has the `queue_end` key set, so count is at least 1 */
+                        && $queue[0]['paused'] == true)
                         (PAUSED)
                     @endif
                     </div>
                     <div class="text-right">
-                        Est. Completion: {{ $queue['queue_end'] }}
+                        Est. Completion: {{ ($queue['queue_end']) ? $queue['queue_end'] : '-' }}
                     </div>
                 </div>
                 <ul class="list-group">
