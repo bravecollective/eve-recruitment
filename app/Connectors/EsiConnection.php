@@ -67,6 +67,9 @@ class EsiConnection
         "HangarAll"
     ];
 
+    // The maximum number of mails to load from ESI
+    const MAX_MAILS_TO_LOAD = 100;
+
     /**
      * EsiModel constructor
      *
@@ -165,17 +168,22 @@ class EsiConnection
             $skillsModel = new SkillsApi($this->client, $this->config);
             $attributes = $skillsModel->getCharactersCharacterIdAttributes($this->char_id, $this->char_id);
 
+            $ship = $locationModel->getCharactersCharacterIdShip($this->char_id, $this->char_id);
+        } catch(\Exception $e) {
+            $ship = $attributes = null;
+        }
+
+        try {
             if ($location->getStructureId() == null && $location->getStationId() == null)
                 $location->structure_name = "In Space (" . $this->getSystemName($location->getSolarSystemId()) . ")";
             else if ($location->getStructureId() != null)
                 $location->structure_name = $this->getStructureName($location->getStructureId());
             else
                 $location->structure_name = $this->getStationName($location->getStationId());
-
-            $ship = $locationModel->getCharactersCharacterIdShip($this->char_id, $this->char_id);
         } catch(\Exception $e) {
-            $location = $ship = $attributes = null;
+            $location->structure_name = "- Undockable Structure -";
         }
+
         $public_data = $this->eseye->invoke('get', '/characters/{character_id}/', [
             "character_id" => $this->char_id
         ]);
@@ -387,9 +395,22 @@ class EsiConnection
             $mail = Cache::get($mailCacheKey);
         else
         {
-            $mail = $model->getCharactersCharacterIdMailWithHttpInfo($this->char_id, $this->char_id);
-            Cache::add($mailCacheKey, $mail[0], $this->getCacheExpirationTime($mail));
-            $mail = $mail[0];
+            $mail_http = $model->getCharactersCharacterIdMailWithHttpInfo($this->char_id, $this->char_id);
+            $mail = $mail_http[0];
+
+            while (count($mail) >= 50) // If count is < 50, there's no new mail to request
+            {
+                $last_mail_id = end($mail)->getMailId();
+                reset($mail);
+                $temp = $model->getCharactersCharacterIdMail($this->char_id, $this->char_id, null, null, $last_mail_id);
+
+                $mail = array_merge($mail, $temp);
+
+                if (count($mail) >= self::MAX_MAILS_TO_LOAD)
+                    break;
+            }
+
+            Cache::add($mailCacheKey, $mail, $this->getCacheExpirationTime($mail_http));
         }
 
         foreach ($mail as $m)
@@ -451,12 +472,12 @@ class EsiConnection
         }
 
         if (count($ids) == 0)
-            return null;
+            return [];
 
         $res = $this->eseye->setBody($ids)->invoke('post', '/universe/names/');
 
         if (!$res)
-            return null;
+            return [];
 
         $data = json_decode($res->raw, true);
         $new_ids = [];
@@ -500,8 +521,13 @@ class EsiConnection
             $skill_category = $this->getGroupName($skill->getSkillId());
 
             if (!array_key_exists($skill_category, $out))
+            {
                 $out[$skill_category] = [];
+                $out[$skill_category]['skillpoints'] = 0;
+            }
 
+
+            $out[$skill_category]['skillpoints'] += $skill->getSkillpointsInSkill();
             $out[$skill_category][$skill_name] = [
                 'skillpoints' => $skill->getSkillpointsInSkill(),
                 'level' => $skill->getActiveSkillLevel()
@@ -537,8 +563,8 @@ class EsiConnection
     {
         $cache_key = "skill_queue_{$this->char_id}";
 
-        if (Cache::has($cache_key))
-            return Cache::get($cache_key);
+        //if (Cache::has($cache_key))
+        //    return Cache::get($cache_key);
 
         $model = new SkillsApi($this->client, $this->config);
         $queue = $model->getCharactersCharacterIdSkillqueueWithHttpInfo($this->char_id, $this->char_id);
@@ -552,6 +578,16 @@ class EsiConnection
                 'paused' => (!method_exists($skill, 'getFinishDate') || $skill->getFinishDate() == null) ? true : false,
             ];
         }
+
+        $out['queue_end'] = null;
+
+        if (count($queue[0]) > 0)
+        {
+            $queue_end_date = end($queue[0])->getFinishDate();
+            $out['queue_end'] = ($queue_end_date) ? $queue_end_date->format('Y-m-d H:i') : null;
+            reset($queue[0]);
+        }
+
 
         Cache::add($cache_key, $out, $this->getCacheExpirationTime($queue));
 

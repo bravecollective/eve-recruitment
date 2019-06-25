@@ -18,16 +18,20 @@
         </div>
         <div class="col-lg-4">
             <h2 class="color-white">My Applications</h2>
-        @foreach ($applications as $application)
-            <div class="row">
-                <div class="col-6">
-                    <h3>{{ $application->recruitmentAd->group_name }}</h3>
-                </div>
-                <div class="col-6">
-                    <h3>{{ \App\Models\Application::getStringForState($application->status) }}</h3>
-                </div>
-            </div>
-        @endforeach
+            <table class="table">
+                <thead>
+                    <th>Group</th>
+                    <th>State</th>
+                    <th>Last Update</th>
+                </thead>
+                @foreach ($applications as $application)
+                <tr>
+                    <td>{{ $application->recruitmentAd->group_name }}</td>
+                    <td>{{ \App\Models\Application::getStringForState($application->status) }}</td>
+                    <td>{{ $application->last_update }}</td>
+                </tr>
+                @endforeach
+            </table>
         </div>
     </div>
 @else

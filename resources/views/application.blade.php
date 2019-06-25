@@ -1,9 +1,27 @@
 @extends('default')
 @section('content')
-
 @include('parts/application/character_header', ['character' => $character])
 <div class="row justify-content-center">
 @if(isset($application))
+    <div class="modal fade" id="state-modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header">
+                    <h5 class="modal-title">Application state information</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>{!! $state_tooltip !!}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="col-12 col-lg-3 col-md-5">
         <select style="width: 95%;" class="custom-select" style="width: 15%; margin-top: 1em;" autocomplete="off" onchange="updateStatus(this);">
     @foreach($states as $id => $state)
@@ -14,7 +32,7 @@
         @endif
     @endforeach
         </select>
-        <span class="fa fa-info-circle" data-toggle="tooltip" data-html="true" title="{{ $state_tooltip }}"></span>
+        <span style="cursor: pointer;" class="fa fa-info-circle" data-toggle="modal" data-target="#state-modal"></span>
     </div>
 @endif
 </div><br />
@@ -143,10 +161,6 @@
         document.title = "{{ $character->name }} - " + document.title;
         let esiLoaded = false;
         let char_id = "{{ $character->character_id }}";
-
-        $(document).ready(function(){
-            $('[data-toggle="tooltip"]').tooltip();
-        });
 
         function loadPartial(url, anchor, name, additionalFunction = null)
         {
