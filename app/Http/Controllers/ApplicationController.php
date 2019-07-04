@@ -208,8 +208,9 @@ class ApplicationController extends Controller
         $this->checkPermissions($char_id);
         $esi = new EsiConnection($char_id);
 
+        $char_name = User::where('character_id', $char_id)->first()->name;
         $mail = $esi->getMail();
-        $res = view('parts/application/mail', ['mails' => $mail])->render();
+        $res = view('parts/application/mail', ['mails' => $mail, 'name' => $char_name])->render();
 
         die(json_encode(['success' => true, 'message' => $res]));
     }

@@ -7,7 +7,11 @@
                 </div>
                 <ul class="list-group">
                 @foreach($mails as $mail)
-                    <div class="list-group-item bg-dark text-white" onclick="toggleCollapse('#mail-{{ $mail->getMailId() }}', {{ $mail->getMailId() }})">
+                    <div class="list-group-item bg-dark text-white"
+                     @if($name == $mail->sender)
+                         style="background-color: #8a4141 !important;"
+                     @endif
+                         onclick="toggleCollapse('#mail-{{ $mail->getMailId() }}', {{ $mail->getMailId() }})">
                         <div class="row">
                             <div class="col-xl-3 col-lg-3 col-md-3 col-sm-5 col-12">
                                 <strong>Sender:</strong> {{ $mail->sender }}

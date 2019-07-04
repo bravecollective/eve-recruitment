@@ -68,7 +68,7 @@ class EsiConnection
     ];
 
     // The maximum number of mails to load from ESI
-    const MAX_MAILS_TO_LOAD = 100;
+    const MAX_MAILS_TO_LOAD = 200;
 
     /**
      * EsiModel constructor
@@ -438,7 +438,7 @@ class EsiConnection
         else
         {
             $mail->contents = $model->getCharactersCharacterIdMailMailId($this->char_id, $mailId, $this->char_id)->getBody();
-            Cache::add($mailBodyCacheKey . $mailId, $out['contents'], env('CACHE_TIME', 3264));
+            Cache::add($mailBodyCacheKey . $mailId, $mail->contents, env('CACHE_TIME', 3264));
         }
 
         $mail->recipients = [];
