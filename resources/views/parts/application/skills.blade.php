@@ -4,9 +4,9 @@
         @php($escaped_cat = str_replace(' ', '-', $category))
         <div class="accordion" id="{{ $escaped_cat }}">
             <div class="card bg-dark text-white">
-                <div class="card-body">
+                <div class="card-body" data-toggle="collapse" data-target="#collapse-{{ $escaped_cat }}" aria-expanded="false" aria-controls="collapse-{{ $escaped_cat }}">
                     <div class="card-header" id="header-{{ $escaped_cat }}">
-                        <button class="btn btn-link text-white float-left" style="padding: 0;" type="button" data-toggle="collapse" data-target="#collapse-{{ $escaped_cat }}" aria-expanded="false" aria-controls="collapse-{{ $escaped_cat }}">
+                        <button class="btn btn-link text-white float-left" style="padding: 0;" type="button">
                             {{ $category }}
                         </button>
                         <div class="text-right">
