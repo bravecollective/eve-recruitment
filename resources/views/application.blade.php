@@ -346,9 +346,16 @@
             return false;
         }
 
-        function toggleCollapse(anchor)
+        function toggleCollapse(anchor, id)
         {
-            $('#' + anchor).collapse('toggle');
+            if ($(anchor).is(':empty'))
+            {
+                $(anchor).collapse('toggle');
+                $(anchor).html('Loading...');
+                $.get('/mail/' + char_id + '/' + id, (e) => $(anchor).html(e));
+            }
+            else
+                $(anchor).collapse('toggle');
         }
     </script>
 @endsection

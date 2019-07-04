@@ -376,7 +376,7 @@ class EsiConnection
     }
 
     /**
-     * Get a user's mail
+     * Get a user's mail metadata
      *
      * @return \Swagger\Client\Eve\Model\GetCharactersCharacterIdMail200Ok[]
      * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
@@ -387,12 +387,10 @@ class EsiConnection
     public function getMail()
     {
         $mailCacheKey = "mail_{$this->char_id}";
-        $mailBodyCacheKey = "mail_body_";
         $model = new MailApi($this->client, $this->config);
-        $ids = [];
 
         if (Cache::has($mailCacheKey))
-            $mail = Cache::get($mailCacheKey);
+            return Cache::get($mailCacheKey);
         else
         {
             $mail_http = $model->getCharactersCharacterIdMailWithHttpInfo($this->char_id, $this->char_id);
@@ -409,66 +407,84 @@ class EsiConnection
                 if (count($mail) >= self::MAX_MAILS_TO_LOAD)
                     break;
             }
-
-            Cache::add($mailCacheKey, $mail, $this->getCacheExpirationTime($mail_http));
         }
 
         foreach ($mail as $m)
         {
-            if (Cache::has($mailBodyCacheKey . $m->getMailId()))
-                $m->contents = Cache::get($mailBodyCacheKey . $m->getMailId());
-            else
-            {
-                $m->contents = $model->getCharactersCharacterIdMailMailId($this->char_id, $m->getMailId(), $this->char_id)->getBody();
-                Cache::add($mailBodyCacheKey . $m->getMailId(), $m->contents, env('CACHE_TIME', 3264));
-            }
-
             $m->sender = $this->getCharacterName($m->getFrom());
-            $m->recipients = [];
+        }
 
-            foreach ($m->getRecipients() as $recipient)
+        Cache::add($mailCacheKey, $mail, $this->getCacheExpirationTime($mail_http));
+
+        return $mail;
+    }
+
+    /**
+     * Get information about a single mail
+     *
+     * @param $mailId
+     */
+    public function getMailDetails($mailId)
+    {
+        $mailBodyCacheKey = "mail_body_";
+        $model = new MailApi($this->client, $this->config);
+        $out = [];
+        $ids = [];
+
+        $mail = $model->getCharactersCharacterIdMailMailId($this->char_id, $mailId, $this->char_id);
+
+        if (Cache::has($mailBodyCacheKey . $mailId))
+            $mail->contents = Cache::get($mailBodyCacheKey . $mailId);
+        else
+        {
+            $mail->contents = $model->getCharactersCharacterIdMailMailId($this->char_id, $mailId, $this->char_id)->getBody();
+            Cache::add($mailBodyCacheKey . $mailId, $out['contents'], env('CACHE_TIME', 3264));
+        }
+
+        $mail->recipients = [];
+
+        foreach ($mail->getRecipients() as $recipient)
+        {
+            switch ($recipient->getRecipientType())
             {
-                switch ($recipient->getRecipientType())
-                {
-                    case 'character':
-                        $m->recipients[] = [
-                            'type' => 'character',
-                            'id' => $recipient->getRecipientId(),
-                            'name' => null
-                        ];
-                        break;
+                case 'character':
+                    $mail->recipients[] = [
+                        'type' => 'character',
+                        'id' => $recipient->getRecipientId(),
+                        'name' => null
+                    ];
+                    break;
 
-                    case 'corporation':
-                        $m->recipients[] = [
-                            'type' => 'corporation',
-                            'id' => $recipient->getRecipientId(),
-                            'name' => null
-                        ];
-                        break;
+                case 'corporation':
+                    $mail->recipients[] = [
+                        'type' => 'corporation',
+                        'id' => $recipient->getRecipientId(),
+                        'name' => null
+                    ];
+                    break;
 
-                    case 'alliance':
-                        $m->recipients[] = [
-                            'type' => 'alliance',
-                            'id' => $recipient->getRecipientId(),
-                            'name' => null
-                        ];
-                        break;
+                case 'alliance':
+                    $mail->recipients[] = [
+                        'type' => 'alliance',
+                        'id' => $recipient->getRecipientId(),
+                        'name' => null
+                    ];
+                    break;
 
-                    case 'mailing_list':
-                        $m->recipients[] = [
-                            'type' => 'mailing list',
-                            'name' => $this->getMailingListName($recipient->getRecipientId()),
-                            'id' => null
-                        ];
-                        break;
+                case 'mailing_list':
+                    $mail->recipients[] = [
+                        'type' => 'mailing list',
+                        'name' => $this->getMailingListName($recipient->getRecipientId()),
+                        'id' => null
+                    ];
+                    break;
 
-                    default:
-                        break;
-                }
-
-                if (in_array($recipient->getRecipientType(), ['character', 'corporation', 'alliance']) && !in_array($recipient->getRecipientId(), $ids))
-                    $ids[] = $recipient->getRecipientId();
+                default:
+                    break;
             }
+
+            if (in_array($recipient->getRecipientType(), ['character', 'corporation', 'alliance']) && !in_array($recipient->getRecipientId(), $ids))
+                $ids[] = $recipient->getRecipientId();
         }
 
         if (count($ids) == 0)
@@ -485,13 +501,10 @@ class EsiConnection
         foreach ($data as $d)
             $new_ids[$d['id']] = $d['name'];
 
-        foreach ($mail as $m)
+        foreach ($mail->recipients as &$recipient)
         {
-            foreach ($m->recipients as &$recipient)
-            {
-                if ($recipient['name'] == null)
-                        $recipient['name'] = array_key_exists($recipient['id'], $new_ids) ? $new_ids[$recipient['id']] : 'Unknown recipient';
-            }
+            if ($recipient['name'] == null)
+                $recipient['name'] = array_key_exists($recipient['id'], $new_ids) ? $new_ids[$recipient['id']] : 'Unknown recipient';
         }
 
         return $mail;
@@ -563,8 +576,8 @@ class EsiConnection
     {
         $cache_key = "skill_queue_{$this->char_id}";
 
-        //if (Cache::has($cache_key))
-        //    return Cache::get($cache_key);
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
 
         $model = new SkillsApi($this->client, $this->config);
         $queue = $model->getCharactersCharacterIdSkillqueueWithHttpInfo($this->char_id, $this->char_id);

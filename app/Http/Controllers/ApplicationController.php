@@ -184,6 +184,15 @@ class ApplicationController extends Controller
         die(json_encode(['success' => true, 'message' => $res]));
     }
 
+    public function getSingleMail($char_id, $id)
+    {
+        $this->checkPermissions($char_id);
+        $esi = new EsiConnection($char_id);
+
+        $mail = $esi->getMailDetails($id);
+        return view('parts/application/mail_body', ['mail' => $mail]);
+    }
+
     /**
      * Load user mail
      *
