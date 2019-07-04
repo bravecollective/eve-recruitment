@@ -96,6 +96,14 @@ class Application extends Model
         return $dbApp;
     }
 
+    /**
+     * Get an applicant's warnings
+     *
+     * @param $application
+     * @return array
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Swagger\Client\Eve\ApiException
+     */
     public static function getWarnings($application)
     {
         $previously_denied = false;
@@ -103,8 +111,13 @@ class Application extends Model
         $changes = $application->changelog;
 
         foreach ($changes as $change)
+        {
             if ($change->new_state == self::DENIED)
+            {
                 $previously_denied = true;
+                break;
+            }
+        }
 
         if ($previously_denied)
             $warnings[] = "User was previously denied";
@@ -134,7 +147,7 @@ class Application extends Model
                         if ($name == "Cynosural Field Theory")
                         {
                             $cyno = true;
-                            if ($skill['level'] == 5)
+                            if ($skill['trained'] == 5)
                                 $cyno5 = true;
                         }
                     }

@@ -19,18 +19,18 @@
                             <div class="list-group-item bg-dark text-white">
                                 {{ $name }}
                                 <div class="float-right">
-                                    @if($info['level'] == 5)
-                                        @for($i = 0; $i < $info['level']; $i++)
+                                    @if($info['trained'] == 5)
+                                        @for($i = 0; $i < $info['trained']; $i++)
                                             <i class="fa fa-star"></i>
                                         @endfor
-                                        @for($i = $info['level']; $i < 5; $i++)
+                                        @for($i = $info['trained']; $i < 5; $i++)
                                             <i class="far fa-star"></i>
                                         @endfor
                                     @else
-                                        @for($i = 0; $i < $info['level']; $i++)
+                                        @for($i = 0; $i < $info['trained']; $i++)
                                             <i class="fa fa-star" style="color: white;"></i>
                                         @endfor
-                                        @for($i = $info['level']; $i < 5; $i++)
+                                        @for($i = $info['trained']; $i < 5; $i++)
                                             <i class="far fa-star" style="color: white;"></i>
                                         @endfor
                                     @endif

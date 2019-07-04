@@ -367,7 +367,7 @@ class EsiConnection
         {
             foreach ($category as $skillName => $attributes)
             {
-                if ($skillName == $skill && $attributes['level'] >= $level)
+                if ($skillName == $skill && $attributes['trained'] >= $level)
                     return true;
             }
         }
@@ -543,7 +543,8 @@ class EsiConnection
             $out[$skill_category]['skillpoints'] += $skill->getSkillpointsInSkill();
             $out[$skill_category][$skill_name] = [
                 'skillpoints' => $skill->getSkillpointsInSkill(),
-                'level' => $skill->getActiveSkillLevel()
+                'level' => $skill->getActiveSkillLevel(),
+                'trained' => $skill->getTrainedSkillLevel()
             ];
         }
 
