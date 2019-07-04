@@ -53,7 +53,9 @@ class StatsController extends Controller
 
         $changes = ApplicationChangelog::where('old_state', $start_state_id)
             ->join('account', 'account_id', '=', 'account.id')
+            ->join('application', 'application.id', '=', 'application_id')
             ->where('new_state', $end_state_id)
+            ->where('recruitment_id', $ad_id)
             ->whereBetween('application_changelog.created_at', [$start_date, $end_date])
             ->get();
 
