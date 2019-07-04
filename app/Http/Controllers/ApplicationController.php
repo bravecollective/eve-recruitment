@@ -184,6 +184,15 @@ class ApplicationController extends Controller
         die(json_encode(['success' => true, 'message' => $res]));
     }
 
+    public function getSingleMail($char_id, $id)
+    {
+        $this->checkPermissions($char_id);
+        $esi = new EsiConnection($char_id);
+
+        $mail = $esi->getMailDetails($id);
+        return view('parts/application/mail_body', ['mail' => $mail]);
+    }
+
     /**
      * Load user mail
      *
@@ -199,8 +208,9 @@ class ApplicationController extends Controller
         $this->checkPermissions($char_id);
         $esi = new EsiConnection($char_id);
 
+        $char_name = User::where('character_id', $char_id)->first()->name;
         $mail = $esi->getMail();
-        $res = view('parts/application/mail', ['mails' => $mail])->render();
+        $res = view('parts/application/mail', ['mails' => $mail, 'name' => $char_name])->render();
 
         die(json_encode(['success' => true, 'message' => $res]));
     }
