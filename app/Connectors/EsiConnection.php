@@ -668,7 +668,7 @@ class EsiConnection
         $names = [];
 
         foreach (array_chunk($names_to_fetch, 900) as $chunk)
-            $names = array_merge($names, $model->postCharactersCharacterIdAssetsNames($this->char_id, json_encode($chunk), $this->char_id));
+            $names = array_merge($names, $model->postCharactersCharacterIdAssetsNames($this->char_id, $chunk, $this->char_id));
 
         foreach ($out as $location => &$items)
         {
