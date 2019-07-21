@@ -73,19 +73,19 @@ class AccountRole extends Model
         $account_roles = AccountRole::whereIn('role_id', $recruiter_role_ids)->where('account_id', $account_id)->get();
 
         if (!$account_roles)
-            return null;
+            return [];
 
         // 2. Get the ad IDs
         $recruitment_ads = Role::whereIn('id', $account_roles->pluck('role_id')->toArray())->get();
 
         if (!$recruitment_ads)
-            return null;
+            return [];
 
         // 3. Get the ads
         $ads = RecruitmentAd::whereIn('id', $recruitment_ads->pluck('recruitment_id')->toArray())->get();
 
         if (!$ads)
-            return null;
+            return [];
 
         // 4. Get corp names, where necessary
         foreach ($ads as $ad)
