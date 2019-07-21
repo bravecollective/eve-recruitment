@@ -91,7 +91,7 @@ class AccountRole extends Model
         foreach ($ads as $ad)
             $ad->corp_name = ($ad->corp_id == null) ? null : User::where('corporation_id', $ad->corp_id)->first()->corporation_name;
 
-        return $ads;
+        return $ads->all();
     }
 
     /**
