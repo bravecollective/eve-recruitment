@@ -3942,16 +3942,16 @@
         },
         {
             "name": "tkhamez/swagger-eve-php",
-            "version": "2.0.2",
+            "version": "2.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tkhamez/swagger-eve-php.git",
-                "reference": "76c7a4ef61502a7abd36342e0ce0b083c3c5e0aa"
+                "reference": "0ae52ea3b5126928f84101ac182875616e756815"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tkhamez/swagger-eve-php/zipball/76c7a4ef61502a7abd36342e0ce0b083c3c5e0aa",
-                "reference": "76c7a4ef61502a7abd36342e0ce0b083c3c5e0aa",
+                "url": "https://api.github.com/repos/tkhamez/swagger-eve-php/zipball/0ae52ea3b5126928f84101ac182875616e756815",
+                "reference": "0ae52ea3b5126928f84101ac182875616e756815",
                 "shasum": ""
             },
             "require": {
@@ -3992,7 +3992,7 @@
                 "rest",
                 "sdk"
             ],
-            "time": "2019-05-15T17:34:03+00:00"
+            "time": "2019-07-11T18:33:45+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
