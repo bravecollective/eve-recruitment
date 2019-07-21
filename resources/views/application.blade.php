@@ -40,6 +40,19 @@
 <div class="row justify-content-center">
     <div class="col-12">
         <ul class="nav nav-pills justify-content-center">
+            <li class="nav-item dropdown ml-2">
+                <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#"
+                   role="button" aria-haspopup="true" aria-expanded="false">
+                    Applications
+                </a>
+                <div class="dropdown-menu">
+                    @foreach($userApplications as $userApplication)
+                        <a class="dropdown-item" target="_blank" href="/application/{{ $userApplication->id }}">
+                            {{ $userApplication->recruitmentAd->group_name }}
+                        </a>
+                    @endforeach
+                </div>
+            </li>
          @if(isset($application))
             <li class="nav-item ml-2">
                 <a class="nav-link active show" id="application-tab" data-toggle="pill" href="#tab-application" role="tab" aria-controls="tab-application" aria-selected="true">
@@ -131,6 +144,7 @@
     <div class="tab-pane fade" id="tab-contracts" role="tabpanel" aria-labelledby="tab-contracts"></div>
     <div class="tab-pane fade" id="tab-notifications" role="tabpanel" aria-labelledby="tab-notifications"></div>
     <div class="tab-pane fade" id="tab-utilities" role="tabpanel" aria-labelledby="tab-utilities">@include('parts/application/utilities')</div>
+</div>
 @endsection
 @section('styles')
     <style>

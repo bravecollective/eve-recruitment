@@ -73,6 +73,7 @@ class ApplicationController extends Controller
             'isk' => $isk,
             'titles' => $titles,
             'state_tooltip' => $tooltips,
+            'userApplications' => Application::getUserApplicationsForRecruiter($application->account->main()),
         ]);
     }
 
@@ -121,7 +122,8 @@ class ApplicationController extends Controller
             'sp' => $sp,
             'isk' => $isk,
             'deleted_characters' => $deleted_chars,
-            'titles' => $titles
+            'titles' => $titles,
+            'userApplications' => Application::getUserApplicationsForRecruiter($char),
         ]);
     }
 

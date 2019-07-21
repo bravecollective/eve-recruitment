@@ -61,6 +61,8 @@ class AccountRole extends Model
 
     /**
      * Get the ads that a recruiter can view
+     *
+     * @return RecruitmentAd[]
      */
     public static function getAdsUserCanView()
     {

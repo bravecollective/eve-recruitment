@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Connectors\EsiConnection;
+use App\Models\Permission\AccountRole;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -183,6 +184,31 @@ class Application extends Model
         }
 
         return $applications;
+    }
+
+    /**
+     * Get applications for a user that the currently logged in user may see.
+     *
+     * @param User $character
+     * @return Application[]
+     */
+    public static function getUserApplicationsForRecruiter(User $character)
+    {
+        $allowedAddIds = [];
+        foreach (AccountRole::getAdsUserCanView() as $ad) {
+            $allowedAddIds[] = $ad->id;
+        }
+
+        $result = [];
+        foreach (self::whereAccountId($character->account_id)->get() as $application)
+        {
+            if (in_array($application->recruitment_id, $allowedAddIds))
+            {
+                $result[] = $application;
+            }
+        }
+
+        return $result;
     }
 
     /**
