@@ -6,8 +6,10 @@ use App\Models\Permission\AccountRole;
 use App\Models\Permissions\Role;
 use App\Models\RecruitmentAd;
 use App\Models\User;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 
 class SearchController extends Controller
@@ -32,9 +34,9 @@ class SearchController extends Controller
     /**
      * Search from the navbar
      *
-     * @param Request $r
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
      */
-    public function navbarCharacterSearch(Request $r)
+    public function navbarCharacterSearch()
     {
         $user = Auth::user();
 
@@ -45,6 +47,9 @@ class SearchController extends Controller
          * 1. Get account roles
          * 2. Get corresponding corp IDs
          * 3. Limit search results by those IDs
+         * or
+         * 1. Get ad IDs that the user can view
+         * 2. Limit search results to characters from applications of those IDs
          */
         $roles = AccountRole::where('account_id', Auth::user()->id)->get()->pluck('role_id')->toArray();
         $ads = array_unique(Role::whereIn('id', $roles)
@@ -57,8 +62,20 @@ class SearchController extends Controller
             ->get()
             ->pluck('corp_id')
             ->toArray();
+        $adIds = array_map(function($ad) {
+            return $ad->id;
+        }, AccountRole::getAdsUserCanView());
 
-        $res = User::where('name', 'like', '%' . Input::get('search') . '%')->whereIn('corporation_id', $corps)->get();
+        $res = DB::table('user')
+            ->select('user.*')
+            ->leftJoin('application', 'application.account_id', '=', 'user.account_id')
+            ->where('name', 'like', '%' . Input::get('search') . '%')
+            ->where(function (Builder $query) use ($corps, $adIds) {
+                $query
+                    ->whereIn('user.corporation_id', $corps)
+                    ->orWhereIn('application.recruitment_id', $adIds)
+                ;
+            })->distinct()->get();
         return view('search_results', ['results' => $res]);
     }
 }
