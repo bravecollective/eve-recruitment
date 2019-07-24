@@ -1398,6 +1398,10 @@ class EsiConnection
             return "Unknown Character";
         }
 
+        // for unknown reasons the name is sometimes not set
+        if (! isset($char->name)) {
+            return "Unknown Error";
+        }
 
         Cache::add($cache_key, $char->name, env('CACHE_TIME', 3264));
 
