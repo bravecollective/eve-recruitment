@@ -1,3 +1,4 @@
+@if($app->account->main())
 <div class="row" style="margin-top: 1em;">
     <div class="col-auto">
         <img src="https://image.eveonline.com/Character/{{ $app->account->main_user_id }}_32.jpg">
@@ -22,3 +23,4 @@
         <a target="_blank" href="/application/{{ $app->id }}"><button type="button" class="btn btn-primary">Open</button></a>
     </div>
 </div>
+@endif
