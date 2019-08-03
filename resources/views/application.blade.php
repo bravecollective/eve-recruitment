@@ -36,7 +36,6 @@
     </div>
 @endif
 </div><br />
-@if($sp != null)
 <div class="row justify-content-center">
     <div class="col-12">
         <ul class="nav nav-pills justify-content-center">
@@ -53,6 +52,7 @@
                     @endforeach
                 </div>
             </li>
+        @if($sp != null)
          @if(isset($application))
             <li class="nav-item ml-2">
                 <a class="nav-link active show" id="application-tab" data-toggle="pill" href="#tab-application" role="tab" aria-controls="tab-application" aria-selected="true">
@@ -113,10 +113,10 @@
                      Utilities
                  </a>
              </li>
+        @endif
         </ul>
     </div>
 </div><br />
-@endif
 <div id="errors"></div><br />
 @if($sp != null)
 <div class="row justify-content-center">
