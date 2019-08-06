@@ -453,13 +453,13 @@ class ApplicationController extends Controller
         if (!AccountRole::canViewApplications($ad))
             return redirect('/')->with('error', 'Unauthorized');
 
-        $open_apps = Application::where('status', Application::OPEN)->where('recruitment_id', $id)->orderBy('updated_at', 'asc')->get();
-        $review_requested_apps = Application::where('status', Application::REVIEW_REQUESTED)->where('recruitment_id', $id)->orderBy('updated_at', 'asc')->get();
-        $on_hold_apps = Application::where('status', Application::ON_HOLD)->where('recruitment_id', $id)->orderBy('updated_at', 'asc')->get();
-        $trial = Application::where('status', Application::TRIAL)->where('recruitment_id', $id)->orderBy('updated_at', 'asc')->get();
-        $accepted_apps = Application::where('status', Application::ACCEPTED)->where('recruitment_id', $id)->orderBy('updated_at', 'asc')->get();
-        $closed_apps = Application::whereIn('status', [Application::CLOSED, Application::DENIED])->where('recruitment_id', $id)->orderBy('updated_at', 'asc')->get();
-        $in_progress = Application::where('status', Application::IN_PROGRESS)->where('recruitment_id', $id)->orderBy('updated_at', 'asc')->get();
+        $open_apps = Application::where('status', Application::OPEN)->where('recruitment_id', $id)->get();
+        $review_requested_apps = Application::where('status', Application::REVIEW_REQUESTED)->where('recruitment_id', $id)->count();
+        $on_hold_apps = Application::where('status', Application::ON_HOLD)->where('recruitment_id', $id)->count();
+        $trial = Application::where('status', Application::TRIAL)->where('recruitment_id', $id)->count();
+        $accepted_apps = Application::where('status', Application::ACCEPTED)->where('recruitment_id', $id)->count();
+        $closed_apps = Application::whereIn('status', [Application::CLOSED, Application::DENIED])->where('recruitment_id', $id)->count();
+        $in_progress = Application::where('status', Application::IN_PROGRESS)->where('recruitment_id', $id)->count();
 
         return view('applications',  ['ad' => $ad,
                                             'open_apps' => $open_apps,
@@ -469,6 +469,58 @@ class ApplicationController extends Controller
                                             'accepted_apps' => $accepted_apps,
                                             'closed_apps' => $closed_apps,
                                             'in_progress_apps' => $in_progress]);
+    }
+
+    /**
+     * Load applications via ajax on tab change
+     * @param $id
+     */
+    function loadAjaxApplications($id)
+    {
+        $ad = RecruitmentAd::find($id);
+        $type = substr(Input::get('type'), 1);
+        $states = null;
+
+        if (!$ad)
+            die(json_encode(['success' => false, 'message' => 'Invalid ad ID']));
+
+        if (!AccountRole::canViewApplications($ad))
+            die(json_encode(['success' => false, 'message' => 'Unauthorized']));
+
+        switch($type)
+        {
+            case 'open':
+                $states = Application::OPEN;
+                break;
+            case 'review-requested':
+                $states = Application::REVIEW_REQUESTED;
+                break;
+            case 'hold':
+                $states = Application::ON_HOLD;
+                break;
+            case 'trial':
+                $states = Application::TRIAL;
+                break;
+            case 'accepted':
+                $states = Application::ACCEPTED;
+                break;
+            case 'closed':
+                $states = [Application::CLOSED, Application::DENIED];
+                break;
+            case 'in-progress':
+                $states = Application::IN_PROGRESS;
+                break;
+            default:
+                break;
+        }
+
+        if ($states == null)
+            die(json_encode(['success' => false, 'message' => 'Invalid state name']));
+
+        $query = ($type == 'closed') ? Application::whereIn('status', $states) : Application::where('status', $states);
+        $query = $query->where('recruitment_id', $id)->orderBy('updated_at', 'asc')->get();
+
+        die(view('application_ajax_page', ['apps' => $query])->render());
     }
 
     /**
