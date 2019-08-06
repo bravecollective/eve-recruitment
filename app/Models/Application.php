@@ -133,7 +133,7 @@ class Application extends Model
 
             foreach ($skills as $catName => $category)
             {
-                if ($catName == "Spaceship Command")
+                if ($catName == "Spaceship Command" && !$hic)
                 {
                     foreach ($category as $name => $skill)
                     {
@@ -141,7 +141,7 @@ class Application extends Model
                             $hic = true;
                     }
                 }
-                else if ($catName == "Navigation")
+                else if ($catName == "Navigation" && !$cyno)
                 {
                     foreach ($category as $name => $skill)
                     {
@@ -154,6 +154,9 @@ class Application extends Model
                     }
                 }
             }
+
+            if ($hic && $cyno && $cyno5)
+                break; // This can only break once all 3 are triggered, since the rest of the chars won't change anything
         }
 
         if ($cyno == true)
