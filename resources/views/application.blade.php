@@ -183,6 +183,10 @@
 
             warnings_div.html('<div class="list-group-item bg-dark text-white">Loading...</div>');
             $.get('/application/{{ $application->id }}/warnings', (e) => warnings_div.html(e));
+        @else
+            // This needs to be done since, for individual character ESI viewing, overview is not loaded as a partial,
+            // and therefore this is never ran
+            $('[data-toggle="tooltip"]').tooltip();
         @endif
         });
 
