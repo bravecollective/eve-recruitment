@@ -16,6 +16,9 @@
                     <div id="collapse-{{ $escaped_cat }}" class="collapse" aria-labelledby="header-{{ $escaped_cat }}" data-parent="#{{ $escaped_cat }}">
                         <ul class="list-group">
                         @foreach($skill as $name => $info)
+                            @if($name == "skillpoints")
+                                @continue
+                            @endif
                             <div class="list-group-item bg-dark text-white">
                                 {{ $name }}
                                 <div class="float-right">
