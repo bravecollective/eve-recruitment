@@ -72,7 +72,9 @@ class User extends Model
             {
                 $dbUser->alliance_id = $user->corporation->alliance->id;
                 $dbUser->alliance_name = $user->corporation->alliance->name;
-            } // Don't need an else since the default values for alliance are null
+            }
+            else
+                $dbUser->alliance_id = $dbUser->alliance_name = null;
 
             $dbUser->save();
             $new_user_ids[] = $dbUser->character_id;
