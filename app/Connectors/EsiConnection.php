@@ -549,17 +549,7 @@ class EsiConnection
         }
 
         foreach ($out as &$category)
-        {
-            uksort($category, function ($a, $b) use($category) {
-                $skill_a = $category[$a];
-                $skill_b = $category[$b];
-
-                if ($skill_a['level'] == $skill_b['level'])
-                    return strcmp($a, $b);
-
-                return $skill_a['level'] < $skill_b['level'] ? 1 : -1;
-            });
-        }
+            ksort($category);
 
         ksort($out);
 
