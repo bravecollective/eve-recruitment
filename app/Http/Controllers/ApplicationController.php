@@ -513,7 +513,7 @@ class ApplicationController extends Controller
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
         if (!Application::canApply(Auth::user(), $ad))
-            die(json_encode(['success' => false, 'message' => 'You cannot apply to this recruitment ad. Please contact a recruiter for further information.']));
+            die(json_encode(['success' => false, 'message' => 'You have already applied to this recruitment ad. Please see the homepage for your application status.']));
 
         $questions = Input::get('questions');
 
