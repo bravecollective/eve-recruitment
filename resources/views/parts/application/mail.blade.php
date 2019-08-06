@@ -9,7 +9,9 @@
                 @foreach($mails as $mail)
                     <div class="list-group-item bg-dark text-white"
                      @if($name == $mail->sender)
-                         style="background-color: #8a4141 !important;"
+                         style="background-color: #8a4141 !important; cursor: pointer;"
+                     @else
+                         style="cursor: pointer;"
                      @endif
                          onclick="toggleCollapse('#mail-{{ $mail->getMailId() }}', {{ $mail->getMailId() }})">
                         <div class="row">
