@@ -20,22 +20,22 @@
         </li>
         <li class="nav-item">
             <a class="nav-link" id="trial-tab" data-toggle="tab" role="tab" aria-controls="trial" aria-selected="false" href="#trial">
-                Trial
+                Trial ({{ count($trial_apps) }})
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link" id="accepted-tab" data-toggle="tab" role="tab" aria-controls="accepted" aria-selected="false" href="#accepted">
-                Accepted
+                Accepted ({{ count($accepted_apps) }})
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link" id="closed-tab" data-toggle="tab" role="tab" aria-controls="closed" aria-selected="false" href="#closed">
-                Closed/Denied
+                Closed/Denied ({{ count($closed_apps) }})
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link" id="in-progress-tab" data-toggle="tab" role="tab" aria-controls="in-progress" aria-selected="false" href="#in-progress">
-                In Progress
+                In Progress ({{ count($in_progress_apps) }})
             </a>
         </li>
     </ul>
