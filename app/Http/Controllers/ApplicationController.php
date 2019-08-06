@@ -45,9 +45,8 @@ class ApplicationController extends Controller
             $sp = $esi->getSkillpoints();
             $isk = $esi->getWalletBalance();
             $titles = $esi->getTitles();
-            $warnings = Application::getWarnings($application);
         } catch(\Exception $e) {
-            $sp = $isk = $titles = $warnings = null;
+            $sp = $isk = $titles = null;
         }
 
         $tooltips = [];
@@ -68,7 +67,6 @@ class ApplicationController extends Controller
             'character' => $application->account->main(),
             'application' => $application,
             'states' => Application::$state_names,
-            'warnings' => $warnings,
             'sp' => $sp,
             'isk' => $isk,
             'titles' => $titles,
@@ -125,6 +123,30 @@ class ApplicationController extends Controller
             'titles' => $titles,
             'userApplications' => Application::getUserApplicationsForRecruiter($char),
         ]);
+    }
+
+    /**
+     * Load application warnings
+     *
+     * @param $id
+     * @return \Illuminate\Http\RedirectResponse
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Swagger\Client\Eve\ApiException
+     */
+    public function loadWarnings($id)
+    {
+        $application = Application::find($id);
+
+        if (!$application)
+            return redirect('/')->with('error', 'Invalid application ID');
+
+        $ad = $application->recruitmentAd;
+
+        if (!AccountRole::canViewApplications($ad))
+            return redirect('/')->with('error', 'Unauthorized');
+
+        $warnings = Application::getWarnings($application);
+        die(view('parts/application/warnings', ['warnings' => $warnings]));
     }
 
     /**

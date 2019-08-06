@@ -54,6 +54,7 @@ Route::get('/application/{id}', 'ApplicationController@viewApplication');
 Route::post('/application/{id}/state/update', 'ApplicationController@updateState');
 Route::post('/application/{id}/comments/add', 'CommentController@addComment');
 Route::post('/application/{id}/comments/delete', 'CommentController@deleteComment');
+Route::get('/application/{id}/warnings', 'ApplicationController@loadWarnings');
 Route::get('/character/{id}', 'ApplicationController@viewCharacterEsi');
 Route::post('/applications/{id}', 'ApplicationController@loadAjaxApplications');
 Route::get('/applications', 'ApplicationController@getAvailableApplications');

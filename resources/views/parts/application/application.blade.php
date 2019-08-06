@@ -46,14 +46,7 @@
                             <div class="card-header">
                                 Warnings
                             </div>
-                            <ul class="list-group">
-                            @if($warnings)
-                                @foreach($warnings as $warning)
-                                    <div class="list-group-item bg-dark text-white">
-                                        {{ $warning }}
-                                    </div>
-                                @endforeach
-                            @endif
+                            <ul class="list-group" id="warnings">
                             </ul>
                         </div>
                     </div>

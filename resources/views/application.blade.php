@@ -176,6 +176,16 @@
         let esiLoaded = false;
         let char_id = "{{ $character->character_id }}";
 
+        $(function() {
+        @if(isset($application))
+            // Load warnings on document load
+            let warnings_div = $('#warnings');
+
+            warnings_div.html('<div class="list-group-item bg-dark text-white">Loading...</div>');
+            $.get('/application/{{ $application->id }}/warnings', (e) => warnings_div.html(e));
+        @endif
+        });
+
         function loadPartial(url, anchor, name, additionalFunction = null)
         {
             let res = $("#result-" + anchor);
