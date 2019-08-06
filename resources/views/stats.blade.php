@@ -33,7 +33,11 @@
             <div class="col-12 col-sm-5 col-lg-3">
                 <input type="date" class="form-control" name="end_date">
             </div>
-        </div><br />
+        </div>
+        <div class="row form-check">
+            <input type="checkbox" id="show-all" name="show-all" autocomplete="off" />
+            <label for="show-all">Show All State Changes (ignores state changes above if checked)</label>
+        </div>
         <button type="submit" class="btn btn-success">Lookup</button>
     </form>
     <div id="stats-data"></div>

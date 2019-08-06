@@ -36,6 +36,7 @@ class StatsController extends Controller
         $start_date = $r->get('start_date');
         $end_date = $r->get('end_date');
         $ad_id = $r->get('ad_id');
+        $show_all = $r->get('show-all');
 
         $ad = RecruitmentAd::where('id', $ad_id)->first();
 
@@ -51,12 +52,14 @@ class StatsController extends Controller
         $start_state_id = array_search($start_state, Application::$state_names);
         $end_state_id = array_search($end_state, Application::$state_names);
 
-        $changes = ApplicationChangelog::where('old_state', $start_state_id)
-            ->join('account', 'account_id', '=', 'account.id')
+        $changes = ApplicationChangelog::join('account', 'account_id', '=', 'account.id')
             ->join('application', 'application.id', '=', 'application_id')
-            ->where('new_state', $end_state_id)
-            ->where('recruitment_id', $ad_id)
-            ->whereBetween('application_changelog.created_at', [$start_date, $end_date])
+            ->where('recruitment_id', $ad_id);
+
+        if (!$show_all)
+            $changes = $changes->where('old_state', $start_state_id)->where('new_state', $end_state_id);
+
+        $changes = $changes->whereBetween('application_changelog.created_at', [$start_date, $end_date])
             ->get();
 
         foreach ($changes as $change)
