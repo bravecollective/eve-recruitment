@@ -156,37 +156,57 @@ class EsiConnection
      *
      * @return array
      * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidAuthenticationException
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\RequestFailedException
      * @throws \Seat\Eseye\Exceptions\UriDataMissingException
      */
     public function getCharacterInfo()
     {
+        $locationModel = new LocationApi($this->client, $this->config);
+
         try {
-            $locationModel = new LocationApi($this->client, $this->config);
-            $location = $locationModel->getCharactersCharacterIdLocation($this->char_id, $this->char_id);
-
-            $skillsModel = new SkillsApi($this->client, $this->config);
-            $attributes = $skillsModel->getCharactersCharacterIdAttributes($this->char_id, $this->char_id);
-
             $ship = $locationModel->getCharactersCharacterIdShip($this->char_id, $this->char_id);
-        } catch(\Exception $e) {
-            $ship = $attributes = null;
+        } catch (\Exception $e) {
+            $ship = null;
         }
 
         try {
-            if ($location->getStructureId() == null && $location->getStationId() == null)
-                $location->structure_name = "In Space (" . $this->getSystemName($location->getSolarSystemId()) . ")";
-            else if ($location->getStructureId() != null)
-                $location->structure_name = $this->getStructureName($location->getStructureId());
-            else
-                $location->structure_name = $this->getStationName($location->getStationId());
+            $skillsModel = new SkillsApi($this->client, $this->config);
+            $attributes = $skillsModel->getCharactersCharacterIdAttributes($this->char_id, $this->char_id);
         } catch(\Exception $e) {
+            $attributes = null;
+        }
+
+        try {
+            $location = $locationModel->getCharactersCharacterIdLocation($this->char_id, $this->char_id);
+        } catch (\Exception $e) {
+            $location = null;
+        }
+
+        if ($location !== null)
+        {
+            try {
+                if ($location->getStructureId() == null && $location->getStationId() == null)
+                    $location->structure_name = "In Space (" . $this->getSystemName($location->getSolarSystemId()) . ")";
+                else if ($location->getStructureId() != null)
+                    $location->structure_name = $this->getStructureName($location->getStructureId());
+                else
+                    $location->structure_name = $this->getStationName($location->getStationId());
+            } catch(\Exception $e) {
+                $location->structure_name = "- Undockable Structure -";
+            }
+        }
+        else
+        {
+            $location = new \stdClass();
             $location->structure_name = "- Undockable Structure -";
         }
 
         $public_data = $this->eseye->invoke('get', '/characters/{character_id}/', [
             "character_id" => $this->char_id
         ]);
+
         return [
             'location' => $location,
             'birthday' => explode('T', $public_data->birthday)[0],
@@ -247,7 +267,7 @@ class EsiConnection
         try {
             $home->location_name = $this->getLocationBasedOnStationType($home->getLocationType(), $home->getLocationId());
         } catch(\Exception $e) {
-            $home->location_name = "Unknown Location";
+            $home->location_name = "- Undockable Station -";
         }
 
         foreach ($clones->getJumpClones() as $clone)
@@ -255,7 +275,7 @@ class EsiConnection
             try {
                 $clone->location_name = $this->getLocationBasedOnStationType($clone->getLocationType(), $clone->getLocationId());
             } catch(\Exception $e) {
-                $clone->location_name = "Unknown Location";
+                $clone->location_name = "- Undockable Station -";
             }
         }
 
