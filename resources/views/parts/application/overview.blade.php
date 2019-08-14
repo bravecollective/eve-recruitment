@@ -250,13 +250,23 @@
                         <img class="mr-3 rounded img-fluid" src="{{ $img_link }}" />
                         @endif
                         <div class="media-body">
-                            <h5 class="mt-0">
+                            <h5 class="mt-0" style="margin: 0;">
                             @if($contact->getContactType() != "faction")
                                 {{ $contact->contact_name }}
                             @else
                                 (Faction)
                             @endif
                             </h5>
+                        @if($contact->getContactType() == "character")
+                            @if($contact->alliance_name != null)
+                                <div style="display: inline-block;" data-toggle="tooltip" title="{{ $contact->alliance_name }}">[{{ $contact->alliance_ticker }}]</div>/{{ $contact->corp_name }}
+                            @else
+                                {{ $contact->corp_name }}
+                            @endif
+                            <br />
+                        @elseif($contact->getContactType() == "corporation" && $contact->alliance_name != null)
+                            <div style="display: inline-block;" data-toggle="tooltip" title="{{ $contact->alliance_name }}">[{{ $contact->alliance_ticker }}]</div><br />
+                        @endif
                             <span class="badge badge-pill {{ $class }}">Standing: {{ $contact->getStanding() }}</span>
                         @if($contact->getContactId() > 3000000 && $contact->getContactId() < 4000000)
                             <span class="badge badge-pill badge-primary">NPC</span>

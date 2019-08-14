@@ -1236,17 +1236,59 @@ class EsiConnection
         $model = new ContactsApi($this->client, $this->config);
         $contacts = $model->getCharactersCharacterIdContacts($this->char_id, $this->char_id);
         $IDs = $this->eseye->setBody(array_map(function ($e) { return $e->getContactId(); }, $contacts))->invoke('post', '/universe/names');
+
+        $char_ids = [];
+
+        foreach ($contacts as $contact)
+            if ($contact->getContactType() == "character")
+                $char_ids[] = $contact->getContactId();
+
+        $affiliations = $this->eseye->setBody($char_ids)->invoke('post', '/characters/affiliation');
+
         $IDs = json_decode($IDs->raw);
+        $affiliations = json_decode($affiliations->raw);
 
         foreach ($contacts as $contact)
         {
-            $ID = array_filter($IDs,
+            $names = array_filter($IDs,
                     function ($e) use(&$contact) {
                         return $e->id == $contact->getContactId();
                     }
                 );
-            $ID = array_pop($ID);
-            $contact->contact_name = $ID->name;
+            $name = array_pop($names);
+            $contact->contact_name = $name->name;
+            $contact->alliance_name = $contact->alliance_ticker = null;
+
+            if ($contact->getContactType() == "character")
+            {
+                $affiliation = array_filter($affiliations,
+                    function ($e) use(&$contact) {
+                        return $e->character_id == $contact->getContactId();
+                    }
+                );
+                $affiliation = array_pop($affiliation);
+
+                $contact->corp_id = $affiliation->corporation_id;
+                $contact->corp_name = $this->getCorporationName($contact->corp_id);
+
+                if (property_exists($affiliation, 'alliance_id'))
+                {
+                    $contact->alliance_name = $this->getAllianceName($affiliation->alliance_id);
+                    $contact->alliance_ticker = $this->getAllianceTicker($affiliation->alliance_id);
+                }
+            }
+            else if ($contact->getContactType() == "corporation")
+            {
+                $corp_info = $this->eseye->invoke('get', '/corporations/{corporation_id}/', [
+                    'corporation_id' => $contact->getContactId()
+                ]);
+
+                if (!isset($corp_info->alliance_id))
+                    continue;
+
+                $contact->alliance_name = $this->getAllianceName($corp_info->alliance_id);
+                $contact->alliance_ticker = $this->getAllianceTicker($corp_info->alliance_id);
+            }
         }
 
         // Reverse sort by standing
