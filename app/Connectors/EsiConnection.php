@@ -1235,27 +1235,18 @@ class EsiConnection
     {
         $model = new ContactsApi($this->client, $this->config);
         $contacts = $model->getCharactersCharacterIdContacts($this->char_id, $this->char_id);
+        $IDs = $this->eseye->setBody(array_map(function ($e) { return $e->getContactId(); }, $contacts))->invoke('post', '/universe/names');
+        $IDs = json_decode($IDs->raw);
 
         foreach ($contacts as $contact)
         {
-            switch($contact->getContactType())
-            {
-                case "character":
-                    $contact->contact_name = $this->getCharacterName($contact->getContactId());
-                    break;
-
-                case "alliance":
-                    $contact->contact_name = $this->getAllianceName($contact->getContactId());
-                    break;
-
-                case "corporation":
-                    $contact->contact_name = $this->getCorporationName($contact->getContactId());
-                    break;
-
-                default:
-                    $contact->contact_name = null;
-                    break;
-            }
+            $ID = array_filter($IDs,
+                    function ($e) use(&$contact) {
+                        return $e->id == $contact->getContactId();
+                    }
+                );
+            $ID = array_pop($ID);
+            $contact->contact_name = $ID->name;
         }
 
         // Reverse sort by standing
