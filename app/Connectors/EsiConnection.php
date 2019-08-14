@@ -156,37 +156,57 @@ class EsiConnection
      *
      * @return array
      * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidAuthenticationException
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\RequestFailedException
      * @throws \Seat\Eseye\Exceptions\UriDataMissingException
      */
     public function getCharacterInfo()
     {
+        $locationModel = new LocationApi($this->client, $this->config);
+
         try {
-            $locationModel = new LocationApi($this->client, $this->config);
-            $location = $locationModel->getCharactersCharacterIdLocation($this->char_id, $this->char_id);
-
-            $skillsModel = new SkillsApi($this->client, $this->config);
-            $attributes = $skillsModel->getCharactersCharacterIdAttributes($this->char_id, $this->char_id);
-
             $ship = $locationModel->getCharactersCharacterIdShip($this->char_id, $this->char_id);
-        } catch(\Exception $e) {
-            $ship = $attributes = null;
+        } catch (\Exception $e) {
+            $ship = null;
         }
 
         try {
-            if ($location->getStructureId() == null && $location->getStationId() == null)
-                $location->structure_name = "In Space (" . $this->getSystemName($location->getSolarSystemId()) . ")";
-            else if ($location->getStructureId() != null)
-                $location->structure_name = $this->getStructureName($location->getStructureId());
-            else
-                $location->structure_name = $this->getStationName($location->getStationId());
+            $skillsModel = new SkillsApi($this->client, $this->config);
+            $attributes = $skillsModel->getCharactersCharacterIdAttributes($this->char_id, $this->char_id);
         } catch(\Exception $e) {
+            $attributes = null;
+        }
+
+        try {
+            $location = $locationModel->getCharactersCharacterIdLocation($this->char_id, $this->char_id);
+        } catch (\Exception $e) {
+            $location = null;
+        }
+
+        if ($location !== null)
+        {
+            try {
+                if ($location->getStructureId() == null && $location->getStationId() == null)
+                    $location->structure_name = "In Space (" . $this->getSystemName($location->getSolarSystemId()) . ")";
+                else if ($location->getStructureId() != null)
+                    $location->structure_name = $this->getStructureName($location->getStructureId());
+                else
+                    $location->structure_name = $this->getStationName($location->getStationId());
+            } catch(\Exception $e) {
+                $location->structure_name = "- Undockable Structure -";
+            }
+        }
+        else
+        {
+            $location = new \stdClass();
             $location->structure_name = "- Undockable Structure -";
         }
 
         $public_data = $this->eseye->invoke('get', '/characters/{character_id}/', [
             "character_id" => $this->char_id
         ]);
+
         return [
             'location' => $location,
             'birthday' => explode('T', $public_data->birthday)[0],
@@ -247,7 +267,7 @@ class EsiConnection
         try {
             $home->location_name = $this->getLocationBasedOnStationType($home->getLocationType(), $home->getLocationId());
         } catch(\Exception $e) {
-            $home->location_name = "Unknown Location";
+            $home->location_name = "- Undockable Station -";
         }
 
         foreach ($clones->getJumpClones() as $clone)
@@ -255,7 +275,7 @@ class EsiConnection
             try {
                 $clone->location_name = $this->getLocationBasedOnStationType($clone->getLocationType(), $clone->getLocationId());
             } catch(\Exception $e) {
-                $clone->location_name = "Unknown Location";
+                $clone->location_name = "- Undockable Station -";
             }
         }
 
@@ -1215,26 +1235,59 @@ class EsiConnection
     {
         $model = new ContactsApi($this->client, $this->config);
         $contacts = $model->getCharactersCharacterIdContacts($this->char_id, $this->char_id);
+        $IDs = $this->eseye->setBody(array_map(function ($e) { return $e->getContactId(); }, $contacts))->invoke('post', '/universe/names');
+
+        $char_ids = [];
+
+        foreach ($contacts as $contact)
+            if ($contact->getContactType() == "character")
+                $char_ids[] = $contact->getContactId();
+
+        $affiliations = $this->eseye->setBody($char_ids)->invoke('post', '/characters/affiliation');
+
+        $IDs = json_decode($IDs->raw);
+        $affiliations = json_decode($affiliations->raw);
 
         foreach ($contacts as $contact)
         {
-            switch($contact->getContactType())
+            $names = array_filter($IDs,
+                    function ($e) use(&$contact) {
+                        return $e->id == $contact->getContactId();
+                    }
+                );
+            $name = array_pop($names);
+            $contact->contact_name = $name->name;
+            $contact->alliance_name = $contact->alliance_ticker = null;
+
+            if ($contact->getContactType() == "character")
             {
-                case "character":
-                    $contact->contact_name = $this->getCharacterName($contact->getContactId());
-                    break;
+                $affiliation = array_filter($affiliations,
+                    function ($e) use(&$contact) {
+                        return $e->character_id == $contact->getContactId();
+                    }
+                );
+                $affiliation = array_pop($affiliation);
 
-                case "alliance":
-                    $contact->contact_name = $this->getAllianceName($contact->getContactId());
-                    break;
+                $contact->corp_id = $affiliation->corporation_id;
+                $contact->corp_name = $this->getCorporationName($contact->corp_id);
 
-                case "corporation":
-                    $contact->contact_name = $this->getCorporationName($contact->getContactId());
-                    break;
+                if (property_exists($affiliation, 'alliance_id'))
+                {
+                    $contact->alliance_name = $this->getAllianceName($affiliation->alliance_id);
+                    $contact->alliance_ticker = $this->getAllianceTicker($affiliation->alliance_id);
+                }
+            }
+            else if ($contact->getContactType() == "corporation")
+            {
+                $corp_info = $this->eseye->invoke('get', '/corporations/{corporation_id}/', [
+                    'corporation_id' => $contact->getContactId()
+                ]);
 
-                default:
-                    $contact->contact_name = null;
-                    break;
+                if (!isset($corp_info->alliance_id))
+                    continue;
+
+                $contact->alliance_name = $this->getAllianceName($corp_info->alliance_id);
+                $contact->alliance_ticker = $this->getAllianceTicker($corp_info->alliance_id);
             }
         }
 
@@ -1564,16 +1617,23 @@ class EsiConnection
     }
 
     /**
-     * Given a name ID get the name
+     * Get a name from an ID from /universe/names
      *
      * @param $name_id
-     * @return \Swagger\Client\Eve\Model\PostUniverseNames200Ok[]
-     * @throws \Swagger\Client\Eve\ApiException
+     * @return mixed|string|null
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidAuthenticationException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\RequestFailedException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
      */
     public function getUnknownTypeName($name_id)
     {
         if (!$name_id)
             return null;
+
+        if ($name_id == 2)
+            return "Insurance";
 
         $cache_key = "universe_names_{$name_id}";
 

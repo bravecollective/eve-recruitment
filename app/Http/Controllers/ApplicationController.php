@@ -38,7 +38,7 @@ class ApplicationController extends Controller
         if (!AccountRole::canViewApplications($ad))
             return redirect('/')->with('error', 'Unauthorized');
 
-        #User::updateUsersOnApplicationLoad($application->account->main_user_id);
+        User::updateUsersOnApplicationLoad($application->account->main_user_id);
         $esi = new EsiConnection($application->account->main_user_id);
 
         try {
@@ -94,7 +94,7 @@ class ApplicationController extends Controller
         if (!AccountRole::recruiterCanViewEsi($char_id) && (!Auth::user()->hasRole($char->corporation_name . ' recruiter') && !Auth::user()->hasRole($char->corporation_name . ' director')))
             return redirect('/')->with('error', 'Unauthorized');
 
-        #User::updateUsersOnApplicationLoad($char_id);
+        User::updateUsersOnApplicationLoad($char_id);
         $esi = new EsiConnection($char_id);
 
         $char_info = $esi->getCharacterInfo();
