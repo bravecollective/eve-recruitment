@@ -1584,16 +1584,23 @@ class EsiConnection
     }
 
     /**
-     * Given a name ID get the name
+     * Get a name from an ID from /universe/names
      *
      * @param $name_id
-     * @return \Swagger\Client\Eve\Model\PostUniverseNames200Ok[]
-     * @throws \Swagger\Client\Eve\ApiException
+     * @return mixed|string|null
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidAuthenticationException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\RequestFailedException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
      */
     public function getUnknownTypeName($name_id)
     {
         if (!$name_id)
             return null;
+
+        if ($name_id == 2)
+            return "Insurance";
 
         $cache_key = "universe_names_{$name_id}";
 
