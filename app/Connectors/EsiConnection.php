@@ -429,9 +429,23 @@ class EsiConnection
             }
         }
 
+        $ids = [];
+        array_map(function ($e) use(&$ids) {
+            if (!in_array($e->getFrom(), $ids))
+                $ids[] = $e->getFrom();
+        }, $mail);
+
+        $senders = $this->eseye->setBody($ids)->invoke('post', '/universe/names');
+        $senders = json_decode($senders->raw);
+
         foreach ($mail as $m)
         {
-            $m->sender = $this->getCharacterName($m->getFrom());
+            $names = array_filter($senders, function ($e) use ($m) {
+                return $e->id == $m->getFrom();
+            });
+            $name = array_pop($names);
+
+            $m->sender = $name->name;
         }
 
         Cache::add($mailCacheKey, $mail, $this->getCacheExpirationTime($mail_http));
