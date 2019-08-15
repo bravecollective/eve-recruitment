@@ -431,7 +431,7 @@ class EsiConnection
 
         $ids = [];
         array_map(function ($e) use(&$ids) {
-            if (!in_array($e->getFrom(), $ids))
+            if (!in_array($e->getFrom(), $ids) && ($e->getFrom() < 100000000 || $e->getFrom() > 2099999999))
                 $ids[] = $e->getFrom();
         }, $mail);
 
@@ -440,12 +440,17 @@ class EsiConnection
 
         foreach ($mail as $m)
         {
-            $names = array_filter($senders, function ($e) use ($m) {
-                return $e->id == $m->getFrom();
-            });
-            $name = array_pop($names);
+            if ($m->getFrom() > 100000000 && $m ->getFrom() < 2099999999)
+              $m->sender = $this->getCharacterName($m->getFrom());
+            else
+            {
+                $names = array_filter($senders, function ($e) use ($m) {
+                    return $e->id == $m->getFrom();
+                });
+                $name = array_pop($names);
 
-            $m->sender = $name->name;
+                $m->sender = $name->name;
+            }
         }
 
         Cache::add($mailCacheKey, $mail, $this->getCacheExpirationTime($mail_http));
