@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Connectors\CoreConnection;
+use App\Models\Account;
 use App\Models\Application;
 use App\Models\ApplicationChangelog;
 use App\Connectors\EsiConnection;
@@ -171,6 +172,7 @@ class ApplicationController extends Controller
 
         $res = view('parts/application/overview', [
             'application' => true,
+            'account' => Account::find($char->account_id),
             'character' => $char,
             'character_info' => $character_info,
             'clones' => $clones,

@@ -271,6 +271,9 @@
                         @if($contact->getContactId() > 3000000 && $contact->getContactId() < 4000000)
                             <span class="badge badge-pill badge-primary">NPC</span>
                         @endif
+                        @if(sizeof(array_filter($account->alts()->toArray(), function ($e) use (&$contact) { return $e['character_id'] == $contact->getContactId(); })) > 0)
+                            <span class="badge badge-pill badge-primary">Included Alt</span>
+                        @endif
                         </div>
                     </div>
                 </a>
