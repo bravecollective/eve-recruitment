@@ -1477,7 +1477,7 @@ class EsiConnection
         }
 
         // for unknown reasons the name is sometimes not set
-        if (! isset($char->name)) {
+        if (!isset($char->name)) {
             return "Unknown Error";
         }
 
@@ -1727,17 +1727,9 @@ class EsiConnection
             $res = null;
 
             try {
-                $res = $this->getCharacterName($id);
-                $legacyLookups[] = new ESINameResponse("character", $id, $res);
+                $res = $this->getCorporationName($id);
+                $legacyLookups[] = new ESINameResponse("corporation", $id, $res);
             } catch (\Exception $e) { }
-
-            if ($res === null)
-            {
-                try {
-                    $res = $this->getCorporationName($id);
-                    $legacyLookups[] = new ESINameResponse("corporation", $id, $res);
-                } catch (\Exception $e) { }
-            }
 
             if ($res === null)
             {
@@ -1745,6 +1737,12 @@ class EsiConnection
                     $res = $this->getAllianceName($id);
                     $legacyLookups[] = new ESINameResponse("alliance", $id, $res);
                 } catch (\Exception $e) { }
+            }
+
+            if ($res == null)
+            {
+                $res = $this->getCharacterName($id);
+                $legacyLookups[] = new ESINameResponse("character", $id, $res);
             }
         }
 
