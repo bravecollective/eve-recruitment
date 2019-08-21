@@ -114,6 +114,7 @@ class ApplicationController extends Controller
 
         return view('application', [
             'character' => $char,
+            'account' => Account::find($char->account_id),
             'character_info' => $char_info,
             'clones' => $clones,
             'corp_history' => $corp_history,
