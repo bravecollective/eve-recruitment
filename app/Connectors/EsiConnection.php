@@ -415,9 +415,9 @@ class EsiConnection
         else
         {
             $mail_http = $model->getCharactersCharacterIdMailWithHttpInfo($this->char_id, $this->char_id);
-            $mail = $mail_http[0];
+            $mail = $temp = $mail_http[0];
 
-            while (count($mail) >= 50) // If count is < 50, there's no new mail to request
+            while (count($temp) >= 50) // If count is < 50, there's no new mail to request
             {
                 $last_mail_id = end($mail)->getMailId();
                 reset($mail);
