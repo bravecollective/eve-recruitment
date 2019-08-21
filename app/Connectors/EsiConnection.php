@@ -2,6 +2,7 @@
 
 namespace App\Connectors;
 
+use App\Models\ESINameResponse;
 use GuzzleHttp\Client;
 use Swagger\Client\Eve\ApiException;
 use App\Models\Group;
@@ -430,27 +431,18 @@ class EsiConnection
         }
 
         $ids = [];
-        array_map(function ($e) use(&$ids) {
-            if (!in_array($e->getFrom(), $ids) && ($e->getFrom() < 100000000 || $e->getFrom() > 2099999999))
-                $ids[] = $e->getFrom();
-        }, $mail);
+        array_map(function ($e) use(&$ids) { $ids[] = $e->getFrom(); }, $mail);
 
-        $senders = $this->eseye->setBody($ids)->invoke('post', '/universe/names');
-        $senders = json_decode($senders->raw);
+        $senders = $this->lookupNames($ids);
 
         foreach ($mail as $m)
         {
-            if ($m->getFrom() > 100000000 && $m ->getFrom() < 2099999999)
-              $m->sender = $this->getCharacterName($m->getFrom());
-            else
-            {
-                $names = array_filter($senders, function ($e) use ($m) {
-                    return $e->id == $m->getFrom();
-                });
-                $name = array_pop($names);
+            $names = array_filter($senders, function ($e) use ($m) {
+                return $e->id == $m->getFrom();
+            });
+            $name = array_pop($names);
 
-                $m->sender = $name->name;
-            }
+            $m->sender = $name->name;
         }
 
         Cache::add($mailCacheKey, $mail, $this->getCacheExpirationTime($mail_http));
@@ -529,12 +521,7 @@ class EsiConnection
         if (count($ids) == 0)
             return [];
 
-        $res = $this->eseye->setBody($ids)->invoke('post', '/universe/names/');
-
-        if (!$res)
-            return [];
-
-        $data = json_decode($res->raw, true);
+        $data = $this->lookupNames($ids);
         $new_ids = [];
 
         foreach ($data as $d)
@@ -972,6 +959,13 @@ class EsiConnection
         $contracts = $model->getCharactersCharacterIdContractsWithHttpInfo($this->char_id, $this->char_id);
         $out = [];
 
+        $character_ids = [];
+        array_map(function ($e) use(&$character_ids) {
+            $character_ids[] = $e->getAcceptorId();
+            $character_ids[] = $e->getIssuerId();
+        }, $contracts[0]);
+        $character_names = $this->lookupNames($character_ids);
+
         foreach ($contracts[0] as $contract)
         {
             $model_items = $model->getCharactersCharacterIdContractsContractIdItems($this->char_id, $contract->getContractId(), $this->char_id);
@@ -1022,13 +1016,23 @@ class EsiConnection
 
             $assignee = ($assignee == null) ? "Unknown" : $assignee;
 
+            $acceptor = array_filter($character_names, function ($e) use (&$contract) {
+                return $e->id == $contract->getAcceptorId();
+            });
+            $acceptor = sizeof($acceptor) > 0 ? array_pop($acceptor)->name : "Unknown Acceptor (ID: { $contract->getAcceptorId() })";
+
+            $issuer = array_filter($character_names, function ($e) use (&$contract) {
+                return $e->id == $contract->getIssuerId();
+            });
+            $issuer = sizeof($issuer) > 0 ? array_pop($issuer)->name : "Unknown Issuer (ID: { $contract->getIssuerId() })";
+
             $out[] = [
                 'id' => $contract->getContractId(),
                 'issued' => $contract->getDateIssued()->format('Y-m-d H:i'),
                 'expired' => $contract->getDateExpired()->format('Y-m-d H:i'),
                 'assignee' => $assignee,
-                'acceptor' => $this->getCharacterName($contract->getAcceptorId()),
-                'issuer' => $this->getCharacterName($contract->getIssuerId()),
+                'acceptor' => $acceptor,
+                'issuer' => $issuer,
                 'type' => ucwords(implode(' ', explode('_', $type))),
                 'status' => ucwords(implode(' ', explode('_', $contract->getStatus()))),
                 'price' => $price,
@@ -1093,6 +1097,7 @@ class EsiConnection
     {
         $cache_key = "wallet_journal_{$this->char_id}";
         $out = [];
+        $ids = [];
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
@@ -1110,11 +1115,23 @@ class EsiConnection
             $journal[0] = array_merge($journal[0], $second);
         }
 
+        array_map(function ($e) use(&$ids) {
+            $ids[] = $e->getFirstPartyId();
+            $ids[] = $e->getSecondPartyId(); }, $journal[0]);
+
+        $names = $this->lookupNames($ids);
+
         foreach ($journal[0] as $entry)
         {
+            $sender = array_filter($names, function ($e) use(&$entry) { return $e->id == $entry->getFirstPartyId(); });
+            $sender = sizeof($sender) > 0 ? array_pop($sender)->name : "Unknown Sender (ID: { $entry->getFirstPartyId() })";
+
+            $receiver = array_filter($names, function ($e) use(&$entry) { return $e->id == $entry->getSecondPartyId(); });
+            $receiver = sizeof($receiver) > 0 ? array_pop($receiver)->name : "Unknown Receiver (ID: { $entry->getFirstPartyId() })";
+
             $out[] = [
-                'sender' => $this->getUnknownTypeName($entry->getFirstPartyId()),
-                'receiver' => $this->getUnknownTypeName($entry->getSecondPartyId()),
+                'sender' => $sender,
+                'receiver' => $receiver,
                 'description' => $entry->getDescription(),
                 'type' => ucwords(str_replace('_', ' ', $entry->getRefType())),
                 'amount' => number_format($entry->getAmount()),
@@ -1254,8 +1271,9 @@ class EsiConnection
     {
         $model = new ContactsApi($this->client, $this->config);
         $contacts = $model->getCharactersCharacterIdContacts($this->char_id, $this->char_id);
-        $IDs = $this->eseye->setBody(array_map(function ($e) { return $e->getContactId(); }, $contacts))->invoke('post', '/universe/names');
+        $ids = array_map(function ($e) { return $e->getContactId(); }, $contacts);
 
+        $IDs = $this->lookupNames($ids);
         $char_ids = [];
 
         foreach ($contacts as $contact)
@@ -1263,8 +1281,6 @@ class EsiConnection
                 $char_ids[] = $contact->getContactId();
 
         $affiliations = $this->eseye->setBody($char_ids)->invoke('post', '/characters/affiliation');
-
-        $IDs = json_decode($IDs->raw);
         $affiliations = json_decode($affiliations->raw);
 
         foreach ($contacts as $contact)
@@ -1668,6 +1684,71 @@ class EsiConnection
         $name = $data[0]->name;
         Cache::add($cache_key, $name, env('CACHE_TIME', 3264));
         return $name;
+    }
+
+    /**
+     * Lookup names from ESI
+     *
+     * @param $ids
+     * @return array|mixed|\Seat\Eseye\Containers\EsiResponse
+     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
+     * @throws \Seat\Eseye\Exceptions\InvalidAuthenticationException
+     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws \Seat\Eseye\Exceptions\RequestFailedException
+     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     */
+    public function lookupNames($ids)
+    {
+        if (sizeof($ids) == 0)
+            return [];
+
+        $lookupIDs = [];
+        $legacyIDs = [];
+        $legacyLookups = [];
+        $names = [];
+
+        array_map(function ($e) use(&$legacyIDs, &$lookupIDs) {
+            if ($e < 10000)
+                return; // Random system items. Lookups will fail
+            if (!in_array($e, $legacyIDs) && $e >= 100000000 && $e <= 2099999999)
+                $legacyIDs[] = $e;
+            else if (!in_array($e, $lookupIDs))
+                $lookupIDs[] = $e;
+        }, $ids);
+
+        if (sizeof($lookupIDs) > 0)
+        {
+            $names = $this->eseye->setBody($lookupIDs)->invoke('post', '/universe/names');
+            $names = json_decode($names->raw);
+        }
+
+        foreach ($legacyIDs as $id)
+        {
+            $res = null;
+
+            try {
+                $res = $this->getCharacterName($id);
+                $legacyLookups[] = new ESINameResponse("character", $id, $res);
+            } catch (\Exception $e) { }
+
+            if ($res === null)
+            {
+                try {
+                    $res = $this->getCorporationName($id);
+                    $legacyLookups[] = new ESINameResponse("corporation", $id, $res);
+                } catch (\Exception $e) { }
+            }
+
+            if ($res === null)
+            {
+                try {
+                    $res = $this->getAllianceName($id);
+                    $legacyLookups[] = new ESINameResponse("alliance", $id, $res);
+                } catch (\Exception $e) { }
+            }
+        }
+
+        return array_merge($names, $legacyLookups);
     }
 
     /**
