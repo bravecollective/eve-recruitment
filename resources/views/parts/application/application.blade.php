@@ -66,6 +66,10 @@
                                 <small>{{ $changelog->account->main()->name }} - {{ $changelog->created_at }}</small>
                             </div>
                         @endforeach
+                            <div class="list-group-item bg-dark text-white">
+                                Applied<br />
+                                <small>{{ $application->created_at }}</small>
+                            </div>
                     </ul>
                 </div>
             </div>
