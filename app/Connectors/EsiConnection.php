@@ -1708,11 +1708,14 @@ class EsiConnection
         $names = [];
 
         array_map(function ($e) use(&$legacyIDs, &$lookupIDs) {
-            if ($e < 10000)
-                return; // Random system items. Lookups will fail
             if (!in_array($e, $legacyIDs) && $e >= 100000000 && $e <= 2099999999)
-                $legacyIDs[] = $e;
-            else if (!in_array($e, $lookupIDs))
+                $legacyIDs[] = $e; // IDs not resolvable by /universe/names
+            else if (!in_array($e, $lookupIDs) && (
+                ($e >= 500000 && $e < 2000000) ||
+                ($e >= 3000000 && $e < 4000000) ||
+                ($e >= 90000000 && $e < 100000000) ||
+                ($e >= 2100000000)
+            ))
                 $lookupIDs[] = $e;
         }, $ids);
 
