@@ -1019,12 +1019,12 @@ class EsiConnection
             $acceptor = array_filter($character_names, function ($e) use (&$contract) {
                 return $e->id == $contract->getAcceptorId();
             });
-            $acceptor = sizeof($acceptor) > 0 ? array_pop($acceptor)->name : "Unknown Acceptor (ID: { $contract->getAcceptorId() })";
+            $acceptor = sizeof($acceptor) > 0 ? array_pop($acceptor)->name : "Unknown Acceptor";
 
             $issuer = array_filter($character_names, function ($e) use (&$contract) {
                 return $e->id == $contract->getIssuerId();
             });
-            $issuer = sizeof($issuer) > 0 ? array_pop($issuer)->name : "Unknown Issuer (ID: { $contract->getIssuerId() })";
+            $issuer = sizeof($issuer) > 0 ? array_pop($issuer)->name : "Unknown Issuer";
 
             $out[] = [
                 'id' => $contract->getContractId(),
@@ -1124,10 +1124,10 @@ class EsiConnection
         foreach ($journal[0] as $entry)
         {
             $sender = array_filter($names, function ($e) use(&$entry) { return $e->id == $entry->getFirstPartyId(); });
-            $sender = sizeof($sender) > 0 ? array_pop($sender)->name : "Unknown Sender (ID: { $entry->getFirstPartyId() })";
+            $sender = sizeof($sender) > 0 ? array_pop($sender)->name : "Unknown Sender";
 
             $receiver = array_filter($names, function ($e) use(&$entry) { return $e->id == $entry->getSecondPartyId(); });
-            $receiver = sizeof($receiver) > 0 ? array_pop($receiver)->name : "Unknown Receiver (ID: { $entry->getFirstPartyId() })";
+            $receiver = sizeof($receiver) > 0 ? array_pop($receiver)->name : "Unknown Receiver";
 
             $out[] = [
                 'sender' => $sender,
