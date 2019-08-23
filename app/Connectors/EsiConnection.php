@@ -506,7 +506,7 @@ class EsiConnection
                     $mail->recipients[] = [
                         'type' => 'mailing list',
                         'name' => $this->getMailingListName($recipient->getRecipientId()),
-                        'id' => null
+                        'id' => $recipient->getRecipientId()
                     ];
                     break;
 
@@ -525,7 +525,7 @@ class EsiConnection
         $new_ids = [];
 
         foreach ($data as $d)
-            $new_ids[$d['id']] = $d['name'];
+            $new_ids[$d->id] = $d->name;
 
         foreach ($mail->recipients as &$recipient)
         {
