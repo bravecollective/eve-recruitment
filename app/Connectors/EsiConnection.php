@@ -22,6 +22,7 @@ use Swagger\Client\Eve\Api\SkillsApi;
 use Swagger\Client\Eve\Api\UniverseApi;
 use Swagger\Client\Eve\Api\WalletApi;
 use Swagger\Client\Eve\Configuration;
+use Swagger\Client\Eve\Model\GetCharactersCharacterIdLocationOk;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -217,7 +218,8 @@ class EsiConnection
             'race' => $this->getRace($public_data->race_id),
             'current_ship' => ($ship != null) ? $ship->getShipName() . " (" . $this->getTypeName($ship->getShipTypeId()) . ")" : null,
             'security_status' => round($public_data->security_status, 4),
-            'region' => ($location != null) ? $this->getRegionName($location->getSolarSystemId()) : null,
+            'region' => $location instanceof GetCharactersCharacterIdLocationOk ?
+                $this->getRegionName($location->getSolarSystemId()) : null,
             'attributes' => $attributes
         ];
     }
