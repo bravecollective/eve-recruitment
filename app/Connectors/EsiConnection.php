@@ -1721,10 +1721,18 @@ class EsiConnection
                 $lookupIDs[] = $e;
         }, $ids);
 
+        $names = [];
+
         if (sizeof($lookupIDs) > 0)
         {
-            $names = $this->eseye->setBody($lookupIDs)->invoke('post', '/universe/names');
-            $names = json_decode($names->raw);
+            $chunked_names = array_chunk($lookupIDs, 500);
+
+            foreach ($chunked_names as $lookupChunk)
+            {
+                $res = $this->eseye->setBody($lookupChunk)->invoke('post', '/universe/names');
+                $res = json_decode($res->raw);
+                $names = array_merge($names, $res);
+            }
         }
 
         foreach ($legacyIDs as $id)
