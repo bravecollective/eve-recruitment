@@ -1,5 +1,5 @@
 {
-    "name": "Brave Recruitment",
+    "name": "rangvaldr/eve-recruitment",
     "type": "project",
     "description": "Brave Newbies Recruitment",
     "keywords": [
@@ -19,7 +19,7 @@
         "laravel/tinker": "^1.0",
         "nullx27/eveonline-socialite": "^0.5.0",
         "symfony/yaml": "^4.2",
-        "tkhamez/swagger-eve-php": "~2.0.0"
+        "tkhamez/swagger-eve-php": "^3.0"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^2.6",

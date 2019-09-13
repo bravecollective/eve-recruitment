@@ -1,10 +1,10 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0fb951d6b0cdd42b2ec6d50991caad42",
+    "content-hash": "32462dee79f1cc53dc8c925453d19140",
     "packages": [
         {
             "name": "dnoegel/php-xdg-base-dir",
@@ -3942,16 +3942,16 @@
         },
         {
             "name": "tkhamez/swagger-eve-php",
-            "version": "2.0.3",
+            "version": "3.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tkhamez/swagger-eve-php.git",
-                "reference": "0ae52ea3b5126928f84101ac182875616e756815"
+                "reference": "24e1fc9ced8b053893b6c094060714523bfa50cd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tkhamez/swagger-eve-php/zipball/0ae52ea3b5126928f84101ac182875616e756815",
-                "reference": "0ae52ea3b5126928f84101ac182875616e756815",
+                "url": "https://api.github.com/repos/tkhamez/swagger-eve-php/zipball/24e1fc9ced8b053893b6c094060714523bfa50cd",
+                "reference": "24e1fc9ced8b053893b6c094060714523bfa50cd",
                 "shasum": ""
             },
             "require": {
@@ -3959,11 +3959,11 @@
                 "ext-json": "*",
                 "ext-mbstring": "*",
                 "guzzlehttp/guzzle": "^6.2",
-                "php": ">=5.6"
+                "php": ">=7.1"
             },
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "~2.12",
-                "phpunit/phpunit": "^4.8",
+                "phpunit/phpunit": "^7.4",
                 "squizlabs/php_codesniffer": "~2.6"
             },
             "type": "library",
@@ -3983,16 +3983,17 @@
                 }
             ],
             "description": "An OpenAPI Client Library for EVE Online (ESI)",
-            "homepage": "http://openapi-generator.tech",
+            "homepage": "https://openapi-generator.tech",
             "keywords": [
                 "api",
+                "openapi",
                 "openapi-generator",
                 "openapitools",
                 "php",
                 "rest",
                 "sdk"
             ],
-            "time": "2019-07-11T18:33:45+00:00"
+            "time": "2019-09-10T17:57:59+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
