@@ -7,7 +7,7 @@
                         Question Responses
                     </div>
                     <ul class="list-group">
-                    @foreach($questions as $question)
+                    @foreach($questions->sortByDesc('created_at') as $question)
                         <div class="list-group-item bg-dark text-white">
                             <h4>{{ $question->question }}</h4>
                             <p>{{ $question->response }}</p>

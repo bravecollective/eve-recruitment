@@ -292,6 +292,6 @@ class Application extends Model
     {
         return FormResponse::join('form', 'form.id', '=', 'form_response.question_id')
             ->where('application_id', $this->id)->where('account_id', $this->account_id)
-            ->get();
+            ->get(['response', 'question', 'form_response.created_at']);
     }
 }
