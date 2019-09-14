@@ -1282,8 +1282,11 @@ class EsiConnection
             if ($contact->getContactType() == "character")
                 $char_ids[] = $contact->getContactId();
 
-        $affiliations = $this->eseye->setBody($char_ids)->invoke('post', '/characters/affiliation');
-        $affiliations = json_decode($affiliations->raw);
+        $affiliations = [];
+        if (count($char_ids) > 0) {
+            $affiliations = $this->eseye->setBody($char_ids)->invoke('post', '/characters/affiliation');
+            $affiliations = json_decode($affiliations->raw);
+        }
 
         foreach ($contacts as $contact)
         {
