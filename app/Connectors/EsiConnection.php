@@ -521,7 +521,7 @@ class EsiConnection
         }
 
         if (count($ids) == 0)
-            return [];
+            return $mail;
 
         $data = $this->lookupNames($ids);
         $new_ids = [];
