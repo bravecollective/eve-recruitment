@@ -1,7 +1,7 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
     "content-hash": "32462dee79f1cc53dc8c925453d19140",
@@ -3942,16 +3942,16 @@
         },
         {
             "name": "tkhamez/swagger-eve-php",
-            "version": "3.0.2",
+            "version": "3.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tkhamez/swagger-eve-php.git",
-                "reference": "24e1fc9ced8b053893b6c094060714523bfa50cd"
+                "reference": "d5b1f583d5dc796efdadc76568a39009c66a447a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tkhamez/swagger-eve-php/zipball/24e1fc9ced8b053893b6c094060714523bfa50cd",
-                "reference": "24e1fc9ced8b053893b6c094060714523bfa50cd",
+                "url": "https://api.github.com/repos/tkhamez/swagger-eve-php/zipball/d5b1f583d5dc796efdadc76568a39009c66a447a",
+                "reference": "d5b1f583d5dc796efdadc76568a39009c66a447a",
                 "shasum": ""
             },
             "require": {
@@ -3993,7 +3993,7 @@
                 "rest",
                 "sdk"
             ],
-            "time": "2019-09-10T17:57:59+00:00"
+            "time": "2019-12-12T19:37:42+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
