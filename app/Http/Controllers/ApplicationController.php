@@ -598,7 +598,7 @@ class ApplicationController extends Controller
         {
             foreach ($questions as $question)
             {
-                if (!$question['response'])
+                if (trim($question['response']) === '')
                     die(json_encode(['success' => false, 'message' => 'All question responses are required']));
             }
         }
