@@ -76,3 +76,6 @@ Route::post('/api/esi/{char_id}/skillplan_check', 'ApplicationController@checkSk
 
 // Recruitment ad
 Route::get('/{slug}', 'ApplicationController@loadAdBySlug');
+
+// misc
+Route::post('/character/add', 'CharacterController@addCharacter');
