@@ -75,6 +75,18 @@ class CoreConnection
     }
 
     /**
+     * Get users moved from another core account to this account
+     *
+     * @param $characterId
+     * @return array|null
+     */
+    public static function getAddedCharacters($characterId)
+    {
+        $output =  self::generateWebRequest('/api/app/v1/incoming-characters/' . $characterId);
+        return is_array($output) ? $output : [];
+    }
+
+    /**
      * Get the main from the core account based on character ID
      *
      * @param $characterId

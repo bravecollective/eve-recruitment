@@ -195,6 +195,23 @@
                     @endforeach
                     </div>
                 </div>
+                <div class="card bg-dark text-white">
+                    <div class="card-body">
+                        <div class="card-header">
+                            Core Characters Additions (moved from another account)
+                        </div>
+                        @foreach($added_characters as $character)
+                            <div class="list-group-item bg-dark text-white">
+                                {{ $character->characterName }}
+                                <div class="float-right">
+                                    @if($character->player)
+                                        ({{ $character->player->name }})
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
             </div>
         </div>
     </div>
