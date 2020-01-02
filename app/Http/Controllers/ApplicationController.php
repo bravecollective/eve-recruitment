@@ -101,6 +101,7 @@ class ApplicationController extends Controller
         $char_info = $esi->getCharacterInfo();
         $corp_history = $esi->getCorpHistory();
         $deleted_chars = CoreConnection::getRemovedCharacters($char_id);
+        $added_chars = CoreConnection::getAddedCharacters($char_id);
 
         try {
             $clones = $esi->getCloneInfo();
@@ -122,6 +123,7 @@ class ApplicationController extends Controller
             'sp' => $sp,
             'isk' => $isk,
             'deleted_characters' => $deleted_chars,
+            'added_characters' => $added_chars,
             'titles' => $titles,
             'userApplications' => Application::getUserApplicationsForRecruiter($char),
         ]);
@@ -170,6 +172,7 @@ class ApplicationController extends Controller
         $corp_history = $esi->getCorpHistory();
         $contacts = $esi->getContacts();
         $deleted_chars = CoreConnection::getRemovedCharacters($char_id);
+        $added_chars = CoreConnection::getAddedCharacters($char_id);
 
         $res = view('parts/application/overview', [
             'application' => true,
@@ -179,7 +182,8 @@ class ApplicationController extends Controller
             'clones' => $clones,
             'corp_history' => $corp_history,
             'contacts' => $contacts,
-            'deleted_characters' => $deleted_chars
+            'deleted_characters' => $deleted_chars,
+            'added_characters' => $added_chars,
         ])->render();
 
         die(json_encode(['success' => true, 'message' => $res]));
