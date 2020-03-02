@@ -52,6 +52,7 @@ class Application extends Model
     // Override what the user sees
     public static $state_names_overrides = [
         self::REVIEW_REQUESTED => "Open",
+        self::TRIAL => "Accepted",
     ];
 
     protected $table = 'application';
