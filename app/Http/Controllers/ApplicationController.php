@@ -104,13 +104,18 @@ class ApplicationController extends Controller
         $added_chars = CoreConnection::getAddedCharacters($char_id);
 
         try {
-            $clones = $esi->getCloneInfo();
             $contacts = $esi->getContacts();
             $sp = $esi->getSkillpoints();
             $isk = $esi->getWalletBalance();
             $titles = $esi->getTitles();
         } catch(\Exception $e) {
-            $clones = $contacts = $sp = $isk = $titles = null;
+            $contacts = $sp = $isk = $titles = null;
+        }
+
+        try {
+            $clones = $esi->getCloneInfo();
+        } catch(\Exception $e) {
+            $clones = null;
         }
 
         return view('application', [

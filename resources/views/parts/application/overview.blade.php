@@ -91,11 +91,15 @@
                             Implants
                         </div>
                         <ul class="list-group">
-                        @foreach($clones['implants'] as $implant)
-                            <div class="list-group-item bg-dark text-white">
-                                {{ $implant }}
-                            </div>
-                        @endforeach
+                        @if($clones)
+                                @foreach($clones['implants'] as $implant)
+                                    <div class="list-group-item bg-dark text-white">
+                                        {{ $implant }}
+                                    </div>
+                                @endforeach
+                        @else
+                                Unable to retrieve clone information
+                        @endif
                         </ul>
                     </div>
                 </div>
@@ -107,6 +111,7 @@
                             Jump Clones
                         </div>
                         <ul class="list-group">
+                        @if($clones)
                             <div class="list-group-item bg-dark text-white">
                                 <b>Home: </b> {{ $clones['clones']->getHomeLocation()->location_name }}
                             </div>
@@ -118,6 +123,9 @@
                                 {{ $clone->location_name }}
                             </div>
                         @endforeach
+                        @else
+                                Unable to retrieve clone information
+                        @endif
                         </ul>
                     </div>
                 </div>
