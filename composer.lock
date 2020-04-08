@@ -1,7 +1,7 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
     "content-hash": "32462dee79f1cc53dc8c925453d19140",
@@ -723,6 +723,7 @@
                     "email": "jakub.onderka@gmail.com"
                 }
             ],
+            "abandoned": "php-parallel-lint/php-console-color",
             "time": "2018-09-29T17:23:10+00:00"
         },
         {
@@ -769,6 +770,7 @@
                 }
             ],
             "description": "Highlight PHP code in terminal",
+            "abandoned": "php-parallel-lint/php-console-highlighter",
             "time": "2018-09-29T18:48:56+00:00"
         },
         {
@@ -3942,16 +3944,16 @@
         },
         {
             "name": "tkhamez/swagger-eve-php",
-            "version": "3.2.0",
+            "version": "3.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tkhamez/swagger-eve-php.git",
-                "reference": "d5b1f583d5dc796efdadc76568a39009c66a447a"
+                "reference": "c42c81c1b604123583d93a61ee95e79bbebc8fd5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tkhamez/swagger-eve-php/zipball/d5b1f583d5dc796efdadc76568a39009c66a447a",
-                "reference": "d5b1f583d5dc796efdadc76568a39009c66a447a",
+                "url": "https://api.github.com/repos/tkhamez/swagger-eve-php/zipball/c42c81c1b604123583d93a61ee95e79bbebc8fd5",
+                "reference": "c42c81c1b604123583d93a61ee95e79bbebc8fd5",
                 "shasum": ""
             },
             "require": {
@@ -3993,7 +3995,7 @@
                 "rest",
                 "sdk"
             ],
-            "time": "2019-12-12T19:37:42+00:00"
+            "time": "2020-04-08T18:40:21+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
@@ -4110,6 +4112,7 @@
                 "psr",
                 "psr-7"
             ],
+            "abandoned": "laminas/laminas-diactoros",
             "time": "2019-04-29T21:11:00+00:00"
         }
     ],
@@ -6753,5 +6756,6 @@
         "ext-curl": "*",
         "ext-json": "*"
     },
-    "platform-dev": []
+    "platform-dev": [],
+    "plugin-api-version": "1.1.0"
 }
