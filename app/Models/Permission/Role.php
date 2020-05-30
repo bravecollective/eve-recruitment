@@ -57,11 +57,12 @@ class Role extends Model
     public static function createDirectorRoles($account)
     {
         $alliace_whitelist = explode(',', env('ALLIANCE_WHITELIST'));
+        $corporation_whitelist = explode(',', env('CORPORATION_WHITELIST'));
         $characters = $account->characters;
 
         foreach ($characters as $character)
         {
-            if ($character->alliance_id === null || !in_array($character->alliance_id, $alliace_whitelist))
+            if (!in_array($character->alliance_id, $alliace_whitelist) && !in_array($character->corporation_id, $corporation_whitelist))
                 continue;
 
             $role = Role::where('name', $character->corporation_name . " director")->where('slug', 'director')->first();

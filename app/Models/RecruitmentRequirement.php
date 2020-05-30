@@ -99,9 +99,13 @@ class RecruitmentRequirement extends Model
     {
         $output = [];
         $alliance_whitelist = explode(',', env('ALLIANCE_WHITELIST'));
+        $corporation_whitelist = explode(',', env('CORPORATION_WHITELIST'));
         $core_groups = CoreGroup::all();
         $alliances = User::select(['alliance_id', 'alliance_name'])->whereIn('alliance_id', $alliance_whitelist)->groupBy(['alliance_id', 'alliance_name'])->get();
-        $corporations = User::select(['corporation_id', 'corporation_name'])->whereIn('alliance_id', $alliance_whitelist)->groupBy(['corporation_id', 'corporation_name'])->get();
+        $corporations1 = User::select(['corporation_id', 'corporation_name'])->whereIn('alliance_id', $alliance_whitelist)->groupBy(['corporation_id', 'corporation_name'])->get();
+        $corporations2 = User::select(['corporation_id', 'corporation_name'])->whereIn('corporation_id', $corporation_whitelist)->groupBy(['corporation_id', 'corporation_name'])->get();
+
+        $corporations = collect($corporations1)->merge($corporations2);
 
         foreach ($core_groups as $group)
             $output[] = self::createObject($group->name, $group->id, RecruitmentRequirement::CORE_GROUP);
