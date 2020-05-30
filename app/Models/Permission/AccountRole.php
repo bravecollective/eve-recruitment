@@ -177,7 +177,7 @@ class AccountRole extends Model
                 continue; // No group associated with this one
 
             $corp = preg_split("/\s+(?=\S*+$)/", $role->name)[0]; // Split at last space. Everything before 'director' or 'recruiter'
-            $ad = RecruitmentAd::where('group_name', $corp)->first();
+            $ad = RecruitmentAd::where('group_name', $corp)->where('corp_id', null)->first();
 
             if (!$ad)
                 continue;
