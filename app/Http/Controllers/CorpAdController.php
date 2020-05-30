@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\FormQuestion;
+use App\Models\Permission\AccountRole;
 use App\Models\Permissions\Role;
 use App\Models\RecruitmentAd;
 use App\Models\RecruitmentRequirement;
@@ -14,6 +15,84 @@ use Illuminate\Support\Facades\Input;
 
 class CorpAdController extends Controller
 {
+
+    /**
+     * Manage corp roles
+     * @param $corp_id
+     */
+    public function manageRoles($corp_id)
+    {
+        $ad = RecruitmentAd::where('corp_id', $corp_id)->first();
+
+        if (!$ad || !Auth::user()->hasRole(User::where('corporation_id', $corp_id)->first()->corporation_name . " director"))
+            return redirect('/')->with('error', 'Unauthorized');
+
+        if (!$ad)
+            return redirect('/')->with('error', 'Invalid corp ID');
+
+        return view('ad_permissions', [
+            'ad' => $ad,
+            'recruiters' => RecruitmentAd::getRecruiters($ad->id),
+            'roles' => Role::where('recruitment_id', $ad->id)->get()
+        ]);
+    }
+
+    public function savePermissions()
+    {
+        $ad_id = Input::get('ad_id');
+        $ad = RecruitmentAd::find($ad_id);
+
+        if (!$ad)
+            die(json_encode(['success' => false, 'message' => 'Invalid ad ID']));
+
+        if (!AccountRole::userCanEditAd('corp', $ad->corp_id))
+            die(json_encode(['success' => false, 'message' => 'Unauthorized']));
+
+        (new PermissionsController())->saveUserRoles($ad->group_name . ' director');
+        die(json_encode(['success' => true, 'message' => 'Roles updated']));
+    }
+
+    /**
+     * Get a user's permissions
+     */
+    public function loadPermissions()
+    {
+        $ad_id = Input::get('ad_id');
+        $ad = RecruitmentAd::find($ad_id);
+
+        if (!$ad)
+            die(json_encode(['success' => false, 'message' => 'Invalid ad ID']));
+
+        if (!AccountRole::userCanEditAd('corp', $ad->corp_id))
+            die(json_encode(['success' => false, 'message' => 'Unauthorized']));
+
+        $user_id = Input::get('user_id');
+        $user = User::where('character_id', $user_id)->first();
+
+        if (!$user)
+            die(json_encode(['success' => false, 'message' => 'Invalid user ID']));
+
+        $roles = Role::where('recruitment_id', $ad_id)->get();
+        $user_roles = AccountRole::where('account_id', $user->account_id)->whereIn('role_id', $roles->pluck('id')->toArray())->get();
+
+        die(json_encode(['success' => true, 'message' => $user_roles]));
+    }
+
+    public function listCorpsForRoles()
+    {
+        if (!Auth::user()->hasRoleLike('%director'))
+            return redirect('/')->with('error', 'Unauthorized');
+
+        $corpIDs = array_map(function ($e) { return $e->corp_id; }, AccountRole::getUserCorpMembersOrAdsListing());
+        $ads = RecruitmentAd::whereIn('corp_id', $corpIDs)->get();
+
+        return view('list_ads', [
+            'title' => 'Corporation',
+            'ads' => $ads,
+            'permissions' => true
+        ]);
+    }
+
     /**
      * View the corp ad edit page
      *

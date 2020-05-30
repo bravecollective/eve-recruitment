@@ -3,7 +3,6 @@
 <h1>{{ $ad->group_name }} Permissions</h1>
 <div class="row">
     <div class="col-12 col-md-6 col-xl-4">
-        <h2>Permissions</h2>
         <div class="row">
             <div class="col-10 form-group">
                 <h3><label for="search">Character Search</label></h3>
@@ -35,7 +34,7 @@
     </div>
     <div class="col-12 col-md-6 col-xl-2">
         <div class="row">
-            <h2>{{ $ad->group_name }} Recruiters</h2>
+            <h2>Recruiters</h2>
         </div>
     @foreach($recruiters as $recruiter)
         <div class="row">
@@ -56,6 +55,12 @@
         let roles = $(".role");
         let roles_checkboxes = $('.role-checkbox');
         let persistent_checkboxes = $('.persistent-checkbox');
+
+        @if($ad->corp_id == null)
+            let base_url = "/api/groups" ;
+        @else
+            let base_url ="/api/corporations";
+        @endif
 
         function clearCheckboxes()
         {
@@ -78,7 +83,7 @@
                 data.roles.push({ 'id': e.id, 'active': !!(e.checked), 'persistent': p });
             });
 
-            $.post('/api/groups/roles/save', data, function(e) {
+            $.post(base_url + '/roles/save', data, function(e) {
                 e = JSON.parse(e);
                 if (e.success === true)
                     showInfo("Permissions saved");
@@ -99,7 +104,7 @@
 
             $("#character_id").val(user_id);
 
-            $.post('/api/groups/roles', data, function (e) {
+            $.post(base_url + '/roles', data, function (e) {
                 list.hide();
 
                 e = JSON.parse(e);
@@ -112,7 +117,6 @@
 
                 e.message.forEach(function (f) {
                     $("#" + f.role_id).prop('checked', true);
-                    console.log('checking ' + f.role_id);
                     if (f.set === 1)
                         $("#persistent-" + f.role_id).prop('checked', true);
                     else

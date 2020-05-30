@@ -9,6 +9,8 @@ Route::get('/corporations/{corp_id}', 'CorpMembersController@viewCorpMembers');
 // Corp ad routes
 Route::get('/corporations/{id}/ad', 'CorpAdController@manageAd');
 Route::post('/corporations/{id}/ad/save', 'CorpAdController@saveAd');
+Route::get('/corporations/manage/roles', 'CorpAdController@listCorpsForRoles');
+Route::get('/corporations/{corp_id}/manage/roles', 'CorpAdController@manageRoles');
 Route::get('/recruitments/{id}/delete', 'CorpAdController@deleteAd');
 
 // Group Ads
@@ -32,6 +34,8 @@ Route::delete('/api/recruitments/{ad_id}/questions/{question_id}', 'GroupAdContr
 Route::delete('/api/recruitments/{ad_id}/requirements/{requirement_id}', 'GroupAdController@deleteRequirement');
 Route::post('/api/groups/roles', 'GroupAdController@loadPermissions');
 Route::post('/api/groups/roles/save', 'GroupAdController@savePermissions');
+Route::post('/api/corporations/roles', 'CorpAdController@loadPermissions');
+Route::post('/api/corporations/roles/save', 'CorpAdController@savePermissions');
 
 // Global admin routes
 Route::get('/admin/roles', 'PermissionsController@globalRoles');

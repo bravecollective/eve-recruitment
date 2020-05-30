@@ -84,7 +84,10 @@ class GroupAdController extends Controller
 
         $ads = AccountRole::getGroupAdsUsercanView();
 
-        return view('group_ads', ['ads' => $ads]);
+        return view('list_ads', [
+            'title' => 'Group',
+            'ads' => $ads
+        ]);
     }
 
     /**
@@ -99,7 +102,10 @@ class GroupAdController extends Controller
 
         $ads = AccountRole::getGroupAdsUsercanView();
 
-        return view('group_ads', ['ads' => $ads, 'permissions' => true]);
+        return view('list_ads', [
+            'title' => 'Group',
+            'ads' => $ads,
+            'permissions' => true]);
     }
 
     /**
@@ -118,7 +124,7 @@ class GroupAdController extends Controller
         if (!AccountRole::userCanEditAd('group', $ad->id))
             return redirect('/')->with('error', 'Unauthorized');
 
-        return view('group_permissions', [
+        return view('ad_permissions', [
             'ad' => $ad,
             'recruiters' => RecruitmentAd::getRecruiters($ad_id),
             'roles' => Role::where('recruitment_id', $ad_id)->get()

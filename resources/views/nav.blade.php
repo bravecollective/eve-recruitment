@@ -60,6 +60,8 @@
                     @foreach($corp_ad as $ad)
                         <a class="dropdown-item" href="/corporations/{{ $ad->corp_id }}/ad">{{ $ad->corp_name }}</a>
                     @endforeach
+                        <hr>
+                        <a class="dropdown-item" href="/corporations/manage/roles">Manage Roles</a>
                     </div>
                 </li>
             @endif
