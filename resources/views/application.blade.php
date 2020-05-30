@@ -52,7 +52,7 @@
                     @endforeach
                 </div>
             </li>
-        @if($sp != null)
+        @if($character->has_valid_token)
          @if(isset($application))
             <li class="nav-item ml-2">
                 <a class="nav-link active show" id="application-tab" data-toggle="pill" href="#tab-application" role="tab" aria-controls="tab-application" aria-selected="true">
@@ -118,7 +118,7 @@
     </div>
 </div><br />
 <div id="errors"></div><br />
-@if($sp != null)
+@if($character->has_valid_token)
 <div class="row justify-content-center">
     <div class="col-auto">
         <button type="button" class="btn btn-primary" id="load-esi-button" onclick="loadEsiData();">Load ESI Data</button>
@@ -130,9 +130,10 @@
 @if(isset($application))
     @include('parts/application/application', ['questions' => $application->questions(),
                                                'changelog' => $application->changelog,
-                                               'comments' => $application->comments])
+                                               'comments' => $application->comments,
+                                               'character' => $character])
     <div class="tab-pane fade" id="tab-overview" role="tabpanel" aria-labelledby="tab-overview"></div>
-@elseif($sp != null)
+@elseif($character->has_valid_token)
     <div class="tab-pane fade show active" id="tab-overview" role="tabpanel" aria-labelledby="tab-overview">
         @include('parts/application/overview')
     </div>
@@ -177,7 +178,7 @@
         let char_id = "{{ $character->character_id }}";
 
         $(function() {
-        @if(isset($application))
+        @if(isset($application) && $character->has_valid_token)
             // Load warnings on document load
             let warnings_div = $('#warnings');
 

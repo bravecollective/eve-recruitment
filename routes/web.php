@@ -39,8 +39,8 @@ Route::get('/admin/roles/auto', 'PermissionsController@autoRoles');
 Route::get('/admin/coregroups', 'PermissionsController@listCoreGroups');
 
 // Authentication routes
-Route::get('/login', 'Auth\AuthController@redirectToProvider')->name('login');
-Route::get('/login/callback', 'Auth\AuthController@handleProviderCallback')->name('loginCallback');
+Route::get('/login', 'AuthController@redirectToProvider')->name('login');
+Route::get('/login/callback', 'AuthController@handleProviderCallback')->name('loginCallback');
 Route::get('/logout', function () {
     Auth::logout();
     return redirect('/');

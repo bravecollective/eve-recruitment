@@ -47,6 +47,9 @@
                                 Warnings
                             </div>
                             <ul class="list-group" id="warnings">
+                                @if(!$character->has_valid_token)
+                                    No valid token - Unable to load warnings
+                                @endif
                             </ul>
                         </div>
                     </div>

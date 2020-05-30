@@ -96,6 +96,13 @@ class ApplicationController extends Controller
             return redirect('/')->with('error', 'Unauthorized');
 
         User::updateUsersOnApplicationLoad($char_id);
+
+        if (!$char->has_valid_token)
+            return view('application', [
+                'character' => $char,
+                'userApplications' => Application::getUserApplicationsForRecruiter($char),
+            ]);
+
         $esi = new EsiConnection($char_id);
 
         $char_info = $esi->getCharacterInfo();

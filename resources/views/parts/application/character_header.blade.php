@@ -27,7 +27,7 @@
     </div>
 </div>
 <br />
-@if($sp != null)
+@if($character->has_valid_token)
 <div class="row justify-content-center">
     <div class="col-auto">
         <h5>{{ $sp }} Skillpoints</h5>
