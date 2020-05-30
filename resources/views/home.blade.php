@@ -23,12 +23,21 @@
                     <th>Group</th>
                     <th>State</th>
                     <th>Last Update</th>
+                    <th>Actions</th>
                 </thead>
                 @foreach ($applications as $application)
+                    @if($application->status == \App\Models\Application::REVOKED)
+                        @continue
+                    @endif
                 <tr>
                     <td>{{ $application->recruitmentAd->group_name }}</td>
                     <td>{{ \App\Models\Application::getStringForState($application->status) }}</td>
                     <td>{{ $application->last_update }}</td>
+                    <td>
+                    @if(\App\Models\Application::canBeRevoked($application))
+                            <a href="/application/{{ $application->id }}/revoke"><button type="button" class="btn btn-danger">Revoke</button></a>
+                    @endif
+                    </td>
                 </tr>
                 @endforeach
             </table>

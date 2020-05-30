@@ -18,6 +18,7 @@ class Application extends Model
     const CLOSED = 6;
     const TRIAL = 8;
     const IN_PROGRESS = 9;
+    const REVOKED = 10;
 
     /**
      * NOTE: $state_names is the base for the tooltips
@@ -35,11 +36,12 @@ class Application extends Model
         self::OPEN => "Open",
         self::REVIEW_REQUESTED => "Review Requested",
         self::TRIAL => "Trial",
+        self::REVOKED => "Revoked",
     ];
 
     // Tooltips to show on the application page
     public static $tooltips = [
-        self::ACCEPTED => "Accept the application (cannot re-apply)",
+        self::ACCEPTED => "Accept the application (can re-apply)",
         self::ON_HOLD => "Tell the applicant that they need to provide more information (cannot re-apply)",
         self::CLOSED => "Close the application (can re-apply)",
         self::DENIED => "Deny the application (cannot re-apply)",
@@ -58,6 +60,37 @@ class Application extends Model
     protected $table = 'application';
 
     /**
+     * Determine if an application can be revoked or not
+     *
+     * @param $application
+     * @return bool
+     */
+    public static function canBeRevoked($application)
+    {
+        if ($application == null || $application->account_id != Auth::user()->id)
+            return false;
+
+        $appliedCorp = $application->recruitmentAd->corp_id;
+
+        if ($appliedCorp == null)
+            return true;
+
+        $characters = $application->account->characters;
+        $canRevoke = true;
+
+        foreach ($characters as $character)
+        {
+            if ($character->corporation_id == $appliedCorp)
+            {
+                $canRevoke = false;
+                break;
+            }
+        }
+
+        return $canRevoke;
+    }
+
+    /**
      * Given the state ID, return the string representation
      *
      * @param $state
@@ -68,10 +101,7 @@ class Application extends Model
         if (!array_key_exists($state, self::$state_names))
             return "UNKNOWN STATE";
 
-        if (!Auth::user()->hasRole('recruiter') && !Auth::user()->hasRole('group admin') && array_key_exists($state, self::$state_names_overrides))
-            return self::$state_names_overrides[$state];
-
-        return self::$state_names[$state];
+        return array_key_exists($state, self::$state_names_overrides) ? self::$state_names_overrides[$state] : self::$state_names[$state];
     }
 
     /**
@@ -91,6 +121,8 @@ class Application extends Model
             $dbApp->account_id = $account_id;
             $dbApp->recruitment_id = $recruitment_id;
         }
+        else
+            ApplicationChangelog::addEntry($dbApp->id, $dbApp->status, self::OPEN, $account_id);
 
         $dbApp->status = self::OPEN;
         $dbApp->save();
@@ -229,10 +261,9 @@ class Application extends Model
             self::DENIED,
             self::ON_HOLD,
             self::REVIEW_REQUESTED,
-            self::ACCEPTED,
             self::TRIAL,
             self::OPEN,
-            self::IN_PROGRESS
+            self::IN_PROGRESS,
         ];
 
         if (Application::where('account_id', $account->id)

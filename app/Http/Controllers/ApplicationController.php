@@ -31,7 +31,7 @@ class ApplicationController extends Controller
     {
         $application = Application::find($id);
 
-        if (!$application)
+        if (!$application || $application->status == Application::REVOKED)
             return redirect('/')->with('error', 'Invalid application ID');
 
         $ad = $application->recruitmentAd;
@@ -632,5 +632,18 @@ class ApplicationController extends Controller
                 unset($ads[$idx]);
 
         return view('available_ads', ['ads' => $ads]);
+    }
+
+    public function revokeApplication($application_id)
+    {
+        $app = Application::find($application_id);
+
+        if (!Application::canBeRevoked($app))
+            return redirect('/')->with('error', 'Unauthorized');
+
+        $app->status = Application::REVOKED;
+        $app->save();
+
+        return redirect('/')->with('info', 'Application revoked');
     }
 }

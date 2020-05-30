@@ -16,11 +16,13 @@ class ApplicationChangelog extends Model
      * @param $old_state
      * @param $new_state
      */
-    public static function addEntry($application_id, $old_state, $new_state)
+    public static function addEntry($application_id, $old_state, $new_state, $account_id = null)
     {
+        $account_id = ($account_id == null) ? Auth::user()->id : $account_id;
+
         $entry = new ApplicationChangelog();
         $entry->application_id = $application_id;
-        $entry->account_id = Auth::user()->id;
+        $entry->account_id = $account_id;
         $entry->old_state = $old_state;
         $entry->new_state = $new_state;
         $entry->save();
