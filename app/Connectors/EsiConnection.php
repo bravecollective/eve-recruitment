@@ -3,7 +3,16 @@
 namespace App\Connectors;
 
 use App\Models\ESINameResponse;
+use DateTime;
+use Exception;
 use GuzzleHttp\Client;
+use Seat\Eseye\Containers\EsiResponse;
+use Seat\Eseye\Exceptions\EsiScopeAccessDeniedException;
+use Seat\Eseye\Exceptions\InvalidAuthenticationException;
+use Seat\Eseye\Exceptions\InvalidContainerDataException;
+use Seat\Eseye\Exceptions\RequestFailedException;
+use Seat\Eseye\Exceptions\UriDataMissingException;
+use stdClass;
 use Swagger\Client\Eve\ApiException;
 use App\Models\Group;
 use App\Models\Type;
@@ -22,7 +31,9 @@ use Swagger\Client\Eve\Api\SkillsApi;
 use Swagger\Client\Eve\Api\UniverseApi;
 use Swagger\Client\Eve\Api\WalletApi;
 use Swagger\Client\Eve\Configuration;
+use Swagger\Client\Eve\Model\GetCharactersCharacterIdContacts200Ok;
 use Swagger\Client\Eve\Model\GetCharactersCharacterIdLocationOk;
+use Swagger\Client\Eve\Model\GetCharactersCharacterIdMail200Ok;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -76,7 +87,7 @@ class EsiConnection
      * EsiModel constructor
      *
      * @param int $char_id Char ID to create the instance for
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws InvalidContainerDataException
      */
     public function __construct($char_id)
     {
@@ -116,10 +127,10 @@ class EsiConnection
     /**
      * Get a user's corp history
      *
-     * @return \Seat\Eseye\Containers\EsiResponse
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @return EsiResponse
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException
      */
     public function getCorpHistory()
     {
@@ -142,12 +153,12 @@ class EsiConnection
             $d->alliance_ticker = $this->getAllianceTicker($alliance_id);
             $d->alliance_name = $this->getAllianceName($alliance_id);
 
-            $start = new \DateTime($d->start_date);
-            $end = ($idx != 0) ? new \DateTime($data[$idx - 1]->start_date) : null;
+            $start = new DateTime($d->start_date);
+            $end = ($idx != 0) ? new DateTime($data[$idx - 1]->start_date) : null;
 
             $d->formatted_start_date = $start->format("m-d-Y");
             $d->formatted_end_date = ($end != null) ? $end->format("m-d-Y") : null;
-            $d->duration = ($end != null) ? $start->diff($end)->format('%a days') : $start->diff(new \DateTime())->format('%a days');
+            $d->duration = ($end != null) ? $start->diff($end)->format('%a days') : $start->diff(new DateTime())->format('%a days');
         }
 
         return $data;
@@ -157,11 +168,11 @@ class EsiConnection
      * Get a character's information
      *
      * @return array
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidAuthenticationException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\RequestFailedException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidAuthenticationException
+     * @throws InvalidContainerDataException
+     * @throws RequestFailedException
+     * @throws UriDataMissingException
      */
     public function getCharacterInfo()
     {
@@ -169,20 +180,20 @@ class EsiConnection
 
         try {
             $ship = $locationModel->getCharactersCharacterIdShip($this->char_id, $this->char_id);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $ship = null;
         }
 
         try {
             $skillsModel = new SkillsApi($this->client, $this->config);
             $attributes = $skillsModel->getCharactersCharacterIdAttributes($this->char_id, $this->char_id);
-        } catch(\Exception $e) {
+        } catch(Exception $e) {
             $attributes = null;
         }
 
         try {
             $location = $locationModel->getCharactersCharacterIdLocation($this->char_id, $this->char_id);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $location = null;
         }
 
@@ -195,13 +206,13 @@ class EsiConnection
                     $location->structure_name = $this->getStructureName($location->getStructureId());
                 else
                     $location->structure_name = $this->getStationName($location->getStationId());
-            } catch(\Exception $e) {
+            } catch(Exception $e) {
                 $location->structure_name = "- Undockable Structure -";
             }
         }
         else
         {
-            $location = new \stdClass();
+            $location = new stdClass();
             $location->structure_name = "- Undockable Structure -";
         }
 
@@ -254,7 +265,7 @@ class EsiConnection
      * Get a character's clone information
      *
      * @return array
-     * @throws \Swagger\Client\Eve\ApiException
+     * @throws ApiException
      */
     public function getCloneInfo()
     {
@@ -269,7 +280,7 @@ class EsiConnection
 
         try {
             $home->location_name = $this->getLocationBasedOnStationType($home->getLocationType(), $home->getLocationId());
-        } catch(\Exception $e) {
+        } catch(Exception $e) {
             $home->location_name = "- Undockable Station -";
         }
 
@@ -277,7 +288,7 @@ class EsiConnection
         {
             try {
                 $clone->location_name = $this->getLocationBasedOnStationType($clone->getLocationType(), $clone->getLocationId());
-            } catch(\Exception $e) {
+            } catch(Exception $e) {
                 $clone->location_name = "- Undockable Station -";
             }
         }
@@ -291,9 +302,9 @@ class EsiConnection
      * @param $item_id
      * @return bool
      * @throws ApiException
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException
      */
     public function characterCanUseItem($item_id)
     {
@@ -401,11 +412,11 @@ class EsiConnection
     /**
      * Get a user's mail metadata
      *
-     * @return \Swagger\Client\Eve\Model\GetCharactersCharacterIdMail200Ok[]
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
-     * @throws \Swagger\Client\Eve\ApiException
+     * @return GetCharactersCharacterIdMail200Ok[]
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException
+     * @throws ApiException
      */
     public function getMail()
     {
@@ -433,7 +444,7 @@ class EsiConnection
         }
 
         $ids = [];
-        array_map(function ($e) use(&$ids) { $ids[] = $e->getFrom(); }, $mail);
+        array_map(function ($e) use(&$ids) { $ids[] = ['id' => $e->getFrom(), 'type' => 'character']; }, $mail);
 
         $senders = $this->lookupNames($ids);
 
@@ -461,7 +472,6 @@ class EsiConnection
     {
         $mailBodyCacheKey = "mail_body_";
         $model = new MailApi($this->client, $this->config);
-        $out = [];
         $ids = [];
 
         $mail = $model->getCharactersCharacterIdMailMailId($this->char_id, $mailId, $this->char_id);
@@ -517,7 +527,7 @@ class EsiConnection
             }
 
             if (in_array($recipient->getRecipientType(), ['character', 'corporation', 'alliance']) && !in_array($recipient->getRecipientId(), $ids))
-                $ids[] = $recipient->getRecipientId();
+                $ids[] = ['id' => $recipient->getRecipientId(), 'type' => $recipient->getRecipientType()];
         }
 
         if (count($ids) == 0)
@@ -542,7 +552,7 @@ class EsiConnection
      * Get a character's skills
      *
      * @return array|mixed
-     * @throws \Swagger\Client\Eve\ApiException
+     * @throws ApiException
      */
     public function getSkills()
     {
@@ -589,7 +599,7 @@ class EsiConnection
      * Get a character's skillqueue
      *
      * @return array|mixed
-     * @throws \Swagger\Client\Eve\ApiException
+     * @throws ApiException
      */
     public function getSkillQueue()
     {
@@ -630,10 +640,10 @@ class EsiConnection
      * Get a user's assets
      *
      * @return array
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
-     * @throws \Swagger\Client\Eve\ApiException
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException
+     * @throws ApiException
      */
     public function getAssets()
     {
@@ -746,9 +756,9 @@ class EsiConnection
      * @param $item
      * @param $assets
      * @return array
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException
      */
     private function constructAssetTreeForItem($item, &$assets)
     {
@@ -793,9 +803,9 @@ class EsiConnection
      *
      * @param $type_id
      * @return int|string
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException
      */
     private function getMarketPrice($type_id)
     {
@@ -825,7 +835,7 @@ class EsiConnection
      * Get a user's wallet transactions
      *
      * @return mixed
-     * @throws \Swagger\Client\Eve\ApiException
+     * @throws ApiException
      */
     public function getTransactions()
     {
@@ -858,7 +868,7 @@ class EsiConnection
      * Get a character's market orders
      *
      * @return array|mixed
-     * @throws \Swagger\Client\Eve\ApiException
+     * @throws ApiException
      */
     public function getMarketOrders()
     {
@@ -893,10 +903,10 @@ class EsiConnection
      * Get user notifications
      *
      * @return array|mixed
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
-     * @throws \Swagger\Client\Eve\ApiException
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException
+     * @throws ApiException
      */
     public function getNotifications()
     {
@@ -945,10 +955,10 @@ class EsiConnection
      * Get a character's contracts
      *
      * @return mixed
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
-     * @throws \Swagger\Client\Eve\ApiException
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException
+     * @throws ApiException
      */
     public function getContracts()
     {
@@ -963,8 +973,8 @@ class EsiConnection
 
         $character_ids = [];
         array_map(function ($e) use(&$character_ids) {
-            $character_ids[] = $e->getAcceptorId();
-            $character_ids[] = $e->getIssuerId();
+            $character_ids[] = ['id' => $e->getAcceptorId(), 'type' => 'character'];
+            $character_ids[] = ['id' => $e->getIssuerId(), 'type' => 'character'];
         }, $contracts[0]);
         $character_names = $this->lookupNames($character_ids);
 
@@ -1011,7 +1021,7 @@ class EsiConnection
             {
                 try {
                     $assignee = $this->getCorporationName($contract->getAssigneeId());
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $assignee = "Unknown Assignee";
                 }
             }
@@ -1071,7 +1081,7 @@ class EsiConnection
                 $res = $this->getStationName($id);
                 Cache::add($cache_key, $res, env('CACHE_TIME', 3264));
                 return $res;
-            } catch (\Exception $e) { }
+            } catch (Exception $e) { }
         }
         else if ($id == 2004)
             return "Asset Safety";
@@ -1082,7 +1092,7 @@ class EsiConnection
             $res = $this->getStructureName($id);
             Cache::add($cache_key, $res, env('CACHE_TIME', 3264));
             return $res;
-        } catch (\Exception $e) { }
+        } catch (Exception $e) { }
 
         Cache::add($cache_key, "Unknown Location", env('CACHE_TIME', 3264));
         return "Unknown Location";
@@ -1093,7 +1103,7 @@ class EsiConnection
      *
      * @param int $page
      * @return array|mixed
-     * @throws \Swagger\Client\Eve\ApiException
+     * @throws ApiException
      */
     public function getJournal($page = 1)
     {
@@ -1118,8 +1128,8 @@ class EsiConnection
         }
 
         array_map(function ($e) use(&$ids) {
-            $ids[] = $e->getFirstPartyId();
-            $ids[] = $e->getSecondPartyId(); }, $journal[0]);
+            $ids[] = ['id' => $e->getFirstPartyId(), 'type' => null];
+            $ids[] = ['id' => $e->getSecondPartyId(), 'type' => null]; }, $journal[0]);
 
         $names = $this->lookupNames($ids);
 
@@ -1178,9 +1188,9 @@ class EsiConnection
      *
      * @param $race_id
      * @return mixed
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException
      */
     public function getRace($race_id)
     {
@@ -1207,9 +1217,9 @@ class EsiConnection
      *
      * @param $ancestry_id
      * @return mixed
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException
      */
     public function getAncestry($ancestry_id)
     {
@@ -1236,9 +1246,9 @@ class EsiConnection
      *
      * @param $bloodline_id
      * @return mixed
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException
      */
     public function getBloodline($bloodline_id)
     {
@@ -1263,17 +1273,17 @@ class EsiConnection
     /**
      * Get a user's contacts
      *
-     * @return \Swagger\Client\Eve\Model\GetCharactersCharacterIdContacts200Ok[]
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
-     * @throws \Swagger\Client\Eve\ApiException
+     * @return GetCharactersCharacterIdContacts200Ok[]
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException
+     * @throws ApiException
      */
     public function getContacts()
     {
         $model = new ContactsApi($this->client, $this->config);
         $contacts = $model->getCharactersCharacterIdContacts($this->char_id, $this->char_id);
-        $ids = array_map(function ($e) { return $e->getContactId(); }, $contacts);
+        $ids = array_map(function ($e) { return ['id' => $e->getContactId(), 'type' => $e->getContactType()]; }, $contacts);
 
         $IDs = $this->lookupNames($ids);
         $char_ids = [];
@@ -1350,7 +1360,7 @@ class EsiConnection
      *
      * @param $mailing_list_id
      * @return mixed
-     * @throws \Swagger\Client\Eve\ApiException
+     * @throws ApiException
      */
     public function getMailingListName($mailing_list_id)
     {
@@ -1378,9 +1388,9 @@ class EsiConnection
      *
      * @param $alliance_id
      * @return string|null
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException
      */
     public function getAllianceName($alliance_id)
     {
@@ -1406,9 +1416,9 @@ class EsiConnection
      *
      * @param $alliance_id
      * @return mixed|null
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException
      */
     public function getAllianceTicker($alliance_id)
     {
@@ -1434,9 +1444,9 @@ class EsiConnection
      *
      * @param $corporation_id
      * @return |null
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException
      */
     public function getCorporationName($corporation_id)
     {
@@ -1477,7 +1487,7 @@ class EsiConnection
             $char = $this->eseye->invoke('get', '/characters/{character_id}/', [
                 'character_id' => $character_id
             ]);
-        } catch(\Exception $e) {
+        } catch(Exception $e) {
             return "Unknown Character";
         }
 
@@ -1497,10 +1507,10 @@ class EsiConnection
      * @param $type
      * @param $id
      * @return mixed|string|null
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
-     * @throws \Swagger\Client\Eve\ApiException
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException
+     * @throws ApiException
      */
     public function getLocationBasedOnStationType($type, $id)
     {
@@ -1523,7 +1533,7 @@ class EsiConnection
      * Get the name of a structure
      * @param $structure_id
      * @return string
-     * @throws \Swagger\Client\Eve\ApiException
+     * @throws ApiException
      */
     public function getStructureName($structure_id)
     {
@@ -1544,9 +1554,9 @@ class EsiConnection
      *
      * @param $system_id
      * @return mixed
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException
      */
     public function getSystemName($system_id)
     {
@@ -1568,9 +1578,9 @@ class EsiConnection
      * Get a region name, given the system ID
      * @param $system_id
      * @return mixed
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException
      */
     public function getRegionName($system_id)
     {
@@ -1599,9 +1609,9 @@ class EsiConnection
      *
      * @param $station_id
      * @return mixed
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException
      */
     public function getStationName($station_id)
     {
@@ -1661,11 +1671,11 @@ class EsiConnection
      *
      * @param $name_id
      * @return mixed|string|null
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidAuthenticationException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\RequestFailedException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidAuthenticationException
+     * @throws InvalidContainerDataException
+     * @throws RequestFailedException
+     * @throws UriDataMissingException
      */
     public function getUnknownTypeName($name_id)
     {
@@ -1695,12 +1705,12 @@ class EsiConnection
      * Lookup names from ESI
      *
      * @param $ids
-     * @return array|mixed|\Seat\Eseye\Containers\EsiResponse
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidAuthenticationException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\RequestFailedException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @return array|mixed|EsiResponse
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidAuthenticationException
+     * @throws InvalidContainerDataException
+     * @throws RequestFailedException
+     * @throws UriDataMissingException
      */
     public function lookupNames($ids)
     {
@@ -1713,18 +1723,16 @@ class EsiConnection
         $names = [];
 
         array_map(function ($e) use(&$legacyIDs, &$lookupIDs) {
-            if (!in_array($e, $legacyIDs) && $e >= 100000000 && $e <= 2099999999)
+            if (!in_array($e['id'], $legacyIDs) && $e['id'] >= 100000000 && $e['id'] <= 2099999999)
                 $legacyIDs[] = $e; // IDs not resolvable by /universe/names
-            else if (!in_array($e, $lookupIDs) && (
-                ($e >= 500000 && $e < 2000000) ||
-                ($e >= 3000000 && $e < 4000000) ||
-                ($e >= 90000000 && $e < 100000000) ||
-                ($e >= 2100000000)
+            else if (!in_array($e['id'], $lookupIDs) && (
+                ($e['id'] >= 500000 && $e['id'] < 2000000) ||
+                ($e['id'] >= 3000000 && $e['id'] < 4000000) ||
+                ($e['id'] >= 90000000 && $e['id'] < 100000000) ||
+                ($e['id'] >= 2100000000)
             ))
-                $lookupIDs[] = $e;
+                $lookupIDs[] = $e['id'];
         }, $ids);
-
-        $names = [];
 
         if (sizeof($lookupIDs) > 0)
         {
@@ -1740,25 +1748,46 @@ class EsiConnection
 
         foreach ($legacyIDs as $id)
         {
+            switch ($id['type']) {
+                case 'character':
+                    $legacyLookups[] = new ESINameResponse("character", $id, $this->getCharacterName($id['id']));
+                    continue;
+                    break;
+
+                case 'corporation':
+                    $legacyLookups[] = new ESINameResponse("corporation", $id, $this->getCorporationName($id['id']));
+                    continue;
+                    break;
+
+                case 'alliance':
+                    $legacyLookups[] = new ESINameResponse("alliance", $id, $this->getAllianceName($id['id']));
+                    continue;
+                    break;
+
+                default:
+                    break;
+            }
+
             $res = null;
+            $id = $id['id'];
 
             try {
-                $res = $this->getCorporationName($id);
-                $legacyLookups[] = new ESINameResponse("corporation", $id, $res);
-            } catch (\Exception $e) { }
+                $res = $this->getCharacterName($id);
+                $legacyLookups[] = new ESINameResponse("character", $id, $res);
+            } catch (Exception $e) { }
 
-            if ($res === null)
+            if ($res == null)
             {
                 try {
-                    $res = $this->getAllianceName($id);
-                    $legacyLookups[] = new ESINameResponse("alliance", $id, $res);
-                } catch (\Exception $e) { }
+                    $res = $this->getCorporationName($id);
+                    $legacyLookups[] = new ESINameResponse("corporation", $id, $res);
+                } catch (Exception $e) { }
             }
 
             if ($res == null)
             {
-                $res = $this->getCharacterName($id);
-                $legacyLookups[] = new ESINameResponse("character", $id, $res);
+                $res = $this->getAllianceName($id);
+                $legacyLookups[] = new ESINameResponse("alliance", $id, $res);
             }
         }
 

@@ -41,14 +41,9 @@ class ApplicationController extends Controller
 
         User::updateUsersOnApplicationLoad($application->account->main_user_id);
         $esi = new EsiConnection($application->account->main_user_id);
-
-        try {
-            $sp = $esi->getSkillpoints();
-            $isk = $esi->getWalletBalance();
-            $titles = $esi->getTitles();
-        } catch(\Exception $e) {
-            $sp = $isk = $titles = null;
-        }
+        $sp = $esi->getSkillpoints();
+        $isk = $esi->getWalletBalance();
+        $titles = $esi->getTitles();
 
         $tooltips = [];
 
@@ -109,15 +104,10 @@ class ApplicationController extends Controller
         $corp_history = $esi->getCorpHistory();
         $deleted_chars = CoreConnection::getRemovedCharacters($char_id);
         $added_chars = CoreConnection::getAddedCharacters($char_id);
-
-        try {
-            $contacts = $esi->getContacts();
-            $sp = $esi->getSkillpoints();
-            $isk = $esi->getWalletBalance();
-            $titles = $esi->getTitles();
-        } catch(\Exception $e) {
-            $contacts = $sp = $isk = $titles = null;
-        }
+        $contacts = $esi->getContacts();
+        $sp = $esi->getSkillpoints();
+        $isk = $esi->getWalletBalance();
+        $titles = $esi->getTitles();
 
         try {
             $clones = $esi->getCloneInfo();
