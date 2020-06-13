@@ -59,7 +59,7 @@ class User extends Model
             if (!$dbUser)
                 $dbUser = new User();
             else if ($dbUser->core_account_id != $account->core_account_id)
-                $old_accounts[] = $dbUser->core_account_id; // Used to check for orphaned accounts. This char switched accounts
+                $old_accounts[] = $dbUser->account_id; // Used to check for orphaned accounts. This char switched accounts
 
             $dbUser->account_id = $account->id;
             $dbUser->core_account_id = $core_account_id;
@@ -87,10 +87,29 @@ class User extends Model
         // Delete potentially orphaned accounts
         foreach ($old_accounts as $old_account_id)
         {
-            $users = User::where('core_account_id', $old_account_id)->get();
+            $users = User::where('account_id', $old_account_id)->get();
 
-            if (count($users) == 0)
+            if (count($users) == 0) {
+                $applications = Application::where('account_id', $old_account_id)->get();
+                foreach ($applications as $application) {
+                    $application->account_id = $account->id;
+                    $application->save();
+                }
+
+                $form_responses = FormResponse::where('account_id', $old_account_id)->get();
+                foreach ($form_responses as $response) {
+                    $response->account_id = $account->id;
+                    $response->save();
+                }
+
+                $changelogs = ApplicationChangelog::where('account_id', $old_account_id)->get();
+                foreach ($changelogs as $changelog) {
+                    $changelog->account_id = $account->id;
+                    $changelog->save();
+                }
+
                 Account::where('core_account_id', $old_account_id)->delete();
+            }
             else
             {
                 $account = Account::where('core_account_id', $old_account_id)->first();

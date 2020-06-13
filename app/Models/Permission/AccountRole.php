@@ -2,6 +2,7 @@
 
 namespace App\Models\Permission;
 
+use App\Connectors\EsiConnection;
 use App\Models\Application;
 use App\Models\Permissions\Role;
 use App\Models\RecruitmentAd;
@@ -89,7 +90,7 @@ class AccountRole extends Model
 
         // 4. Get corp names, where necessary
         foreach ($ads as $ad)
-            $ad->corp_name = ($ad->corp_id == null) ? null : User::where('corporation_id', $ad->corp_id)->first()->corporation_name;
+            $ad->corp_name = ($ad->corp_id == null) ? null : (new EsiConnection($account_id))->getCorporationName($ad->corp_id);
 
         return $ads->all();
     }
