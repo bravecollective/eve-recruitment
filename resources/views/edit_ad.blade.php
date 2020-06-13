@@ -69,6 +69,7 @@
 @section('scripts')
     <script type="text/javascript">
         let counter = $(".questions").children().length + 1;
+        let requirement_counter = -1;
         let requirement = null;
         let newQuestionCounter = -1;
         let ad_id = $("#ad_id").val();
@@ -78,7 +79,7 @@
     @elseif($ad->id)
         $.get('/api/group/' + {{ $ad->id }} + '/requirements/template', (e) => requirement = '<div class="input-group" style="margin-bottom: 1em;">' + e + '</div>');
     @else
-        $.get('/api/group/0/requirements/template', (e) => requirement = '<div class="input-group" style="margin-bottom: 1em;">' + e + '</div>');
+        $.get('/api/group/0/requirements/template/' + requirement_counter, (e) => requirement = '<div class="input-group" style="margin-bottom: 1em;">' + e + '</div>');
     @endif
 
         function deleteRequirement(requirement_id)
@@ -87,6 +88,12 @@
 
             if (!confirm("Are you sure you wish to delete this requirement?"))
                 return;
+
+            if (requirement_id < 0) {
+                // Don't need network requests for unsaved requirements
+                $(".requirement_" + requirement_id).parent().remove();
+                return;
+            }
 
             $.ajax({
                 url: url,
@@ -151,6 +158,8 @@
         function addRequirement()
         {
             $(".requirements").append(requirement);
+            requirement_counter -= 1;
+            $.get('/api/group/0/requirements/template/' + requirement_counter, (e) => requirement = '<div class="input-group" style="margin-bottom: 1em;">' + e + '</div>');
         }
 
         function saveAd(f)

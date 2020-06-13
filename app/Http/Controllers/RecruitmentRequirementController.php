@@ -16,10 +16,15 @@ class RecruitmentRequirementController extends Controller
      */
     public function getTemplate($type, $ad_id)
     {
+        $this->getTemplateWithID($type, $ad_id, -1);
+    }
+
+    public function getTemplateWithID($type, $ad_id, $requirement_id)
+    {
         if (!AccountRole::userCanEditAd($type, $ad_id))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
-        $requirements = RecruitmentRequirement::getPossibleRequirements(-1);
+        $requirements = RecruitmentRequirement::getPossibleRequirements($requirement_id);
 
         die(view('parts/recruitment_requirement', ['requirements' => $requirements])->render());
     }
