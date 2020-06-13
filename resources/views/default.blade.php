@@ -9,9 +9,11 @@
         <script src="/js/app.js" type="text/javascript"></script>
         <script src="/js/jquery.dataTables.min.js" type="text/javascript"></script>
         <script src="/js/dataTables.bootstrap4.min.js" type="text/javascript"></script>
+        <script src="/js/dataTables.buttons.min.js" type="text/javascript"></script>
         <link rel="stylesheet" href="/css/font-awesome.min.css">
         <link rel="stylesheet" href="/css/bootstrap.min.css" />
         <link rel="stylesheet" href="/css/app.css" />
+        <link rel="stylesheet" href="/css/buttons.bootstrap4.min.css" />
         <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico" />
         @yield('styles')
     </head>

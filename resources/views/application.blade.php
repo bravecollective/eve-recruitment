@@ -176,6 +176,8 @@
         document.title = "{{ $character->name }} - " + document.title;
         let esiLoaded = false;
         let char_id = "{{ $character->character_id }}";
+        let donation_filter = false;
+        let trading_filter = false;
 
         $(function() {
         @if(isset($application) && $character->has_valid_token)
@@ -241,7 +243,45 @@
             @endif
             loadPartial('/api/esi/' + char_id + '/skills', "tab-skills", 'skills');
             loadPartial('/api/esi/' + char_id + '/mail', "tab-mail", 'mail');
-            loadPartial('/api/esi/' + char_id + '/assets_journal', "tab-assets", 'assets', () => $("#journal-table").DataTable({"order": [[0, "desc"]], "paging": false}));
+            loadPartial('/api/esi/' + char_id + '/assets_journal', "tab-assets", 'assets', () => $("#journal-table").DataTable({
+                order: [[0, "desc"]],
+                paging: false,
+                dom: '"<\'row\'<\'col-sm-12 col-md-6\'B><\'col-sm-12 col-md-6\'f>>"' +
+                    '"<\'row\'<\'col-sm-12\'tr>>"' +
+                    '"<\'row\'<\'col-sm-12 col-md-5\'i><\'col-sm-12 col-md-7\'p>>"',
+                buttons: [
+                    {
+                        text: 'Donations Only',
+                        action: function (e, dt, node, config) {
+                            node.toggleClass("btn-secondary");
+                            donation_filter = !donation_filter;
+
+                            if (!donation_filter) {
+                                dt.column(-5).search("").draw();
+                            } else {
+                                if (trading_filter)
+                                    dt.buttons(1).trigger();
+                                dt.column(-5).search("Player Donation").draw();
+                            }
+                        }
+                    },
+                    {
+                        text: 'Trading Only',
+                        action: function (e, dt, node, config) {
+                            node.toggleClass("btn-secondary");
+                            trading_filter = !trading_filter;
+
+                            if (!trading_filter) {
+                                dt.column(-5).search("").draw();
+                            } else {
+                                if (donation_filter)
+                                    dt.buttons(0).trigger();
+                                dt.column(-5).search("Player Trading").draw();
+                            }
+                        }
+                    }
+                ]
+            }));
             loadPartial('/api/esi/' + char_id + '/market', "tab-market", 'market');
             loadPartial('/api/esi/' + char_id + '/contracts', "tab-contracts", 'contracts');
             loadPartial('/api/esi/' + char_id + '/notifications', "tab-notifications", 'notifications', () => $("#notifications-table").DataTable({"order": [[0, "desc"]], "paging": false}));
