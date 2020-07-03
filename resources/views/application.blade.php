@@ -60,7 +60,7 @@
                 </a>
             </li>
             <li class="nav-item ml-2">
-                <a class="nav-link" id="overview-tab" data-toggle="pill" href="#tab-overview" role="tab" aria-controls="tab-overview" aria-selected="false">
+                <a class="nav-link" id="overview-tab" data-toggle="pill" href="#tab-overview" role="tab" aria-controls="tab-overview" aria-selected="false" onclick="loadOverview()">
                     Overview
                     <span id="result-tab-overview" style="color: red;" class="fas"></span>
                 </a>
@@ -73,37 +73,37 @@
             </li>
          @endif
              <li class="nav-item ml-2">
-                 <a class="nav-link" id="skills-tab" data-toggle="pill" href="#tab-skills" role="tab" aria-controls="tab-skills" aria-selected="false">
+                 <a class="nav-link" id="skills-tab" data-toggle="pill" href="#tab-skills" role="tab" aria-controls="tab-skills" aria-selected="false" onclick="loadSkills()">
                      Skills
                      <span id="result-tab-skills" style="color: red;" class="fas"></span>
                  </a>
              </li>
              <li class="nav-item ml-2">
-                 <a class="nav-link" id="mail-tab" data-toggle="pill" href="#tab-mail" role="tab" aria-controls="tab-mail" aria-selected="false">
+                 <a class="nav-link" id="mail-tab" data-toggle="pill" href="#tab-mail" role="tab" aria-controls="tab-mail" aria-selected="false" onclick="loadMail()">
                      Mail
                      <span id="result-tab-mail" style="color: red;" class="fas"></span>
                  </a>
              </li>
             <li class="nav-item ml-2">
-                <a class="nav-link" id="assets-tab" data-toggle="pill" href="#tab-assets" role="tab" aria-controls="tab-assets" aria-selected="false">
+                <a class="nav-link" id="assets-tab" data-toggle="pill" href="#tab-assets" role="tab" aria-controls="tab-assets" aria-selected="false" onclick="loadJournal()">
                     Assets &amp; Journal
                     <span id="result-tab-assets" style="color: red;" class="fas"></span>
                 </a>
             </li>
             <li class="nav-item ml-2">
-                <a class="nav-link" id="market-tab" data-toggle="pill" href="#tab-market" role="tab" aria-controls="tab-market" aria-selected="false">
+                <a class="nav-link" id="market-tab" data-toggle="pill" href="#tab-market" role="tab" aria-controls="tab-market" aria-selected="false" onclick="loadMarket()">
                     Market
                     <span id="result-tab-market" style="color: red;" class="fas"></span>
                 </a>
             </li>
              <li class="nav-item ml-2">
-                 <a class="nav-link" id="contracts-tab" data-toggle="pill" href="#tab-contracts" role="tab" aria-controls="tab-contracts" aria-selected="false">
+                 <a class="nav-link" id="contracts-tab" data-toggle="pill" href="#tab-contracts" role="tab" aria-controls="tab-contracts" aria-selected="false" onclick="loadContracts()">
                      Contracts
                      <span id="result-tab-contracts" style="color: red;" class="fas"></span>
                  </a>
              </li>
              <li class="nav-item ml-2">
-                 <a class="nav-link" id="notifications-tab" data-toggle="pill" href="#tab-notifications" role="tab" aria-controls="tab-notifications" aria-selected="false">
+                 <a class="nav-link" id="notifications-tab" data-toggle="pill" href="#tab-notifications" role="tab" aria-controls="tab-notifications" aria-selected="false" onclick="loadNotifications()">
                      Notifications
                      <span id="result-tab-notifications" style="color: red;" class="fas"></span>
                  </a>
@@ -174,7 +174,7 @@
 @section('scripts')
     <script type="text/javascript">
         document.title = "{{ $character->name }} - " + document.title;
-        let esiLoaded = false;
+        let esiLoaded = overviewLoaded = skillsLoaded = mailLoaded = assetsLoaded = marketLoaded = contractsLoaded = notificationsLoaded = false;
         let char_id = "{{ $character->character_id }}";
         let donation_filter = false;
         let trading_filter = false;
@@ -236,13 +236,52 @@
                 return;
             }
 
-            esiLoaded = true;
-
             @if(isset($application))
-                loadPartial('/api/esi/' + char_id + '/overview', 'tab-overview', 'overview', () =>  $('[data-toggle="tooltip"]').tooltip());
+                loadOverview();
             @endif
+            loadSkills();
+            loadMail();
+            loadJournal();
+            loadMarket();
+            loadContracts();
+            loadNotifications();
+
+            esiLoaded = true;
+        }
+
+        function loadOverview()
+        {
+            if (esiLoaded || overviewLoaded)
+                return;
+
+            overviewLoaded = true;
+            loadPartial('/api/esi/' + char_id + '/overview', 'tab-overview', 'overview', () =>  $('[data-toggle="tooltip"]').tooltip());
+        }
+
+        function loadSkills()
+        {
+            if (esiLoaded || skillsLoaded)
+                return;
+
+            skillsLoaded = true;
             loadPartial('/api/esi/' + char_id + '/skills', "tab-skills", 'skills');
+        }
+
+        function loadMail()
+        {
+            if (esiLoaded || mailLoaded)
+                return;
+
+            mailLoaded = true;
             loadPartial('/api/esi/' + char_id + '/mail', "tab-mail", 'mail');
+        }
+
+        function loadJournal()
+        {
+            if (esiLoaded || assetsLoaded)
+                return;
+
+            assetsLoaded = true;
             loadPartial('/api/esi/' + char_id + '/assets_journal', "tab-assets", 'assets', () => $("#journal-table").DataTable({
                 order: [[0, "desc"]],
                 paging: false,
@@ -282,8 +321,32 @@
                     }
                 ]
             }));
+        }
+
+        function loadMarket()
+        {
+            if (esiLoaded || marketLoaded)
+                return;
+
+            marketLoaded = true;
             loadPartial('/api/esi/' + char_id + '/market', "tab-market", 'market');
+        }
+
+        function loadContracts()
+        {
+            if (esiLoaded || contractsLoaded)
+                return;
+
+            contractsLoaded = true;
             loadPartial('/api/esi/' + char_id + '/contracts', "tab-contracts", 'contracts');
+        }
+
+        function loadNotifications()
+        {
+            if (esiLoaded || notificationsLoaded)
+                return;
+
+            notificationsLoaded = true;
             loadPartial('/api/esi/' + char_id + '/notifications', "tab-notifications", 'notifications', () => $("#notifications-table").DataTable({"order": [[0, "desc"]], "paging": false}));
         }
 
