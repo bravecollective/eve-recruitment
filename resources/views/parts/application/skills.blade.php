@@ -64,7 +64,7 @@
                 </div>
                 <ul class="list-group">
                 @foreach($queue as $key => $skill)
-                    @if($key == "queue_end")
+                    @if($key === "queue_end")
                         @continue
                     @endif
                     <div class="list-group-item bg-dark text-white">
