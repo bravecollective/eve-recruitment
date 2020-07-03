@@ -1750,17 +1750,17 @@ class EsiConnection
         {
             switch ($id['type']) {
                 case 'character':
-                    $legacyLookups[] = new ESINameResponse("character", $id, $this->getCharacterName($id['id']));
+                    $legacyLookups[] = new ESINameResponse("character", $id['id'], $this->getCharacterName($id['id']));
                     continue;
                     break;
 
                 case 'corporation':
-                    $legacyLookups[] = new ESINameResponse("corporation", $id, $this->getCorporationName($id['id']));
+                    $legacyLookups[] = new ESINameResponse("corporation", $id['id'], $this->getCorporationName($id['id']));
                     continue;
                     break;
 
                 case 'alliance':
-                    $legacyLookups[] = new ESINameResponse("alliance", $id, $this->getAllianceName($id['id']));
+                    $legacyLookups[] = new ESINameResponse("alliance", $id['id'], $this->getAllianceName($id['id']));
                     continue;
                     break;
 
