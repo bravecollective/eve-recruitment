@@ -148,7 +148,33 @@ class EsiConnection
             ]);
             $d->corporation_name = $corp_info->name;
 
-            $alliance_id = (isset($corp_info->alliance_id)) ? $corp_info->alliance_id : null;
+            $history = [];
+            $alliance_history = $this->eseye->invoke('get', '/corporations/{corporation_id}/alliancehistory/', [
+                'corporation_id' => $d->corporation_id
+            ]);
+            foreach ($alliance_history as $h)
+                $history[] = $h;
+
+            usort($history, function ($a, $b) {
+                $a = new \DateTime($a->start_date);
+                $b = new \DateTime($b->start_date);
+
+                return ($a < $b) ? 1 : -1;
+            });
+
+            $alliance_id = null;
+            $charStart = new \DateTime($d->start_date);
+
+            foreach ($history as $h)
+            {
+                $alliStart = new \DateTime($h->start_date);
+                if ($charStart > $alliStart)
+                {
+                    $alliance_id = property_exists($h, 'alliance_id') ? $h->alliance_id : null;
+                    break;
+                }
+            }
+
             $d->alliance_id = $alliance_id;
             $d->alliance_ticker = $this->getAllianceTicker($alliance_id);
             $d->alliance_name = $this->getAllianceName($alliance_id);
