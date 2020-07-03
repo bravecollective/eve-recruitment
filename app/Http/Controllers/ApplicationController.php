@@ -582,7 +582,8 @@ class ApplicationController extends Controller
         if (!RecruitmentRequirement::accountMeetsRequirements(Auth::user(), $requirements))
             return redirect('/')->with('error', 'Unauthorized');
 
-        $name = ($ad->corp_id == null) ? $ad->group_name : User::where('corporation_id', $ad->corp_id)->first()->corporation_name;
+
+        $name = ($ad->corp_id == null) ? $ad->group_name : (new EsiConnection(Auth::user()->id))->getCorporationName($ad->corp_id);
         $form = FormQuestion::where('recruitment_id', $ad->id)->get();
 
         return view('view_ad', ['id' => $ad->id, 'name' => $name, 'text' => $ad->text, 'questions' => $form]);
