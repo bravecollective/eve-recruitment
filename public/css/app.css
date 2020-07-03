@@ -27,7 +27,6 @@ body {
 }
 
 .search-result {
-    position: absolute;
     max-height: 230px;
     width: 95%;
     overflow: auto;
