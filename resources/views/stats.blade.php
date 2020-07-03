@@ -36,7 +36,7 @@
         </div>
         <div class="row form-check">
             <input type="checkbox" id="show-all" name="show-all" autocomplete="off" />
-            <label for="show-all">Show All State Changes (ignores state changes above if checked)</label>
+            <label for="show-all">Show Applications Completed</label>
         </div>
         <button type="submit" class="btn btn-success">Lookup</button>
     </form>

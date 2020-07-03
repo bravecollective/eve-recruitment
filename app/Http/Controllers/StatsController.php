@@ -54,10 +54,13 @@ class StatsController extends Controller
 
         $changes = ApplicationChangelog::join('account', 'account_id', '=', 'account.id')
             ->join('application', 'application.id', '=', 'application_id')
-            ->where('recruitment_id', $ad_id);
+            ->where('recruitment_id', $ad_id)
+            ->where('new_state', '<>', Application::OPEN);
 
         if (!$show_all)
             $changes = $changes->where('old_state', $start_state_id)->where('new_state', $end_state_id);
+        else
+            $changes = $changes->whereIn('new_state', [Application::ACCEPTED, Application::DENIED, Application::CLOSED, Application::TRIAL]);
 
         $changes = $changes->whereBetween('application_changelog.created_at', [$start_date, $end_date])
             ->get();
@@ -71,6 +74,8 @@ class StatsController extends Controller
 
             $stats[$user]++;
         }
+
+        arsort($stats);
 
         die(json_encode(['success'=> true, 'message' => json_encode($stats)]));
     }
