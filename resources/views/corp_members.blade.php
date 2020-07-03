@@ -12,12 +12,12 @@
     <form action="/character/add" method="post">
         <hr>
         <h5>Add missing character from Core</h5>
-        <label>
-            Character ID
-            <input type="text" name="id">
-        </label>
+        <div class="form-group">
+            <label for="id">Character ID</label>
+            <input class="form-control" type="text" name="id">
+        </div>
         <input type="hidden" id="_token" name="_token" value="{{ csrf_token() }}" />
-        <input type="submit" value="Add">
+        <button type="submit" class="btn btn-primary">Add</button>
     </form>
 
 @endsection
