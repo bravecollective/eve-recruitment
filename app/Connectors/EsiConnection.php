@@ -526,7 +526,8 @@ class EsiConnection
                     break;
             }
 
-            if (in_array($recipient->getRecipientType(), ['character', 'corporation', 'alliance']) && !in_array($recipient->getRecipientId(), $ids))
+            if (in_array($recipient->getRecipientType(), ['character', 'corporation', 'alliance']) &&
+                !in_array(['id' => $recipient->getRecipientId(), 'type' => $recipient->getRecipientType()], $ids))
                 $ids[] = ['id' => $recipient->getRecipientId(), 'type' => $recipient->getRecipientType()];
         }
 
