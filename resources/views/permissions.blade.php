@@ -17,10 +17,6 @@
                     <input autocomplete="off" type="checkbox" class="form-check-input role-checkbox" id="{{ $role->id }}" />
                     <label class="text-white form-check-label" for="{{ $role->id }}">{{ $role->name }}</label>
                 </div>
-                <div class="col-1 form-check form-check-inline">
-                    <input autocomplete="off" type="checkbox" class="form-check-input persistent-checkbox" id="persistent-{{ $role->id }}" />
-                    <label class="text-white form-check-label" for="persistent-{{ $role->id }}">Persistent</label>
-                </div>
             </div>
         @endforeach
         </div>
@@ -59,8 +55,7 @@
 
         roles_checkboxes.each(function (e) {
             e = $(this)[0];
-            let p = $('#persistent-' + e.id).prop('checked');
-            data.roles.push({ 'id': e.id, 'active': !!(e.checked), 'persistent': p });
+            data.roles.push({ 'id': e.id, 'active': !!(e.checked), 'persistent': true });
         });
 
         $.post('/api/character/roles/save', data, function(e) {
