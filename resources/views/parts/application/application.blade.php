@@ -7,7 +7,24 @@
                         Question Responses
                     </div>
                     <ul class="list-group">
-                    @foreach($questions->sortByDesc('created_at') as $question)
+                    @php
+                        $questions = $questions->sortByDesc('created_at');
+                        if (count($questions) > 0)
+                            $previous = (new \DateTime($questions->first()->created_at))->format('Y-m-d H:i');
+                    @endphp
+                    @if(count($questions) > 0)
+                        <hr />
+                        <div class="list-group-item bg-dark text-white">{{ $previous }}</div>
+                    @endif
+                    @foreach($questions as $question)
+                        @php($current = (new \DateTime($question->created_at))->format('Y-m-d H:i'))
+                        @if ($current != $previous)
+                            <hr />
+                            @php($previous = $current)
+                            <div class="list-group-item bg-dark text-white">
+                                {{ $current }}
+                            </div>
+                        @endif
                         <div class="list-group-item bg-dark text-white">
                             <h4>{{ $question->question }}</h4>
                             <p>{{ $question->response }}</p>
