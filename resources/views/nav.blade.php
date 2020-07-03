@@ -82,7 +82,7 @@
                     Stats
                 </a>
                 <div class="dropdown-menu" aria-labelledby="stats">
-                    @foreach($recruitment_ads as $ad)
+                    @foreach($stats_ads as $ad)
                         <a class="dropdown-item" href="/stats/{{ $ad->id }}">{{ $ad->corp_name === null ? $ad->group_name : $ad->corp_name }}</a>
                     @endforeach
                 </div>

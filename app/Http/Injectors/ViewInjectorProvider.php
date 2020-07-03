@@ -23,12 +23,14 @@ class ViewInjectorProvider extends ServiceProvider
                 return;
 
             $ads = AccountRole::getAdsUserCanView();
+            $stats_ads = AccountRole::getAdsUserCanView(true);
             $corps = AccountRole::getUserCorpMembersOrAdsListing(true);
             $ad_management = AccountRole::getUserCorpMembersOrAdsListing();
 
             $view->with('recruitment_ads', $ads);
             $view->with('corporations', $corps);
             $view->with('corp_ad', $ad_management);
+            $view->with('stats_ads', $stats_ads);
         });
     }
 }
