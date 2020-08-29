@@ -30,10 +30,10 @@
                         @continue
                     @endif
                 <tr>
-                    <td>{{ $application->recruitmentAd->group_name }}</td>
-                    <td>{{ \App\Models\Application::getStringForState($application->status) }}</td>
-                    <td>{{ $application->last_update }}</td>
-                    <td>
+                    <td class="vertical-middle">{{ $application->recruitmentAd->group_name }}</td>
+                    <td class="vertical-middle">{{ \App\Models\Application::getStringForState($application->status) }}</td>
+                    <td class="vertical-middle">{{ $application->last_update }}</td>
+                    <td class="vertical-middle">
                     @if(\App\Models\Application::canBeRevoked($application))
                             <a href="/application/{{ $application->id }}/revoke"><button type="button" class="btn btn-danger">Revoke</button></a>
                     @endif

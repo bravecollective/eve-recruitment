@@ -70,6 +70,10 @@ class Application extends Model
         if ($application == null || $application->account_id != Auth::user()->id)
             return false;
 
+        $last_state = ApplicationChangelog::where('application_id', $application->id)->orderBy('created_at', 'DESC')->first();
+        if ($last_state && $last_state->new_state == Application::DENIED)
+            return false;
+
         $appliedCorp = $application->recruitmentAd->corp_id;
 
         if ($appliedCorp == null)
