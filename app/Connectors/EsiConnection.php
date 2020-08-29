@@ -1799,8 +1799,8 @@ class EsiConnection
             $id = $id['id'];
 
             try {
-                $res = $this->getCharacterName($id);
-                $legacyLookups[] = new ESINameResponse("character", $id, $res);
+                $res = $this->getAllianceName($id);
+                $legacyLookups[] = new ESINameResponse("alliance", $id, $res);
             } catch (Exception $e) { }
 
             if ($res == null)
@@ -1813,8 +1813,9 @@ class EsiConnection
 
             if ($res == null)
             {
-                $res = $this->getAllianceName($id);
-                $legacyLookups[] = new ESINameResponse("alliance", $id, $res);
+                // This needs to be last because it internally uses a try/catch
+                $res = $this->getCharacterName($id);
+                $legacyLookups[] = new ESINameResponse("character", $id, $res);
             }
         }
 
