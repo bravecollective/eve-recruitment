@@ -55,7 +55,8 @@
                 <div class="card bg-dark">
                     <div class="card-body">
                         <div class="card-header">
-                            Corporation History
+                            Corporation History<br />
+                            <small>Note: The shown alliance is the alliance that the corporation was in <i>when the character was in it</i>.</small>
                         </div>
                         <ul class="list-group">
                         @foreach($corp_history as $corp)
