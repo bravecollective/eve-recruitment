@@ -3,6 +3,7 @@
 namespace App\Connectors;
 
 use App\Models\ESINameResponse;
+use App\Models\User;
 use DateTime;
 use Exception;
 use GuzzleHttp\Client;
@@ -1164,6 +1165,8 @@ class EsiConnection
             $ids[] = ['id' => $e->getSecondPartyId(), 'type' => null]; }, $journal[0]);
 
         $names = $this->lookupNames($ids);
+        $account_id = User::where('character_id', $this->char_id)->first()->pluck('account_id');
+        $alts = User::where('account_id', $account_id)->get()->pluck('name')->toArray();
 
         foreach ($journal[0] as $entry)
         {
@@ -1181,7 +1184,8 @@ class EsiConnection
                 'amount' => number_format($entry->getAmount()),
                 'balance' => number_format($entry->getBalance()),
                 'date' => $entry->getDate()->format('Y-m-d H:i:s'),
-                'note' => $entry->getReason()
+                'note' => $entry->getReason(),
+                'between_alts' => (in_array($sender, $alts) && in_array($receiver, $alts)),
             ];
         }
 

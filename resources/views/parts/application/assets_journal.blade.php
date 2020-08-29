@@ -53,7 +53,8 @@
                         </thead>
                         <tbody>
                         @foreach($journal as $entry)
-                            <tr @if($entry['type'] == 'Player Donation' || $entry['type'] == 'Player Trading') style="background-color: #8a4141;" @endif>
+                            @php($color = $entry['between_alts'] ? '#827846' : '#8a4141')
+                            <tr @if($entry['type'] == 'Player Donation' || $entry['type'] == 'Player Trading') style="background-color: {{ $color }};" @endif>
                                 <td>{{ $entry['date'] }}</td>
                                 <td>{{ $entry['balance'] }} ISK</td>
                                 <td>{{ $entry['type'] }}</td>

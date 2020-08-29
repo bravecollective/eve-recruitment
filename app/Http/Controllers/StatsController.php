@@ -62,12 +62,15 @@ class StatsController extends Controller
         else
             $changes = $changes->whereIn('new_state', [Application::ACCEPTED, Application::DENIED, Application::CLOSED, Application::TRIAL]);
 
-        $changes = $changes->whereBetween('application_changelog.created_at', [$start_date, $end_date])
-            ->get();
+        $changes = $changes->whereBetween('application_changelog.created_at', [$start_date, $end_date])->get();
 
         foreach ($changes as $change)
         {
-            $user = User::where('character_id', $change->main_user_id)->first()->name;
+            $user = User::where('character_id', $change->main_user_id)->first();
+            if (!$user)
+                continue;
+
+            $user = $user->name;
 
             if (!array_key_exists($user, $stats))
                 $stats[$user] = 0;
