@@ -227,6 +227,7 @@ class GroupAdController extends Controller
         $questions = $r->input('questions');
         $requirements = $r->input('requirements');
         $allow_listing = ($r->input('allow_listing') === null) ? 0 : 1;
+        $webhook = $r->input('webhook_url');
 
         $name = $r->input('name');
 
@@ -258,6 +259,7 @@ class GroupAdController extends Controller
         $ad->text = $text;
         $ad->group_name = $name;
         $ad->allow_listing = $allow_listing;
+        $ad->application_notification_url = $webhook;
         $ad->save();
 
         Role::createRoleForAd($ad, 'group');

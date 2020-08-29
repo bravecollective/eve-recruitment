@@ -16,6 +16,7 @@ use App\Models\RecruitmentRequirement;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Input;
+use Maknz\Slack\Client;
 
 class ApplicationController extends Controller
 {
@@ -644,6 +645,12 @@ class ApplicationController extends Controller
 
         $app->status = Application::REVOKED;
         $app->save();
+
+        if ($app->recruitmentAd->application_notification_url !== null)
+        {
+            $client = new Client($app->recruitmentAd->application_notification_url);
+            $client->send("*Revoked Application* \nCharacter: {$app->account->main()->name}\nURL: " . env('APP_URL', '') . "/application/{$app->id}");
+        }
 
         return redirect('/')->with('info', 'Application revoked');
     }

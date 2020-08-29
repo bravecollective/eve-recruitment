@@ -6,6 +6,7 @@ use App\Connectors\EsiConnection;
 use App\Models\Permission\AccountRole;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Maknz\Slack\Client;
 
 class Application extends Model
 {
@@ -130,6 +131,12 @@ class Application extends Model
 
         $dbApp->status = self::OPEN;
         $dbApp->save();
+
+        if ($dbApp->recruitmentAd->application_notification_url !== null)
+        {
+            $client = new Client($dbApp->recruitmentAd->application_notification_url);
+            $client->send("*New Application* \nCharacter: {$dbApp->account->main()->name}\nURL: " . env('APP_URL', '') . "/application/{$dbApp->id}");
+        }
 
         return $dbApp;
     }

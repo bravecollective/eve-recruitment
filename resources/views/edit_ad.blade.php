@@ -25,6 +25,17 @@
         <div class="form-group">
             <div class="row">
                 <div class="col-6 col-xl-4">
+                    <label>(Optional) Slack Notification Webhook URL</label>
+                    <div class="form-group" style="margin-bottom: 1em;">
+                        <input type="text" class="form-control" name="webhook_url" id="webhook_url" value="{{ str_repeat('•', strlen($ad->application_notification_url)) }}" autocomplete="off"/>
+                        <small id="textInfo" class="form-text">This will notify the channel on new and revoked applications. Contact a Slack admin to request a webhook.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="row">
+                <div class="col-6 col-xl-4">
                     <label>Form Questions</label>
                     <div class="questions">
                         @foreach($questions as $question)
@@ -62,7 +73,7 @@
         <small>If unchecked, application listing will not show up on the "Available Applications" page.</small><br /><br />
         <button type="submit" class="btn btn-primary">Submit</button>
     @if($ad->id)
-        <a class="btn btn-danger" href="/recruitments/{{ $ad->id }}/delete">Delete Ad</a>
+        <a class="btn btn-danger" href="/recruitments/{{ $ad->id }}/delete" onclick="return confirm('Are you sure?');">Delete Ad</a>
     @endif
     </form>
 @endsection
