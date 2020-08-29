@@ -31,7 +31,7 @@
                                     <td>{{ $contract['type'] }}<br />{{ $contract['status'] }}</td>
                                     <td>{{ $contract['issuer'] }}</td>
                                     <td>{{ $contract['assignee'] }}<br />{{ $contract['acceptor'] }}</td>
-                                    <td>{{ $contract['price'] }} ISK</td>
+                                    <td>{{ $contract['price'] }} ISK<br />{{ $contract['reward'] }} ISK</td>
                                     <td>
                                         @if($contract['collateral'] != null)
                                             {{ $contract['collateral'] }} ISK

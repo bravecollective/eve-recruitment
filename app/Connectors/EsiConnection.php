@@ -1058,7 +1058,11 @@ class EsiConnection
             $acceptor = array_filter($character_names, function ($e) use (&$contract) {
                 return $e->id == $contract->getAcceptorId();
             });
-            $acceptor = sizeof($acceptor) > 0 ? array_pop($acceptor)->name : "Unknown Acceptor";
+
+            if ($contract->getAcceptorId() > 0)
+                $acceptor = sizeof($acceptor) > 0 ? array_pop($acceptor)->name : "Unknown Acceptor";
+            else
+                $acceptor = '';
 
             $issuer = array_filter($character_names, function ($e) use (&$contract) {
                 return $e->id == $contract->getIssuerId();
@@ -1075,6 +1079,7 @@ class EsiConnection
                 'type' => ucwords(implode(' ', explode('_', $type))),
                 'status' => ucwords(implode(' ', explode('_', $contract->getStatus()))),
                 'price' => $price,
+                'reward' => number_format($contract->getReward()),
                 'start' => $start,
                 'end' => $end,
                 'collateral' => $collateral,
