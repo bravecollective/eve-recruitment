@@ -42,6 +42,8 @@ Route::post('/api/corporations/roles/save', 'CorpAdController@savePermissions');
 Route::get('/admin/roles', 'PermissionsController@globalRoles');
 Route::get('/admin/roles/auto', 'PermissionsController@autoRoles');
 Route::get('/admin/coregroups', 'PermissionsController@listCoreGroups');
+Route::get('/admin/generator', 'ApplicationController@applicationGenerator');
+Route::post('/admin/generator/save', 'ApplicationController@createApplication');
 
 // Authentication routes
 Route::get('/login', 'AuthController@redirectToProvider')->name('login');

@@ -97,6 +97,7 @@
                     <a class="dropdown-item" href="/admin/roles">Global Roles</a>
                     <a class="dropdown-item" href="/admin/roles/auto">Auto Assigned Roles</a>
                     <a class="dropdown-item" href="/admin/coregroups">Known Core Groups</a>
+                    <a class="dropdown-item" href="/admin/generator">Application Generator</a>
                 </div>
             </li>
             @endrole

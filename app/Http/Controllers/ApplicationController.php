@@ -14,6 +14,7 @@ use App\Models\Permission\AccountRole;
 use App\Models\RecruitmentAd;
 use App\Models\RecruitmentRequirement;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Input;
 use Maknz\Slack\Client;
@@ -665,5 +666,40 @@ class ApplicationController extends Controller
 
         $app->delete();
         return redirect('/')->with('info', 'Application deleted');
+    }
+
+    public function applicationGenerator()
+    {
+        if (!Auth::user()->hasRole('admin'))
+            return redirect('/')->with('error', 'Unauthorized');
+
+        return view('application_generator', ['groups' => RecruitmentAd::all()->sortBy('group_name')]);
+    }
+
+    public function createApplication(Request $r) {
+        if (!Auth::user()->hasRole('admin'))
+            return redirect('/')->with('error', 'Unauthorized');
+
+        $user_id = $r->input('char_id');
+        $group = $r->input('group');
+
+        $user = User::where('character_id', $user_id)->first();
+        $ad = RecruitmentAd::find($group);
+
+        if (!$user)
+            return redirect('/')->with('error', 'User does not exist in database');
+        if (!$ad)
+            return redirect('/')->with('error', 'Invalid ad ID');
+
+        $app = Application::where('account_id', $user->account_id)->where('recruitment_id', $ad->id)->first();
+        if (!$app)
+            $app = new Application();
+
+        $app->account_id = $user->account_id;
+        $app->recruitment_id = $ad->id;
+        $app->status = Application::OPEN;
+        $app->save();
+        
+        return redirect('/application/' . $app->id);
     }
 }
