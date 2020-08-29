@@ -46,8 +46,8 @@
                     </div>
                 </ul>
                 <br />
-                <a href="https://zkillboard.com/character/{{ $character->character_id }}" target=_blank class="btn btn-primary">zKillboard</a>
-                <a href="https://evewho.com/pilot/{{ str_replace(' ', '+', $character->name) }}" target=_blank class="btn btn-primary">Eve Who</a>
+                <a href="https://zkillboard.com/character/{{ $character->character_id }}/" target=_blank class="btn btn-primary">zKillboard</a>
+                <a href="https://evewho.com/character/{{ $character->character_id }}" target=_blank class="btn btn-primary">Eve Who</a>
             </div>
         </div>
         </div>
