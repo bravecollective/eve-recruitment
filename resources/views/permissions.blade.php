@@ -8,12 +8,12 @@
             <input type="text" class="form-control" id="search" name="search" placeholder="Search..." onkeyup="search(this);" />
             <ul class="list-group search-result"></ul>
         </div>
-        <div class="col-xl-2 col-12 form-group">
+        <div class="col-xl-8 col-lg-8 col-12 form-group">
             <h2>Roles</h2>
             <input type="hidden" id="character_id" value="" />
         @foreach($roles as $role)
             <div class="row">
-                <div class="col-9 form-check form-check-inline">
+                <div class="col-12 form-check form-check-inline">
                     <input autocomplete="off" type="checkbox" class="form-check-input role-checkbox" id="{{ $role->id }}" />
                     <label class="text-white form-check-label" for="{{ $role->id }}">{{ $role->name }}</label>
                 </div>

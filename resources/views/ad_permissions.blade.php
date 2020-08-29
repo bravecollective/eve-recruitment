@@ -15,13 +15,13 @@
             <button type="button" class="btn btn-primary" onclick="saveRoles();">Save</button>
         </div>
     </div>
-    <div class="col-12 col-md-6 col-xl-3">
+    <div class="col-12 col-md-6 col-xl-4">
         <div class="row">
             <h2>Permissions</h2>
         </div>
         @foreach($roles as $role)
             <div class="role row" style="margin-left: 0.1em;">
-                <div class="col-5 form-check form-check-inline">
+                <div class="col-8 form-check form-check-inline">
                     <input autocomplete="off" type="checkbox" class="form-check-input role-checkbox" id="{{ $role->id }}" />
                     <label class="text-white form-check-label" for="{{ $role->id }}">{{ $role->name }}</label>
                 </div>
