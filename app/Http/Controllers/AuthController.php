@@ -51,11 +51,17 @@ class AuthController extends Controller
         if ($main == null)
             return redirect('/')->with('error', 'Cannot determine main character. Ensure your main is properly selected in Core.');
 
+        $groups = CoreConnection::getCharacterGroups($main->id);
+
+        foreach ($groups as $group)
+            if ($group->name == "banned")
+                return redirect('/')->with('error', 'You are not permitted to login. If you believe this is an error, please contact a recruiter.');
+
         // Insert/update users in database
         User::addUsersToDatabase($core_users, $main);
 
         // Insert/update core groups in database
-        AccountGroup::updateGroupsForUser($main->id);
+        AccountGroup::updateGroupsForUser($main->id, $groups);
 
         $coreAccountID = CoreConnection::getCharacterAccount($main->id);
         $dbAccount = Account::where('core_account_id', $coreAccountID)->first();

@@ -14,10 +14,9 @@ class AccountGroup extends Model
      * Update groups in the database
      * @param $main_id int The main user ID
      */
-    public static function updateGroupsForUser($main_id)
+    public static function updateGroupsForUser($main_id, $core_groups)
     {
         $account_id = User::getAccountIdForUserId($main_id);
-        $core_groups = CoreConnection::getCharacterGroups($main_id);
 
         // TODO: There needs to be a better way than clearing user groups each time
         AccountGroup::where('account_id', $account_id)->delete();
