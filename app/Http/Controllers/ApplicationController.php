@@ -627,7 +627,7 @@ class ApplicationController extends Controller
 
     public function getAvailableApplications()
     {
-        $ads = RecruitmentAd::where('allow_listing', 1)->get();
+        $ads = RecruitmentAd::where('allow_listing', 1)->orderBy('group_name')->get();
         foreach ($ads as $idx => $ad)
             if (!RecruitmentRequirement::accountMeetsRequirements(Auth::user(), $ad->requirements))
                 unset($ads[$idx]);
