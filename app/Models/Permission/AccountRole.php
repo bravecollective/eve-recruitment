@@ -265,12 +265,11 @@ class AccountRole extends Model
         $role = Role::where('name', $ad->group_name . ' recruiter');
 
         if ($ad->corp_id != null)
-        {
             $role = $role->orWhere('name', $ad->group_name . ' director')->get()->pluck('id')->toArray();
-            return AccountRole::where('account_id', Auth::user()->id)->whereIn('role_id', $role)->exists();
-        }
         else
-            return AccountRole::where('account_id', Auth::user()->id)->where('role_id', $role->first()->id)->exists();
+            $role = $role->orWhere('name', $ad->group_name . ' manager')->get()->pluck('id')->toArray();
+
+        return AccountRole::where('account_id', Auth::user()->id)->whereIn('role_id', $role)->exists();
     }
 
     /**
