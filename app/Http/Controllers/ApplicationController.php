@@ -647,4 +647,16 @@ class ApplicationController extends Controller
 
         return redirect('/')->with('info', 'Application revoked');
     }
+
+    public function deleteApplication($application_id)
+    {
+        $app = Application::find($application_id);
+        if (!Auth::user()->hasRole('admin'))
+            return redirect('/')->with('error', 'Unauthorized');
+        else if (!$app)
+            return redirect('/')->with('error', 'Invalid application ID');
+
+        $app->delete();
+        return redirect('/')->with('info', 'Application deleted');
+    }
 }

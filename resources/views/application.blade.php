@@ -123,6 +123,11 @@
     <div class="col-auto">
         <button type="button" class="btn btn-primary" id="load-esi-button" onclick="loadEsiData();">Load ESI Data</button>
     </div>
+@if(\Illuminate\Support\Facades\Auth::user()->hasRole('admin') && isset($application))
+    <div class="col-auto">
+        <button type="button" class="btn btn-danger" id="load-esi-button" onclick="deleteApplication();">Delete Application</button>
+    </div>
+@endif
 </div>
 @endif
 <hr class="my-4">
@@ -477,7 +482,13 @@
 
             return false;
         }
-
+    @if(\Illuminate\Support\Facades\Auth::user()->hasRole('admin') && isset($application))
+        function deleteApplication()
+    {
+        if (confirm('Are you sure?'))
+            location.href = "/delete/application/{{ $application->id }}";
+    }
+    @endif
         function toggleCollapse(anchor, id)
         {
             if ($(anchor).is(':empty'))

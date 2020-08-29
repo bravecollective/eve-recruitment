@@ -64,6 +64,7 @@ Route::get('/application/{id}/revoke', 'ApplicationController@revokeApplication'
 Route::get('/character/{id}', 'ApplicationController@viewCharacterEsi');
 Route::post('/applications/{id}', 'ApplicationController@loadAjaxApplications');
 Route::get('/applications', 'ApplicationController@getAvailableApplications');
+Route::get('/delete/application/{id}', 'ApplicationController@deleteApplication');
 
 // Stats Routes
 Route::get('/stats/{id}', 'StatsController@loadStatsPage');
