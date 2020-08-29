@@ -699,7 +699,7 @@ class ApplicationController extends Controller
         $app->recruitment_id = $ad->id;
         $app->status = Application::OPEN;
         $app->save();
-        
+
         return redirect('/application/' . $app->id);
     }
 }

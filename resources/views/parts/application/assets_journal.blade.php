@@ -56,7 +56,7 @@
                             @php($color = $entry['between_alts'] ? '#827846' : '#8a4141')
                             <tr @if($entry['type'] == 'Player Donation' || $entry['type'] == 'Player Trading') style="background-color: {{ $color }};" @endif>
                                 <td>{{ $entry['date'] }}</td>
-                                <td>{{ $entry['balance'] }} ISK</td>
+                                <td data-sort="{{ $entry['raw_balance'] }}">{{ $entry['balance'] }} ISK</td>
                                 <td>{{ $entry['type'] }}</td>
                                 <td>
                                     {{ $entry['description'] }}
@@ -66,7 +66,7 @@
                                 </td>
                                 <td>{{ $entry['sender'] }}</td>
                                 <td>{{ $entry['receiver'] }}</td>
-                                <td>{{ $entry['amount'] }} ISK</td>
+                                <td data-sort="{{ $entry['raw_amount'] }}">{{ $entry['amount'] }} ISK</td>
                             </tr>
                         @endforeach
                         </tbody>
