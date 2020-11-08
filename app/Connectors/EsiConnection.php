@@ -1738,93 +1738,42 @@ class EsiConnection
      *
      * @param $ids
      * @return array|mixed|EsiResponse
-     * @throws EsiScopeAccessDeniedException
-     * @throws InvalidAuthenticationException
-     * @throws InvalidContainerDataException
-     * @throws RequestFailedException
-     * @throws UriDataMissingException
      */
     public function lookupNames($ids)
     {
         if (sizeof($ids) == 0)
             return [];
 
-        $lookupIDs = [];
-        $legacyIDs = [];
-        $legacyLookups = [];
         $names = [];
+        $ids = array_unique(array_column($ids, 'id'));
+        $chunked_names = array_chunk($ids, 200);
 
-        array_map(function ($e) use(&$legacyIDs, &$lookupIDs) {
-            if (!in_array($e['id'], $legacyIDs) && $e['id'] >= 100000000 && $e['id'] <= 2099999999)
-                $legacyIDs[] = $e; // IDs not resolvable by /universe/names
-            else if (!in_array($e['id'], $lookupIDs) && (
-                ($e['id'] >= 500000 && $e['id'] < 2000000) ||
-                ($e['id'] >= 3000000 && $e['id'] < 4000000) ||
-                ($e['id'] >= 90000000 && $e['id'] < 100000000) ||
-                ($e['id'] >= 2100000000)
-            ))
-                $lookupIDs[] = $e['id'];
-        }, $ids);
-
-        if (sizeof($lookupIDs) > 0)
+        foreach ($chunked_names as $lookupChunk)
         {
-            $chunked_names = array_chunk($lookupIDs, 500);
-
-            foreach ($chunked_names as $lookupChunk)
-            {
+            try {
                 $res = $this->eseye->setBody($lookupChunk)->invoke('post', '/universe/names');
                 $res = json_decode($res->raw);
                 $names = array_merge($names, $res);
+            } catch (\Exception $e) {
+                // One of the IDs was invalid - step through them one by one
+                foreach ($lookupChunk as $id) {
+                    try {
+                        $res = $this->eseye->setBody([$id])->invoke('post', '/universe/names');
+                        $res = json_decode($res->raw);
+                        $names = array_merge($names, $res);
+                    } catch (Exception $e) {
+                        // Found the invalid one - append it as an object in the proper format
+                        $names[] = json_decode(json_encode([
+                            'id' => $id,
+                            'name' => 'Unknown ID (' . $id . ')',
+                            'category' => 'unknown',
+                        ]));
+                    }
+                }
             }
         }
 
-        foreach ($legacyIDs as $id)
-        {
-            switch ($id['type']) {
-                case 'character':
-                    $legacyLookups[] = new ESINameResponse("character", $id['id'], $this->getCharacterName($id['id']));
-                    continue;
-                    break;
-
-                case 'corporation':
-                    $legacyLookups[] = new ESINameResponse("corporation", $id['id'], $this->getCorporationName($id['id']));
-                    continue;
-                    break;
-
-                case 'alliance':
-                    $legacyLookups[] = new ESINameResponse("alliance", $id['id'], $this->getAllianceName($id['id']));
-                    continue;
-                    break;
-
-                default:
-                    break;
-            }
-
-            $res = null;
-            $id = $id['id'];
-
-            try {
-                $res = $this->getAllianceName($id);
-                $legacyLookups[] = new ESINameResponse("alliance", $id, $res);
-            } catch (Exception $e) { }
-
-            if ($res == null)
-            {
-                try {
-                    $res = $this->getCorporationName($id);
-                    $legacyLookups[] = new ESINameResponse("corporation", $id, $res);
-                } catch (Exception $e) { }
-            }
-
-            if ($res == null)
-            {
-                // This needs to be last because it internally uses a try/catch
-                $res = $this->getCharacterName($id);
-                $legacyLookups[] = new ESINameResponse("character", $id, $res);
-            }
-        }
-
-        return array_merge($names, $legacyLookups);
+        return $names;
     }
 
     /**
