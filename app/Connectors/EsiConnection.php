@@ -1165,7 +1165,7 @@ class EsiConnection
             $ids[] = ['id' => $e->getSecondPartyId(), 'type' => null]; }, $journal[0]);
 
         $names = $this->lookupNames($ids);
-        $account_id = User::where('character_id', $this->char_id)->first()->pluck('account_id');
+        $account_id = User::where('character_id', $this->char_id)->first()->account_id;
         $alts = User::where('account_id', $account_id)->get()->pluck('name')->toArray();
 
         foreach ($journal[0] as $entry)
