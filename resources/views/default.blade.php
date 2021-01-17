@@ -15,6 +15,14 @@
         <link rel="stylesheet" href="/css/app.css" />
         <link rel="stylesheet" href="/css/buttons.bootstrap4.min.css" />
         <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico" />
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-7PRW8MQHE2"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'G-7PRW8MQHE2');
+        </script>
         @yield('styles')
     </head>
     <body>
