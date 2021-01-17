@@ -183,7 +183,10 @@ class CorpAdController extends Controller
         $ad->corp_id = $corp_id;
         $ad->group_name = User::where('corporation_id', $corp_id)->first()->corporation_name;
         $ad->allow_listing = $allow_listing;
-        $ad->application_notification_url = $webhook;
+
+        if (filter_var($webhook, FILTER_VALIDATE_URL))
+            $ad->application_notification_url = $webhook;
+
         $ad->save();
 
         Role::createRoleForAd($ad);
