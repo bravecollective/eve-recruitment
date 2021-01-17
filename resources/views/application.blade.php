@@ -204,7 +204,7 @@
             let errors = $("#errors");
 
             res.html('<img width="22" src="/img/loading.webp" />');
-            
+
             $("#error-" + name).remove();
             $("#error-message-" + name).remove();
 
