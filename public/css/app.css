@@ -60,9 +60,20 @@ table {
     vertical-align: middle !important;
 }
 
+#killmails-table {
+    margin: auto;
+    width: 100%;
+}
+
 /* Fix for DataTables with full width showing scrollbar */
 @media only screen and (min-width: 768px) {
     .table-responsive {
         overflow-x: hidden;
+    }
+}
+
+@media only screen and (min-width: 1000px) {
+     #killmails-table {
+        width: 50%;
     }
 }

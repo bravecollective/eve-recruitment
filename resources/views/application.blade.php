@@ -112,6 +112,12 @@
                  </a>
              </li>
              <li class="nav-item ml-2">
+                 <a class="nav-link" id="killmails-tab" data-toggle="pill" href="#tab-killmails" role="tab" aria-controls="tab-killmails" aria-selected="false" onclick="loadKillmails()">
+                     Killmails
+                     <span id="result-tab-killmails" style="color: red;" class="fas"></span>
+                 </a>
+             </li>
+             <li class="nav-item ml-2">
                  <a class="nav-link" id="utilities-tab" data-toggle="pill" href="#tab-utilities" role="tab" aria-controls="tab-utilities" aria-selected="false">
                      Utilities
                  </a>
@@ -152,6 +158,7 @@
     <div class="tab-pane fade" id="tab-market" role="tabpanel" aria-labelledby="tab-market"></div>
     <div class="tab-pane fade" id="tab-contracts" role="tabpanel" aria-labelledby="tab-contracts"></div>
     <div class="tab-pane fade" id="tab-notifications" role="tabpanel" aria-labelledby="tab-notifications"></div>
+    <div class="tab-pane fade" id="tab-killmails" role="tabpanel" aria-labelledby="tab-killmails"></div>
     <div class="tab-pane fade" id="tab-utilities" role="tabpanel" aria-labelledby="tab-utilities">@include('parts/application/utilities')</div>
 </div>
 @endsection
@@ -182,7 +189,7 @@
 @section('scripts')
     <script type="text/javascript">
         document.title = "{{ $character->name }} - " + document.title;
-        let overviewLoaded = skillsLoaded = mailLoaded = assetsLoaded = marketLoaded = contractsLoaded = notificationsLoaded = false;
+        let overviewLoaded = skillsLoaded = mailLoaded = assetsLoaded = marketLoaded = contractsLoaded = notificationsLoaded = killmailsLoaded = false;
         let char_id = "{{ $character->character_id }}";
         let donation_filter = false;
         let trading_filter = false;
@@ -260,6 +267,8 @@
                         case 'notifications':
                             notificationsLoaded = false;
                             break;
+                        case 'killmails':
+                            killmailsLoaded = false;
                         default:
                             break;
                     }
@@ -277,6 +286,7 @@
             loadMarket();
             loadContracts();
             loadNotifications();
+            loadKillmails();
         }
 
         function loadOverview()
@@ -378,6 +388,15 @@
 
             notificationsLoaded = true;
             loadPartial('/api/esi/' + char_id + '/notifications', "tab-notifications", 'notifications', () => $("#notifications-table").DataTable({"order": [[0, "desc"]], "paging": false}));
+        }
+
+        function loadKillmails()
+        {
+            if (killmailsLoaded)
+                return;
+
+            //killmailsLoaded = true;
+            loadPartial('/api/esi/' + char_id + '/killmails', "tab-killmails", 'killmails');
         }
 
     @if(isset($application))

@@ -14,6 +14,7 @@ use Seat\Eseye\Exceptions\InvalidContainerDataException;
 use Seat\Eseye\Exceptions\RequestFailedException;
 use Seat\Eseye\Exceptions\UriDataMissingException;
 use stdClass;
+use Swagger\Client\Eve\Api\KillmailsApi;
 use Swagger\Client\Eve\ApiException;
 use App\Models\Group;
 use App\Models\Type;
@@ -1337,6 +1338,51 @@ class EsiConnection
                 return $bloodline->name;
 
         return "UNKNOWN";
+    }
+
+    public function getKillmails()
+    {
+        $cache_key = "killmails_{$this->char_id}";
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
+
+        $model = new KillmailsApi($this->client, $this->config);
+        $data = $model->getCharactersCharacterIdKillmailsRecent($this->char_id, $this->char_id);
+        $killmailHashes = array_map(function ($e) { return ['id' => $e->getKillmailId(), 'hash' => $e->getKillmailHash()]; }, $data);
+        $killmails = [];
+
+        foreach ($killmailHashes as $killmailHash)
+        {
+            $data = $this->eseye->invoke('get', '/killmails/{killmail_id}/{killmail_hash}/', [
+                'killmail_id' => $killmailHash['id'],
+                'killmail_hash' => $killmailHash['hash']
+            ]);
+
+            foreach ($data->attackers as $attacker)
+            {
+                $attacker->name = property_exists($attacker, 'character_id') ? $this->getCharacterName($attacker->character_id) : null;
+                $attacker->corporation_name = property_exists($attacker, 'corporation_id') ? $this->getCorporationName($attacker->corporation_id) : null;
+                $attacker->alliance_name = property_exists($attacker, 'alliance_id') ? $this->getAllianceName($attacker->alliance_id) : null;
+
+                if ($attacker->final_blow == true)
+                    $data->final_blow = $attacker;
+            }
+
+            $data->victim->name = property_exists($data->victim, 'character_id') ? $this->getCharacterName($data->victim->character_id) : null;
+            $data->victim->corporation_name = property_exists($data->victim, 'corporation_id') ? $this->getCorporationName($data->victim->corporation_id) : null;
+            $data->victim->alliance_name = property_exists($data->victim, 'alliance_id') ? $this->getAllianceName($data->victim->alliance_id) : null;
+            $data->victim->ship_type_name = $this->getTypeName($data->victim->ship_type_id);
+
+            $data->solar_system = $this->eseye->invoke('get', '/universe/systems/' . $data->solar_system_id);
+            $constellation = $this->eseye->invoke('get', '/universe/constellations/' . $data->solar_system->constellation_id);
+            $data->region = $this->eseye->invoke('get', '/universe/regions/' . $constellation->region_id);
+            $killmails[] = $data;
+        }
+
+        Cache::add($cache_key, $killmails, env('CACHE_TIME', 3264));
+
+        return $killmails;
     }
 
     /**

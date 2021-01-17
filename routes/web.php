@@ -79,6 +79,7 @@ Route::get('/api/esi/{char_id}/mail', 'ApplicationController@loadMail');
 Route::get('/api/esi/{char_id}/assets_journal', 'ApplicationController@loadAssetsJournal');
 Route::get('/api/esi/{char_id}/market', 'ApplicationController@loadMarket');
 Route::get('/api/esi/{char_id}/notifications', 'ApplicationController@loadNotifications');
+Route::get('/api/esi/{char_id}/killmails', 'ApplicationController@loadKillmails');
 Route::get('/api/esi/{char_id}/contracts', 'ApplicationController@loadContracts');
 Route::post('/api/esi/{char_id}/fit_check', 'ApplicationController@checkFit');
 Route::post('/api/esi/{char_id}/skillplan_check', 'ApplicationController@checkSkillplan');

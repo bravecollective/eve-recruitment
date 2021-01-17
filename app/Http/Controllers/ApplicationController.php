@@ -323,6 +323,17 @@ class ApplicationController extends Controller
         die(json_encode(['success' => true, 'message' => $res]));
     }
 
+    public function loadKillmails($char_id)
+    {
+        $this->checkPermissions($char_id);
+        $esi = new EsiConnection($char_id);
+
+        $killmails = $esi->getKillmails();
+        $res = view('parts/application/killmails', ['killmails' => $killmails])->render();
+
+        die(json_encode(['success' => true, 'message' => $res]));
+    }
+
     /**
      * Load a user's contracts
      *
