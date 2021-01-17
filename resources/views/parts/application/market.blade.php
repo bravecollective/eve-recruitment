@@ -10,6 +10,7 @@
                         <thead>
                         <tr>
                             <th scope="col">Date</th>
+                            <th scope="col">Location</th>
                             <th scope="col">Client</th>
                             <th scope="col">Item</th>
                             <th scope="col">Quantity</th>
@@ -20,6 +21,7 @@
                         @foreach($transactions as $transaction)
                             <tr>
                                 <td>{{ $transaction['date'] }}</td>
+                                <td>{{ $transaction['location'] }}</td>
                                 <td>{{ $transaction['client'] }}</td>
                                 <td>{{ $transaction['item'] }}</td>
                                 <td>{{ $transaction['quantity'] }}</td>

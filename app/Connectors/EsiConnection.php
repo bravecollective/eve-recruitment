@@ -790,7 +790,7 @@ class EsiConnection
      * @param $item_id
      * @return string
      */
-    private function getAssetNameFromArray($items, $item_id)
+    private function getAssetNameFromArray(&$items, $item_id)
     {
         foreach ($items as $key => $item)
             if ($item->getItemId() == $item_id)
@@ -909,7 +909,8 @@ class EsiConnection
                 'item' => $this->getTypeName($transaction->getTypeId()),
                 'quantity' => $transaction->getQuantity(),
                 'change' => number_format((int) $transaction->getQuantity() * (int) $transaction->getUnitPrice()),
-                'buy' => $transaction->getIsBuy()
+                'buy' => $transaction->getIsBuy(),
+                'location' => $this->getLocationName($transaction->getLocationId())
             ];
         }
 

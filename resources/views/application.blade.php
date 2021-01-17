@@ -330,7 +330,7 @@
                             } else {
                                 if (trading_filter)
                                     dt.buttons(1).trigger();
-                                dt.column(-5).search("Player Donation").draw();
+                                dt.column(-5).search("Player Donation").search("Corporation Account Withdrawal").draw();
                             }
                         }
                     },
