@@ -134,8 +134,10 @@ class Application extends Model
 
         if ($dbApp->recruitmentAd->application_notification_url !== null)
         {
-            $client = new Client($dbApp->recruitmentAd->application_notification_url);
-            $client->send("*New Application* \nCharacter: {$dbApp->account->main()->name}\nURL: " . env('APP_URL', '') . "/application/{$dbApp->id}");
+            try {
+                $client = new Client($dbApp->recruitmentAd->application_notification_url);
+                $client->send("*New Application* - " . $dbApp->recruitmentAd->group_name . "\nCharacter: {$dbApp->account->main()->name}\nURL: " . env('APP_URL', '') . "/application/{$dbApp->id}");
+            } catch (\Exception $e) { }
         }
 
         return $dbApp;
