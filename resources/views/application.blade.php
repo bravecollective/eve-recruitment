@@ -179,7 +179,7 @@
 @section('scripts')
     <script type="text/javascript">
         document.title = "{{ $character->name }} - " + document.title;
-        let esiLoaded = overviewLoaded = skillsLoaded = mailLoaded = assetsLoaded = marketLoaded = contractsLoaded = notificationsLoaded = false;
+        let overviewLoaded = skillsLoaded = mailLoaded = assetsLoaded = marketLoaded = contractsLoaded = notificationsLoaded = false;
         let char_id = "{{ $character->character_id }}";
         let donation_filter = false;
         let trading_filter = false;
@@ -204,6 +204,9 @@
             let errors = $("#errors");
 
             res.html('<img width="22" src="/img/loading.webp" />');
+            
+            $("#error-" + name).remove();
+            $("#error-message-" + name).remove();
 
             $.ajax({
                 url: url,
@@ -217,6 +220,7 @@
                         $("#" + anchor).html(e.message);
                         res.attr('style', 'color: green;');
                         res.addClass('fa-check');
+                        res.removeClass('fa-times');
 
                         if (additionalFunction)
                             additionalFunction();
@@ -228,19 +232,39 @@
                 },
                 error: function(e) {
                     res.empty();
-                    errors.append('<div class="row justify-content-center">Loading of ' + name + ' failed:</div><div class="row justify-content-center"><pre style="color: white;"><xmp>' + e.responseJSON.message.split("response")[0] + '</xmp></pre></div>');
+                    errors.append('<div class="row justify-content-center" id="error-' + name + '">Loading of ' + name + ' failed:</div><div class="row justify-content-center" id="error-message-' + name + '"><pre style="color: white;"><xmp>' + e.responseJSON.message.split("response")[0] + '</xmp></pre></div>');
                     res.addClass('fa-times');
+
+                    switch (name) {
+                        case 'overview':
+                            overviewLoaded = false;
+                            break;
+                        case 'skills':
+                            skillsLoaded = false;
+                            break;
+                        case 'mail':
+                            mailLoaded = false;
+                            break;
+                        case 'assets':
+                            assetsLoaded = false;
+                            break;
+                        case 'market':
+                            marketLoaded = false;
+                            break;
+                        case 'contracts':
+                            contractsLoaded = false;
+                            break;
+                        case 'notifications':
+                            notificationsLoaded = false;
+                            break;
+                        default:
+                            break;
+                    }
                 }
             });
         }
 
         function loadEsiData() {
-            if (esiLoaded)
-            {
-                showError('ESI already loaded. To see updated ESI, reload the page and click the button again.');
-                return;
-            }
-
             @if(isset($application))
                 loadOverview();
             @endif
@@ -250,13 +274,11 @@
             loadMarket();
             loadContracts();
             loadNotifications();
-
-            esiLoaded = true;
         }
 
         function loadOverview()
         {
-            if (esiLoaded || overviewLoaded)
+            if (overviewLoaded)
                 return;
 
             overviewLoaded = true;
@@ -265,7 +287,7 @@
 
         function loadSkills()
         {
-            if (esiLoaded || skillsLoaded)
+            if (skillsLoaded)
                 return;
 
             skillsLoaded = true;
@@ -274,7 +296,7 @@
 
         function loadMail()
         {
-            if (esiLoaded || mailLoaded)
+            if (mailLoaded)
                 return;
 
             mailLoaded = true;
@@ -283,7 +305,7 @@
 
         function loadJournal()
         {
-            if (esiLoaded || assetsLoaded)
+            if (assetsLoaded)
                 return;
 
             assetsLoaded = true;
@@ -330,7 +352,7 @@
 
         function loadMarket()
         {
-            if (esiLoaded || marketLoaded)
+            if (marketLoaded)
                 return;
 
             marketLoaded = true;
@@ -339,7 +361,7 @@
 
         function loadContracts()
         {
-            if (esiLoaded || contractsLoaded)
+            if (contractsLoaded)
                 return;
 
             contractsLoaded = true;
@@ -348,7 +370,7 @@
 
         function loadNotifications()
         {
-            if (esiLoaded || notificationsLoaded)
+            if (notificationsLoaded)
                 return;
 
             notificationsLoaded = true;
