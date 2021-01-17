@@ -11,7 +11,7 @@
     @foreach($questions as $question)
         <div class="form-group">
             <label for="{{ $question->id }}">{{ $question->question }}</label>
-            <input type="text" class="form-control question_response" id="{{ $question->id }}" />
+            <textarea class="form-control question_response" id="{{ $question->id }}"></textarea>
         </div>
     @endforeach
     </form>
