@@ -402,8 +402,33 @@ class EsiConnection
 
         foreach ($skillplan as $skill => $level)
         {
-            if (!$this->userHasSkillLevel($skill, $level))
+            if (!$this->userHasSkillLevel($skill, $level)) {
+                switch ($level) {
+                    case 1:
+                        $level = 'I';
+                        break;
+
+                    case 2:
+                        $level = 'II';
+                        break;
+
+                    case 3:
+                        $level = 'III';
+                        break;
+
+                    case 4:
+                        $level = 'IV';
+                        break;
+
+                    case 5:
+                        $level = 'V';
+                        break;
+
+                    default:
+                        break;
+                }
                 $missing[] = "$skill $level";
+            }
         }
 
         return $missing;

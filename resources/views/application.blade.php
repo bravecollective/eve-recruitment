@@ -46,6 +46,9 @@
                 </a>
                 <div class="dropdown-menu">
                     @foreach($userApplications as $userApplication)
+                        @if ($userApplication->status == \App\Models\Application::REVOKED)
+                            @continue
+                        @endif
                         <a class="dropdown-item" target="_blank" href="/application/{{ $userApplication->id }}">
                             {{ $userApplication->recruitmentAd->group_name }}
                         </a>

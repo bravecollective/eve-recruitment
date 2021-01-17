@@ -649,8 +649,10 @@ class ApplicationController extends Controller
 
         if ($app->recruitmentAd->application_notification_url !== null)
         {
-            $client = new Client($app->recruitmentAd->application_notification_url);
-            $client->send("*Revoked Application* \nCharacter: {$app->account->main()->name}\nURL: " . env('APP_URL', '') . "/application/{$app->id}");
+            try {
+                $client = new Client($app->recruitmentAd->application_notification_url);
+                $client->send("*Revoked Application* \nCharacter: {$app->account->main()->name}\nURL: " . env('APP_URL', '') . "/application/{$app->id}");
+            } catch (\Exception $e) { }
         }
 
         return redirect('/')->with('info', 'Application revoked');
