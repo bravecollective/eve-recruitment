@@ -1267,7 +1267,12 @@ class EsiConnection
             $ancestries = Cache::get($cache_key);
         else
         {
-            $res = $this->eseye->invoke('get', '/universe/ancestries');
+            try {
+                $res = $this->eseye->invoke('get', '/universe/ancestries');
+            } catch (\Exception $e) {
+                return "UNKNOWN";
+            }
+
             $ancestries = json_decode($res->raw);
             Cache::add($cache_key, $ancestries, env('CACHE_TIME', 3264));
         }
