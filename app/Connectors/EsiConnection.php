@@ -701,9 +701,8 @@ class EsiConnection
             "HangarAll"
         ];
 
-
-        //if (Cache::has($cache_key))
-        //    return Cache::get($cache_key);
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
 
         $model = new AssetsApi($this->client, $this->config);
         $assets = $model->getCharactersCharacterIdAssetsWithHttpInfo($this->char_id, $this->char_id);
