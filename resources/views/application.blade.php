@@ -88,11 +88,17 @@
                  </a>
              </li>
             <li class="nav-item ml-2">
-                <a class="nav-link" id="assets-tab" data-toggle="pill" href="#tab-assets" role="tab" aria-controls="tab-assets" aria-selected="false" onclick="loadJournal()">
-                    Assets &amp; Journal
+                <a class="nav-link" id="assets-tab" data-toggle="pill" href="#tab-assets" role="tab" aria-controls="tab-assets" aria-selected="false" onclick="loadAssets()">
+                    Assets
                     <span id="result-tab-assets" style="color: red;" class="fas"></span>
                 </a>
             </li>
+             <li class="nav-item ml-2">
+                 <a class="nav-link" id="journal-tab" data-toggle="pill" href="#tab-journal" role="tab" aria-controls="tab-journal" aria-selected="false" onclick="loadJournal()">
+                     Journal
+                     <span id="result-tab-journal" style="color: red;" class="fas"></span>
+                 </a>
+             </li>
             <li class="nav-item ml-2">
                 <a class="nav-link" id="market-tab" data-toggle="pill" href="#tab-market" role="tab" aria-controls="tab-market" aria-selected="false" onclick="loadMarket()">
                     Market
@@ -155,6 +161,7 @@
     <div class="tab-pane fade" id="tab-skills" role="tabpanel" aria-labelledby="tab-skills"></div>
     <div class="tab-pane fade" id="tab-mail" role="tabpanel" aria-labelledby="tab-mail"></div>
     <div class="tab-pane fade" id="tab-assets" role="tabpanel" aria-labelledby="tab-assets"></div>
+    <div class="tab-pane fade" id="tab-journal" role="tabpanel" aria-labelledby="tab-journal"></div>
     <div class="tab-pane fade" id="tab-market" role="tabpanel" aria-labelledby="tab-market"></div>
     <div class="tab-pane fade" id="tab-contracts" role="tabpanel" aria-labelledby="tab-contracts"></div>
     <div class="tab-pane fade" id="tab-notifications" role="tabpanel" aria-labelledby="tab-notifications"></div>
@@ -189,7 +196,7 @@
 @section('scripts')
     <script type="text/javascript">
         document.title = "{{ $character->name }} - " + document.title;
-        let overviewLoaded = skillsLoaded = mailLoaded = assetsLoaded = marketLoaded = contractsLoaded = notificationsLoaded = killmailsLoaded = false;
+        let overviewLoaded = skillsLoaded = mailLoaded = assetsLoaded = journalLoaded = marketLoaded = contractsLoaded = notificationsLoaded = killmailsLoaded = false;
         let char_id = "{{ $character->character_id }}";
         let donation_filter = false;
         let trading_filter = false;
@@ -258,6 +265,9 @@
                         case 'assets':
                             assetsLoaded = false;
                             break;
+                        case 'journal':
+                            journalLoaded = false;
+                            break;
                         case 'market':
                             marketLoaded = false;
                             break;
@@ -282,6 +292,7 @@
             @endif
             loadSkills();
             loadMail();
+            loadAssets();
             loadJournal();
             loadMarket();
             loadContracts();
@@ -316,13 +327,21 @@
             loadPartial('/api/esi/' + char_id + '/mail', "tab-mail", 'mail');
         }
 
-        function loadJournal()
+        function loadAssets()
         {
             if (assetsLoaded)
                 return;
 
             assetsLoaded = true;
-            loadPartial('/api/esi/' + char_id + '/assets_journal', "tab-assets", 'assets', () => $("#journal-table").DataTable({
+            loadPartial('/api/esi/' + char_id + '/assets', "tab-assets", 'assets');
+        }
+
+        function loadJournal() {
+            if (journalLoaded)
+                return;
+
+            journalLoaded = true;
+            loadPartial('/api/esi/' + char_id + '/journal', "tab-journal", 'journal', () => $("#journal-table").DataTable({
                 order: [[0, "desc"]],
                 paging: false,
                 dom: '"<\'row\'<\'col-sm-12 col-md-6\'B><\'col-sm-12 col-md-6\'f>>"' +
@@ -395,7 +414,7 @@
             if (killmailsLoaded)
                 return;
 
-            //killmailsLoaded = true;
+            killmailsLoaded = true;
             loadPartial('/api/esi/' + char_id + '/killmails', "tab-killmails", 'killmails');
         }
 

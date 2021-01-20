@@ -261,23 +261,35 @@ class ApplicationController extends Controller
     }
 
     /**
-     * Load assets and journal tab
+     * Load assets tab
      *
      * @param $char_id
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
-     * @throws \Swagger\Client\Eve\ApiException
      * @throws \Throwable
      */
-    public function loadAssetsJournal($char_id)
+    public function loadAssets($char_id)
     {
         $this->checkPermissions($char_id);
         $esi = new EsiConnection($char_id);
 
         $assets = $esi->getAssets();
+        $res = view('parts/application/assets', ['assets' => $assets])->render();
+
+        die(json_encode(['success' => true, 'message' => $res]));
+    }
+
+    /**
+     * Load assets journal tab
+     *
+     * @param $char_id
+     * @throws \Throwable
+     */
+    public function loadJournal($char_id)
+    {
+        $this->checkPermissions($char_id);
+        $esi = new EsiConnection($char_id);
+
         $journal = $esi->getJournal();
-        $res = view('parts/application/assets_journal', ['assets' => $assets, 'journal' => $journal])->render();
+        $res = view('parts/application/journal', ['journal' => $journal])->render();
 
         die(json_encode(['success' => true, 'message' => $res]));
     }

@@ -3,7 +3,7 @@
         <img src="https://image.eveonline.com/Type/{{ $asset['type_id'] }}_32.png" />
         {{ $asset['name'] }} - {{ $asset['quantity'] }}
         <div class="float-right">
-            {{ $asset['price'] }} ISK
+            {{ number_format($asset['price']) }} ISK
         </div>
     </div>
 @else
@@ -17,7 +17,7 @@
             @endif
         </a>
         <div class="float-right">
-            {{ $asset['value'] }} ISK
+            {{ number_format($asset['value']) }} ISK
         </div>
         <div class="collapse" data-parent="#location-{{ $location_info['id'] }}" id="items-{{ $asset['id'] }}">
             <div class="list-group">
@@ -26,7 +26,7 @@
                         <img src="https://image.eveonline.com/Type/{{ $item['type_id'] }}_32.png" />
                         {{ $item['name'] }} - {{ $item['quantity'] }}
                         <div class="float-right">
-                            {{ $item['value'] }} ISK
+                            {{ number_format($item['value']) }} ISK
                         </div>
                     </div>
                 @endforeach

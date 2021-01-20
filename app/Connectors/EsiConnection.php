@@ -7,6 +7,7 @@ use App\Models\User;
 use DateTime;
 use Exception;
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Log;
 use Seat\Eseye\Containers\EsiResponse;
 use Seat\Eseye\Exceptions\EsiScopeAccessDeniedException;
 use Seat\Eseye\Exceptions\InvalidAuthenticationException;
@@ -74,13 +75,6 @@ class EsiConnection
      * @var Client
      */
     private $client;
-
-    private static $stationContentLocationFlags = [
-        "AssetSafety",
-        "Deliveries",
-        "Hangar",
-        "HangarAll"
-    ];
 
     // The maximum number of mails to load from ESI
     const MAX_MAILS_TO_LOAD = 200;
@@ -694,84 +688,154 @@ class EsiConnection
      * Get a user's assets
      *
      * @return array
-     * @throws EsiScopeAccessDeniedException
-     * @throws InvalidContainerDataException
-     * @throws UriDataMissingException
      * @throws ApiException
      */
     public function getAssets()
     {
         $cache_key = "assets_{$this->char_id}";
         $names_to_fetch = [];
+        $names = [];
+        $stationContentLocationFlags = [
+            "Deliveries",
+            "Hangar",
+            "HangarAll"
+        ];
 
-        if (Cache::has($cache_key))
-            return Cache::get($cache_key);
+
+        //if (Cache::has($cache_key))
+        //    return Cache::get($cache_key);
 
         $model = new AssetsApi($this->client, $this->config);
         $assets = $model->getCharactersCharacterIdAssetsWithHttpInfo($this->char_id, $this->char_id);
         $out = [];
+        $parentItems = [];
 
         for ($i = 2; $i <= $assets[2]['X-Pages'][0]; $i++)
             $assets[0] = array_merge($assets[0], $model->getCharactersCharacterIdAssets($this->char_id, $this->char_id, null, $i));
 
-        foreach ($assets[0] as $asset)
+        // 1a. Asset safety is a bitch. That needs to happen first
+        foreach ($assets[0] as $idx => $item)
         {
-            if (in_array($asset->getLocationFlag(), self::$stationContentLocationFlags))
-            {
-                $location = $this->getLocationName($asset->getLocationId());
-                $names_to_fetch[] = $asset->getItemId();
-                $location_id = $asset->getLocationId();
+            if ($item->getLocationFlag() != "AssetSafety")
+                continue;
 
-                if (!array_key_exists($location_id, $out))
-                    $out[$location_id] = [
-                        'id' => $location_id,
-                        'name' => $location,
-                        'items' => [],
-                        'containers' => []
-                    ];
-
-                $tmp = $this->constructAssetTreeForItem($asset, $assets[0]);
-
-                if ($tmp['container'])
-                    $out[$location_id]['containers'][] = $tmp;
-                else
-                    $out[$location_id]['items'][] = $tmp;
-
-                $location_price = 0;
-                foreach ($out[$location_id]['items'] as $item)
-                    $location_price += (int) filter_var($item['value'], FILTER_SANITIZE_NUMBER_INT);
-                foreach ($out[$location_id]['containers'] as $item)
-                    $location_price += (int) filter_var($item['value'], FILTER_SANITIZE_NUMBER_INT);
-
-                $out[$location_id]['value'] = number_format($location_price);
-            }
+            $this->addStationItem($out, $parentItems, $item);
+            $names_to_fetch[] = $item->getItemId();
+            unset($assets[0][$idx]);
         }
 
-        $names = [];
-
-        foreach (array_chunk($names_to_fetch, 900) as $chunk)
-            $names = array_merge($names, $model->postCharactersCharacterIdAssetsNames($this->char_id, $chunk, $this->char_id));
-
-        foreach ($out as $location => &$items)
+        // 1b. Create parent container entries
+        foreach ($assets[0] as $idx => $item)
         {
-            foreach ($items['items'] as &$item)
-                $item['item_name'] = $this->getAssetNameFromArray($names, $item['id']);
+            // Items in asset safety wrap show up as "hangar" location flag. Since asset safety wrap is processed first,
+            // if the item's locaiton ID is in $parentItems it is asset safety wrap
+            if (array_key_exists($item->getLocationId(), $parentItems) || !in_array($item->getLocationFlag(), $stationContentLocationFlags))
+                continue;
 
-            foreach ($items['containers'] as &$item)
-            {
-                $item['item_name'] = $this->getAssetNameFromArray($names, $item['id']);
+            $this->addStationItem($out, $parentItems, $item);
+            $names_to_fetch[] = $item->getItemId();
+            unset($assets[0][$idx]);
+        }
+
+        // 2. Add second-level container sub-items
+        foreach ($assets[0] as $item)
+        {
+            // We don't need to do the station content location check again since those were all unset in the
+            // previous for loop
+            if (!array_key_exists($item->getLocationId(), $parentItems))
+                continue; // TODO: Nested containers
+
+            $price = (int) $this->getMarketPrice($item->getTypeId()) * $item->getQuantity();
+            $parentItems[$item->getLocationId()]['items'][] = [
+                'name' => $this->getTypeName($item->getTypeId()),
+                'quantity' => number_format($item->getQuantity()),
+                'item_id' => $item->getItemId(),
+                'type_id' => $item->getTypeId(),
+                'id' => $item->getTypeId(),
+                'price' => $price,
+                'value' => $price,
+                'location' => $this->getLocationName($item->getLocationId()),
+                'items' => []
+            ];
+
+            $parentItems[$item->getLocationId()]['value'] += $price;
+            $names[$item->getItemId()] = 'None';
+        }
+
+        // 3. Calculate the value of each location/container
+        foreach ($out as &$location_items)
+        {
+            $location_price = 0;
+            foreach ($location_items['items'] as $item)
+                $location_price += (int) filter_var($item['value'], FILTER_SANITIZE_NUMBER_INT);
+
+            $location_items['value'] = number_format($location_price);
+        }
+
+        // 4a. Fetch container item names
+        foreach (array_chunk($names_to_fetch, 1000) as $chunk) {
+            $res = $model->postCharactersCharacterIdAssetsNames($this->char_id, $chunk, $this->char_id);
+            foreach ($res as $data)
+                $names[$data->getItemId()] = $data->getName();
+        }
+
+        // 4b. Add names to items and sort based on ISK value
+        foreach ($out as &$location)
+        {
+            // 4a. Convert items that are actually containers to containers
+            foreach ($location['items'] as $key => &$item) {
+                $name = $names[$item['item_id']];
+                $item['item_name'] = $name;
                 uasort($item['items'], "self::sort_locations");
+
+                if (count($item['items']) > 0) {
+                    // Multiple items inside - move it to containers
+                    $item['container'] = true;
+                    $location['containers'][] = $item;
+                    unset($location['items'][$key]);
+                }
             }
 
-            uasort($items['items'], "self::sort_locations");
-            uasort($items['containers'], "self::sort_locations");
+            uasort($location['items'], "self::sort_locations");
+            uasort($location['containers'], "self::sort_locations");
         }
 
         uasort($out, "self::sort_locations");
 
         Cache::add($cache_key, $out, $this->getCacheExpirationTime($assets));
-
         return $out;
+    }
+
+    private function addStationItem(&$out, &$parentItems, $item) {
+        $price = (int) $this->getMarketPrice($item->getTypeId()) * $item->getQuantity();
+        $location_id = $item->getLocationId();
+
+        if (!array_key_exists($location_id, $out))
+        {
+            $location = $this->getLocationName($item->getLocationId());
+            $out[$location_id] = [
+                'id' => $location_id,
+                'name' => $location,
+                'value' => 0,
+                'items' => [],
+                'containers' => []
+            ];
+        }
+
+        $parentItems[$item->getItemId()] = [
+            'name' => $this->getTypeName($item->getTypeId()),
+            'quantity' => number_format($item->getQuantity()),
+            'item_id' => $item->getItemId(),
+            'type_id' => $item->getTypeId(),
+            'id' => $item->getTypeId(),
+            'price' => $price,
+            'value' => $price,
+            'location' => $this->getLocationName($item->getLocationId()),
+            'container' => false,
+            'items' => []
+        ];
+
+        $out[$item->getLocationId()]['items'][] = &$parentItems[$item->getItemId()];
     }
 
     private static function sort_locations ($a, $b) {
@@ -782,74 +846,6 @@ class EsiConnection
             return 0;
 
         return ($v1 > $v2) ? -1 : 1;
-    }
-
-    /**
-     * Get an asset name from a nested array
-     *
-     * @param $items
-     * @param $item_id
-     * @return string
-     */
-    private function getAssetNameFromArray(&$items, $item_id)
-    {
-        foreach ($items as $key => $item)
-            if ($item->getItemId() == $item_id)
-            {
-                $ret = $item->getName();
-                unset($items[$key]);
-                return $ret;
-            }
-
-        return 'None';
-    }
-
-    /**
-     * Get the asset tree for an item that can contain other items, like a container or ship
-     *
-     * @param $item
-     * @param $assets
-     * @return array
-     * @throws EsiScopeAccessDeniedException
-     * @throws InvalidContainerDataException
-     * @throws UriDataMissingException
-     */
-    private function constructAssetTreeForItem($item, &$assets)
-    {
-        $tree = [];
-        $tree['name'] = $this->getTypeName($item->getTypeId());
-        $tree['location'] = $this->getLocationName($item->getLocationId());
-        $tree['quantity'] = number_format($item->getQuantity());
-        $tree['id'] = $item->getItemId();
-        $tree['type_id'] = $item->getTypeId();
-        $tree['price'] = number_format((int) $this->getMarketPrice($item->getTypeId()) * $item->getQuantity(), 0);
-        $tree['value'] = $this->getMarketPrice($item->getTypeId()) * $item->getQuantity();
-        $tree['container'] = false;
-        $tree['items'] = [];
-
-        foreach ($assets as $idx => $asset)
-        {
-            // TODO: Nested container items
-            if ($asset->getLocationId() == $item->getItemId())
-            {
-                $price = (int) $this->getMarketPrice($asset->getTypeId()) * $asset->getQuantity();
-                $tree['items'][] = [
-                    'name' => $this->getTypeName($asset->getTypeId()),
-                    'quantity' => number_format($asset->getQuantity()),
-                    'type_id' => $asset->getTypeId(),
-                    'value' => number_format($price),
-                    'items' => []
-                ];
-
-                $tree['value'] += $price;
-                unset($assets[$idx]);
-            }
-        }
-
-        $tree['value'] = number_format($tree['value']);
-        $tree['container'] = count($tree['items']) > 0;
-
-        return $tree;
     }
 
     /**
