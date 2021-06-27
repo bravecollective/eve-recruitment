@@ -102,7 +102,11 @@ class PermissionsController extends Controller
             $autoRole->group_name = CoreGroup::find($autoRole->core_group_id)->name;
         }
 
-        return view('auto_roles', ['roles' => $autoRoles, 'allRoles' => Role::all(), 'allGroups' => CoreGroup::all()]);
+        $autoRoles = $autoRoles->sortBy(function ($autoRole) {
+            return strtolower($autoRole->role_name);
+        });
+
+        return view('auto_roles', ['roles' => $autoRoles]);
     }
 
     /**
@@ -138,8 +142,8 @@ class PermissionsController extends Controller
         if (!Auth::user()->hasRole('admin'))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
-        $roles = Role::all();
-        $groups = CoreGroup::all();
+        $roles = Role::orderBy('name')->get();
+        $groups = CoreGroup::orderBy('name')->get();
         $view = view('parts/auto_role', ['roles' => $roles, 'groups' => $groups])->render();
 
         die(json_encode(['success' => true, 'message' => $view]));
