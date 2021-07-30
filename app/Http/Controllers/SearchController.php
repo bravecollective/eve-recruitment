@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Permission\AccountRole;
-use App\Models\Permissions\Role;
+use App\Models\Permission\Role;
 use App\Models\RecruitmentAd;
 use App\Models\User;
 use Illuminate\Database\Query\Builder;

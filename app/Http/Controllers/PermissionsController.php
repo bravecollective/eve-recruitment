@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CoreGroup;
 use App\Models\Permission\AccountRole;
 use App\Models\Permission\AutoRole;
-use App\Models\Permissions\Role;
+use App\Models\Permission\Role;
 use App\Models\Account;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;

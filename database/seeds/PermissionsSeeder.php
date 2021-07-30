@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Permission\Role;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,7 @@ class PermissionsSeeder extends Seeder
 
         foreach ($roles as $name)
         {
-            $role = new \App\Models\Permissions\Role();
+            $role = new Role();
             $role->name = str_replace('-', ' ', $name);
             $role->slug = $name;
             $role->save();

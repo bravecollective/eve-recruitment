@@ -3,7 +3,7 @@
 namespace App\Models\Permission;
 
 use App\Models\AccountGroup;
-use App\Models\Permissions\Role;
+use App\Models\Permission\Role;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 

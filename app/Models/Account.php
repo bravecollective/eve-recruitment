@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Permission\HasPermissionTrait;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class Account extends Authenticatable

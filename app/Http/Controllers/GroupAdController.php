@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\FormQuestion;
 use App\Models\Permission\AccountRole;
-use App\Models\Permissions\Role;
+use App\Models\Permission\Role;
 use App\Models\RecruitmentAd;
 use App\Models\RecruitmentRequirement;
 use App\Models\User;
@@ -262,7 +262,7 @@ class GroupAdController extends Controller
 
         if (filter_var($webhook, FILTER_VALIDATE_URL))
             $ad->application_notification_url = $webhook;
-        
+
         $ad->save();
 
         Role::createRoleForAd($ad, 'group');

@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Models\Permission\AccountRole;
-use App\Models\Permissions\Role;
+use App\Models\Permission\Role;
 use Illuminate\Database\Eloquent\Model;
 
 class RecruitmentAd extends Model

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Permissions;
+namespace App\Models\Permission;
 
 use App\Models\Account;
 use App\Models\RecruitmentAd;

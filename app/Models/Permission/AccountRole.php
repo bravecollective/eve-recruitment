@@ -4,7 +4,6 @@ namespace App\Models\Permission;
 
 use App\Connectors\EsiConnection;
 use App\Models\Application;
-use App\Models\Permissions\Role;
 use App\Models\RecruitmentAd;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
