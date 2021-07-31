@@ -316,7 +316,7 @@ class AccountRole extends Model
         return AccountRole::where('account_id', Auth::user()->id)->whereIn('role_id', $role_ids->pluck('id')->toArray())->exists();
     }
 
-    protected function setKeysForSaveQuery(Builder $query)
+    protected function setKeysForSaveQuery($query)
     {
         $query->where('account_id', $this->getAttribute('account_id'))
             ->where('role_id', $this->getAttribute('role_id'));

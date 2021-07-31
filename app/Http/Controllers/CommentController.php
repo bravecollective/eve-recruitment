@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Application;
 use App\Models\Comment;
 use App\Models\Permission\AccountRole;
-use Illuminate\Support\Facades\Input;
+use Illuminate\Http\Request;
 
 class CommentController extends Controller
 {
@@ -15,10 +15,10 @@ class CommentController extends Controller
      * @param $id
      * @throws \Throwable
      */
-    public function addComment($id)
+    public function addComment(Request $r, $id)
     {
         $application = Application::find($id);
-        $comment = Input::get('comment');
+        $comment = $r->input('comment');
 
         if (!$application)
             die(json_encode(['success' => false, 'message' => 'Invalid application ID']));
@@ -41,10 +41,10 @@ class CommentController extends Controller
      *
      * @param $id
      */
-    public function deleteComment($id)
+    public function deleteComment(Request $r, $id)
     {
         $application = Application::find($id);
-        $comment_id = Input::get('comment_id');
+        $comment_id = $r->input('comment_id');
 
         if (!$application)
             die(json_encode(['success' => false, 'message' => 'Invalid application ID']));

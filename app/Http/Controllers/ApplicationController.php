@@ -16,7 +16,6 @@ use App\Models\RecruitmentRequirement;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Input;
 use Maknz\Slack\Client;
 
 class ApplicationController extends Controller
@@ -375,11 +374,11 @@ class ApplicationController extends Controller
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
      * @throws \Seat\Eseye\Exceptions\UriDataMissingException
      */
-    public function checkFit($char_id)
+    public function checkFit(Request $r, $char_id)
     {
         $this->checkPermissions($char_id);
         $esi = new EsiConnection($char_id);
-        $fit = Input::get('fit');
+        $fit = $r->input('fit');
 
         if (!$fit)
             die(json_encode(['success' => false, 'message' => 'Invalid fit']));
@@ -410,11 +409,11 @@ class ApplicationController extends Controller
      * @param $char_id
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
      */
-    public function checkSkillplan($char_id)
+    public function checkSkillplan(Request $r, $char_id)
     {
         $this->checkPermissions($char_id);
         $esi = new EsiConnection($char_id);
-        $skillplan = Input::get('skillplan');
+        $skillplan = $r->input('skillplan');
         $levels = [];
 
         if (!$skillplan)
@@ -482,10 +481,10 @@ class ApplicationController extends Controller
      *
      * @param $id
      */
-    function updateState($id)
+    function updateState(Request $r, $id)
     {
         $application = Application::find($id);
-        $newState = Input::get('state');
+        $newState = $r->input('state');
 
         if (!$application)
             die(json_encode(['success' => false, 'message' => 'Invalid application ID']));
@@ -541,10 +540,10 @@ class ApplicationController extends Controller
      * Load applications via ajax on tab change
      * @param $id
      */
-    function loadAjaxApplications($id)
+    function loadAjaxApplications(Request $r, $id)
     {
         $ad = RecruitmentAd::find($id);
-        $type = substr(Input::get('type'), 1);
+        $type = substr($r->input('type'), 1);
         $states = null;
 
         if (!$ad)
@@ -619,7 +618,7 @@ class ApplicationController extends Controller
      *
      * @param $recruitment_id
      */
-    public function apply($recruitment_id)
+    public function apply(Request $r, $recruitment_id)
     {
         $ad = RecruitmentAd::find($recruitment_id);
 
@@ -634,7 +633,7 @@ class ApplicationController extends Controller
         if (!Application::canApply(Auth::user(), $ad))
             die(json_encode(['success' => false, 'message' => 'You have already applied to this recruitment ad. Please see the homepage for your application status.']));
 
-        $questions = Input::get('questions');
+        $questions = $r->input('questions');
 
         if ($questions)
         {

@@ -5,16 +5,16 @@ namespace App\Http\Controllers;
 use App\Connectors\CoreConnection;
 use App\Models\Account;
 use App\Models\User;
-use Illuminate\Support\Facades\Input;
+use Illuminate\Http\Request;
 
 class CharacterController extends Controller
 {
     /**
      * Add a character from Core to the local database
      */
-    public function addCharacter()
+    public function addCharacter(Request $r)
     {
-        $characterId = (int) Input::get('id');
+        $characterId = (int) $r->input('id');
 
         // check if user exists
         if (User::find($characterId) !== null) {
@@ -37,7 +37,7 @@ class CharacterController extends Controller
         try {
             $characters = CoreConnection::getCharactersForUser($characterId);
         } catch (\Exception $e) {
-            // no nothing
+            // do nothing
         }
         if (isset($characters) && is_array($characters)) {
             foreach ($characters as $character) {
@@ -54,7 +54,7 @@ class CharacterController extends Controller
                 break;
             }
         }
-        if (! $corporationId) {
+        if (!$corporationId) {
             return redirect('/')->with('error', 'An error occurred, please try again.');
         }
 

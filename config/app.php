@@ -178,7 +178,7 @@ return [
         App\Providers\AuthServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-        nullx27\Socialite\EveOnline\Providers\EveOnlineServiceProvider::class,
+        App\Providers\EveOnlineServiceProvider::class,
 
     ],
 

@@ -26,7 +26,7 @@ class SearchController extends Controller
         if (!$user->hasRole('admin') && !$user->hasRoleLike('%manager') && !$user->hasRoleLike('%director'))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
-        $res = User::where('name', 'like', '%' . Input::get('search') . '%');
+        $res = User::where('name', 'like', '%' . $r->input('search') . '%');
 
         die(json_encode(['success' => true, 'message' => $res->get()]));
     }
@@ -36,7 +36,7 @@ class SearchController extends Controller
      *
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
      */
-    public function navbarCharacterSearch()
+    public function navbarCharacterSearch(Request $r)
     {
         $user = Auth::user();
 
@@ -69,7 +69,7 @@ class SearchController extends Controller
         $res = DB::table('user')
             ->select('user.*')
             ->leftJoin('application', 'application.account_id', '=', 'user.account_id')
-            ->where('name', 'like', '%' . Input::get('search') . '%')
+            ->where('name', 'like', '%' . $r->input('search') . '%')
             ->where(function (Builder $query) use ($corps, $adIds) {
                 $query
                     ->whereIn('user.corporation_id', $corps)

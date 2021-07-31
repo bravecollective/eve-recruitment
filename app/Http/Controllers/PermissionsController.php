@@ -3,14 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\CoreGroup;
-use App\Models\Permission\AccountRole;
 use App\Models\Permission\AutoRole;
 use App\Models\Permission\Role;
 use App\Models\Account;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Input;
 
 class PermissionsController extends Controller
 {
@@ -43,12 +41,12 @@ class PermissionsController extends Controller
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function saveAutoRoles()
+    public function saveAutoRoles(Request $r)
     {
         if (!Auth::user()->hasRole('admin'))
             return redirect('/')->with('error', 'Unauthorized');
 
-        $roles = Input::get('roles');
+        $roles = $r->input('roles');
 
         if (!$roles)
             die(json_encode(['success' => false, 'message' => 'No input fields can be blank']));
@@ -112,13 +110,13 @@ class PermissionsController extends Controller
     /**
      * Delete an auto role
      */
-    public function deleteAutoRole()
+    public function deleteAutoRole(Request $r)
     {
         if (!Auth::user()->hasRole('admin'))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
-        $group_id = Input::get('group_id');
-        $role_id = Input::get('role_id');
+        $group_id = $r->input('group_id');
+        $role_id = $r->input('role_id');
 
         if (!$group_id || !$role_id)
             die(json_encode(['success' => false, 'message' => 'Invalid input']));
@@ -165,13 +163,13 @@ class PermissionsController extends Controller
      *
      * @param $role
      */
-    public function saveUserRoles($role = 'admin')
+    public function saveUserRoles(Request $r, $role = 'admin')
     {
         if (!Auth::user()->hasRole($role))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
-        $user_id = Input::get('userid');
-        $roles = Input::get('roles');
+        $user_id = $r->input('userid');
+        $roles = $r->input('roles');
 
         if (!$user_id)
             die(json_encode(['success' => false, 'message' => 'User ID is required']));
@@ -198,12 +196,12 @@ class PermissionsController extends Controller
     /**
      * Load user permissions
      */
-    public function loadUserRoles()
+    public function loadUserRoles(Request $r)
     {
         if (!Auth::user()->hasRole('admin'))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
-        $user_id = Input::get('userid');
+        $user_id = $r->input('userid');
 
         $user = $this->getAccountWithScopes($user_id);
 

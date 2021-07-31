@@ -10,7 +10,6 @@ use App\Models\RecruitmentRequirement;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Input;
 
 class GroupAdController extends Controller
 {
@@ -131,9 +130,9 @@ class GroupAdController extends Controller
         ]);
     }
 
-    public function savePermissions()
+    public function savePermissions(Request $r)
     {
-        $ad_id = Input::get('ad_id');
+        $ad_id = $r->input('ad_id');
         $ad = RecruitmentAd::find($ad_id);
 
         if (!$ad)
@@ -149,9 +148,9 @@ class GroupAdController extends Controller
     /**
      * Get a user's permissions
      */
-    public function loadPermissions()
+    public function loadPermissions(Request $r)
     {
-        $ad_id = Input::get('ad_id');
+        $ad_id = $r->input('ad_id');
         $ad = RecruitmentAd::find($ad_id);
 
         if (!$ad)
@@ -160,7 +159,7 @@ class GroupAdController extends Controller
         if (!AccountRole::userCanEditAd('group', $ad_id))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
-        $user_id = Input::get('user_id');
+        $user_id = $r->input('user_id');
         $user = User::where('character_id', $user_id)->first();
 
         if (!$user)
