@@ -46,7 +46,7 @@ class CorpAdController extends Controller
         if (!AccountRole::userCanEditAd('corp', $ad->corp_id))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
-        (new PermissionsController())->saveUserRoles($ad->group_name . ' director');
+        (new PermissionsController())->saveUserRoles($r, $ad->group_name . ' director');
         die(json_encode(['success' => true, 'message' => 'Roles updated']));
     }
 

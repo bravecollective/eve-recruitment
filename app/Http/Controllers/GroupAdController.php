@@ -141,7 +141,7 @@ class GroupAdController extends Controller
         if (!AccountRole::userCanEditAd('group', $ad->id))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
-        (new PermissionsController())->saveUserRoles($ad->group_name . ' manager');
+        (new PermissionsController())->saveUserRoles($r, $ad->group_name . ' manager');
         die(json_encode(['success' => true, 'message' => 'Roles updated']));
     }
 
