@@ -4,6 +4,27 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * App\Models\RecruitmentRequirement
+ *
+ * @property int $id
+ * @property int $recruitment_id
+ * @property int $requirement_id
+ * @property int $type
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\RecruitmentAd $recruitmentAd
+ * @method static \Illuminate\Database\Eloquent\Builder|RecruitmentRequirement newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|RecruitmentRequirement newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|RecruitmentRequirement query()
+ * @method static \Illuminate\Database\Eloquent\Builder|RecruitmentRequirement whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RecruitmentRequirement whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RecruitmentRequirement whereRecruitmentId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RecruitmentRequirement whereRequirementId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RecruitmentRequirement whereType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RecruitmentRequirement whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class RecruitmentRequirement extends Model
 {
     protected $table = 'recruitment_requirement';

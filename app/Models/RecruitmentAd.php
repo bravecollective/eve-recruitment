@@ -6,6 +6,36 @@ use App\Models\Permission\AccountRole;
 use App\Models\Permission\Role;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * App\Models\RecruitmentAd
+ *
+ * @property int $id
+ * @property int|null $corp_id
+ * @property string $slug
+ * @property string $text
+ * @property int $created_by
+ * @property string|null $group_name
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int $allow_listing
+ * @property string|null $application_notification_url
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\RecruitmentRequirement[] $requirements
+ * @property-read int|null $requirements_count
+ * @method static \Illuminate\Database\Eloquent\Builder|RecruitmentAd newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|RecruitmentAd newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|RecruitmentAd query()
+ * @method static \Illuminate\Database\Eloquent\Builder|RecruitmentAd whereAllowListing($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RecruitmentAd whereApplicationNotificationUrl($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RecruitmentAd whereCorpId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RecruitmentAd whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RecruitmentAd whereCreatedBy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RecruitmentAd whereGroupName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RecruitmentAd whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RecruitmentAd whereSlug($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RecruitmentAd whereText($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RecruitmentAd whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class RecruitmentAd extends Model
 {
     protected $table = 'recruitment_ad';

@@ -5,6 +5,39 @@ namespace App\Models;
 use App\Connectors\CoreConnection;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * App\Models\User
+ *
+ * @property int $account_id
+ * @property int $character_id
+ * @property string $name
+ * @property int $corporation_id
+ * @property string $corporation_name
+ * @property int|null $alliance_id
+ * @property string|null $alliance_name
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int|null $core_account_id
+ * @property int $has_valid_token
+ * @property-read \App\Models\Account $account
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AccountGroup[] $groups
+ * @property-read int|null $groups_count
+ * @method static \Illuminate\Database\Eloquent\Builder|User newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|User newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|User query()
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereAccountId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereAllianceId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereAllianceName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereCharacterId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereCoreAccountId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereCorporationId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereCorporationName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereHasValidToken($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class User extends Model
 {
     protected $table = 'user';

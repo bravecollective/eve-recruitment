@@ -3,10 +3,24 @@
 namespace App\Models\Permission;
 
 use App\Models\AccountGroup;
-use App\Models\Permission\Role;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * App\Models\Permission\AutoRole
+ *
+ * @property int $core_group_id
+ * @property int $role_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @method static \Illuminate\Database\Eloquent\Builder|AutoRole newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AutoRole newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AutoRole query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AutoRole whereCoreGroupId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AutoRole whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AutoRole whereRoleId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AutoRole whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class AutoRole extends Model
 {
     protected $table = 'auto_role';
@@ -55,7 +69,7 @@ class AutoRole extends Model
         return AutoRole::where('core_group_id', $group_id)->where('role_id', $role_id)->first();
     }
 
-    protected function setKeysForSaveQuery(Builder $query)
+    protected function setKeysForSaveQuery($query)
     {
         $query->where('core_group_id', $this->getAttribute('core_group_id'))
             ->where('role_id', $this->getAttribute('role_id'));

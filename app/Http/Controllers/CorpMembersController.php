@@ -8,6 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 
+/**
+ * App\Http\Controllers\CorpMembersController
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder|CorpMembersController newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|CorpMembersController newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|CorpMembersController query()
+ * @mixin \Eloquent
+ */
 class CorpMembersController extends Model
 {
 

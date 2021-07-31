@@ -5,6 +5,29 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * App\Models\ApplicationChangelog
+ *
+ * @property int $id
+ * @property int $application_id
+ * @property int $account_id
+ * @property int $old_state
+ * @property int $new_state
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Account|null $account
+ * @method static \Illuminate\Database\Eloquent\Builder|ApplicationChangelog newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|ApplicationChangelog newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|ApplicationChangelog query()
+ * @method static \Illuminate\Database\Eloquent\Builder|ApplicationChangelog whereAccountId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ApplicationChangelog whereApplicationId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ApplicationChangelog whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ApplicationChangelog whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ApplicationChangelog whereNewState($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ApplicationChangelog whereOldState($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ApplicationChangelog whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class ApplicationChangelog extends Model
 {
     protected $table = 'application_changelog';

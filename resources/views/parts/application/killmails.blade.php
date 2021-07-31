@@ -18,7 +18,7 @@
             <td style="width: 1rem; padding-right: 0; text-align: right;">
                 @if($killmail->victim->alliance_name != null)
                     <img src="https://images.evetech.net/alliances/{{ $killmail->victim->alliance_id }}/logo?size=64" />
-                @else
+                @elseif($killmail->victim->corporation_name != null)
                     <img src="https://images.evetech.net/corporations/{{ $killmail->victim->corporation_id }}/logo?size=64" />
                 @endif
             </td>
@@ -33,7 +33,7 @@
             <td style="width: 1rem; padding-right: 0; text-align: right;">
                 @if($killmail->final_blow->alliance_name != null)
                     <img src="https://images.evetech.net/alliances/{{ $killmail->final_blow->alliance_id }}/logo?size=64" />
-                @else
+                @elseif($killmail->final_blow->corporation_name != null)
                     <img src="https://images.evetech.net/corporations/{{ $killmail->final_blow->corporation_id }}/logo?size=64" />
                 @endif
             </td>
@@ -41,8 +41,10 @@
                 {{ $killmail->final_blow->name }} ({{ count($killmail->attackers) }})<br />
                 @if($killmail->final_blow->alliance_name != null)
                     {{ $killmail->final_blow->alliance_name }}
-                @else
+                @elseif($killmail->final_blow->corporation_name != null)
                     {{ $killmail->final_blow->corporation_name }}
+                @else
+                    <i>Unknown</i>
                 @endif
             </td>
         </tr>

@@ -10,6 +10,24 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * App\Models\Permission\AccountRole
+ *
+ * @property int $account_id
+ * @property int $role_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int $set
+ * @method static Builder|AccountRole newModelQuery()
+ * @method static Builder|AccountRole newQuery()
+ * @method static Builder|AccountRole query()
+ * @method static Builder|AccountRole whereAccountId($value)
+ * @method static Builder|AccountRole whereCreatedAt($value)
+ * @method static Builder|AccountRole whereRoleId($value)
+ * @method static Builder|AccountRole whereSet($value)
+ * @method static Builder|AccountRole whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class AccountRole extends Model
 {
     protected $table = 'account_role';

@@ -5,6 +5,28 @@ namespace App\Models;
 use App\Models\Permission\HasPermissionTrait;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
+/**
+ * App\Models\Account
+ *
+ * @property int $id
+ * @property int $main_user_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int|null $core_account_id
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $characters
+ * @property-read int|null $characters_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Permission\Role[] $roles
+ * @property-read int|null $roles_count
+ * @method static \Illuminate\Database\Eloquent\Builder|Account newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Account newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Account query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Account whereCoreAccountId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Account whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Account whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Account whereMainUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Account whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class Account extends Authenticatable
 {
     use HasPermissionTrait;

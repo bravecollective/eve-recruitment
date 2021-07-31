@@ -5,6 +5,19 @@ namespace App\Models;
 use App\Connectors\CoreConnection;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * App\Models\AccountGroup
+ *
+ * @property int $account_id
+ * @property int $group_id
+ * @property-read \App\Models\User $user
+ * @method static \Illuminate\Database\Eloquent\Builder|AccountGroup newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AccountGroup newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AccountGroup query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AccountGroup whereAccountId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AccountGroup whereGroupId($value)
+ * @mixin \Eloquent
+ */
 class AccountGroup extends Model
 {
     protected $table = 'account_group';

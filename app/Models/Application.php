@@ -8,6 +8,32 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Maknz\Slack\Client;
 
+/**
+ * App\Models\Application
+ *
+ * @property int $id
+ * @property int $account_id
+ * @property int $recruitment_id
+ * @property int $status
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Account|null $account
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ApplicationChangelog[] $changelog
+ * @property-read int|null $changelog_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Comment[] $comments
+ * @property-read int|null $comments_count
+ * @property-read \App\Models\RecruitmentAd $recruitmentAd
+ * @method static \Illuminate\Database\Eloquent\Builder|Application newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Application newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Application query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Application whereAccountId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Application whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Application whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Application whereRecruitmentId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Application whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Application whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class Application extends Model
 {
     // Application states
