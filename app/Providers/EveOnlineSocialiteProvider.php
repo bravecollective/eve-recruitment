@@ -19,7 +19,7 @@ class EveOnlineSocialiteProvider extends AbstractProvider implements ProviderInt
     protected function getAuthUrl($state)
     {
         return $this->buildAuthUrlFromBase(
-            'https://login.eveonline.com/oauth/authorize', $state
+            'https://login.eveonline.com/v2/oauth/authorize', $state
         );
     }
 
@@ -30,7 +30,7 @@ class EveOnlineSocialiteProvider extends AbstractProvider implements ProviderInt
      */
     protected function getTokenUrl()
     {
-        return 'https://login.eveonline.com/oauth/token';
+        return 'https://login.eveonline.com/v2/oauth/token';
     }
 
     /**
