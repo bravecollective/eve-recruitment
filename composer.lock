@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "044cf03ce80afa0043ad10797178d1ea",
+    "content-hash": "8b0244ceb5dde134268bedf7b044c032",
     "packages": [
         {
             "name": "brick/math",
@@ -5025,29 +5025,29 @@
         },
         {
             "name": "tkhamez/swagger-eve-php",
-            "version": "4.0.1",
+            "version": "6.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tkhamez/swagger-eve-php.git",
-                "reference": "cfc2a7f220a6a448c88706defe9915122abf59a5"
+                "reference": "11f971c8286ecdca107fa023ccc9fbbb3940c59e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tkhamez/swagger-eve-php/zipball/cfc2a7f220a6a448c88706defe9915122abf59a5",
-                "reference": "cfc2a7f220a6a448c88706defe9915122abf59a5",
+                "url": "https://api.github.com/repos/tkhamez/swagger-eve-php/zipball/11f971c8286ecdca107fa023ccc9fbbb3940c59e",
+                "reference": "11f971c8286ecdca107fa023ccc9fbbb3940c59e",
                 "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
                 "ext-json": "*",
                 "ext-mbstring": "*",
-                "guzzlehttp/guzzle": "^6.2",
-                "php": ">=7.1"
+                "guzzlehttp/guzzle": "^6.2 || ^7.2",
+                "guzzlehttp/psr7": "^1.8",
+                "php": ">=7.2"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "~2.12",
-                "phpunit/phpunit": "^7.4",
-                "squizlabs/php_codesniffer": "~2.6"
+                "friendsofphp/php-cs-fixer": "^2.12",
+                "phpunit/phpunit": "^8.0 || ^9.0"
             },
             "type": "library",
             "autoload": {
@@ -5078,9 +5078,9 @@
             ],
             "support": {
                 "issues": "https://github.com/tkhamez/swagger-eve-php/issues",
-                "source": "https://github.com/tkhamez/swagger-eve-php/tree/4.0.1"
+                "source": "https://github.com/tkhamez/swagger-eve-php/tree/6.1.0"
             },
-            "time": "2020-10-16T17:42:08+00:00"
+            "time": "2021-07-19T18:27:30+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
