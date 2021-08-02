@@ -20,7 +20,8 @@
         "laravel/tinker": "^2.0",
         "maknz/slack": "^1.7",
         "symfony/yaml": "^5.3.6",
-        "tkhamez/swagger-eve-php": "^4.0"
+        "tkhamez/swagger-eve-php": "^4.0",
+        "ext-bz2": "*"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^2.8",
