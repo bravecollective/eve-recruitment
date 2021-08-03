@@ -81,3 +81,16 @@ table {
 .auto-roles-list-item:hover {
     background-color: #383838;
 }
+
+.pagination > li > a:focus,
+.pagination > li > a:hover,
+.pagination > li > span:focus,
+.pagination > li > span:hover {
+    color: #8e8e8e;
+}
+
+.page-link {
+    background-color: #212529 !important;
+    color: white;
+    border: none;
+}

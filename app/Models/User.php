@@ -3,7 +3,12 @@
 namespace App\Models;
 
 use App\Connectors\CoreConnection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * App\Models\User
@@ -15,27 +20,27 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $corporation_name
  * @property int|null $alliance_id
  * @property string|null $alliance_name
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property int|null $core_account_id
  * @property int $has_valid_token
- * @property-read \App\Models\Account $account
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AccountGroup[] $groups
+ * @property-read Account $account
+ * @property-read Collection|AccountGroup[] $groups
  * @property-read int|null $groups_count
- * @method static \Illuminate\Database\Eloquent\Builder|User newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|User newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|User query()
- * @method static \Illuminate\Database\Eloquent\Builder|User whereAccountId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereAllianceId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereAllianceName($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereCharacterId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereCoreAccountId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereCorporationId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereCorporationName($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereHasValidToken($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
+ * @method static Builder|User newModelQuery()
+ * @method static Builder|User newQuery()
+ * @method static Builder|User query()
+ * @method static Builder|User whereAccountId($value)
+ * @method static Builder|User whereAllianceId($value)
+ * @method static Builder|User whereAllianceName($value)
+ * @method static Builder|User whereCharacterId($value)
+ * @method static Builder|User whereCoreAccountId($value)
+ * @method static Builder|User whereCorporationId($value)
+ * @method static Builder|User whereCorporationName($value)
+ * @method static Builder|User whereCreatedAt($value)
+ * @method static Builder|User whereHasValidToken($value)
+ * @method static Builder|User whereName($value)
+ * @method static Builder|User whereUpdatedAt($value)
  * @mixin \Eloquent
  */
 class User extends Model
@@ -180,16 +185,16 @@ class User extends Model
     /**
      * Get the members of a corporation given the corporation's ID
      * @param $corpId int Corp ID to get members of
-     * @return User[]|null Corporation members
+     * @return LengthAwarePaginator Corporation members
      */
-    public static function getCorpMembers($corpId)
+    public static function getCorpMembers($corpId, $perPage = 50)
     {
-        return User::where('corporation_id', $corpId)->get();
+        return User::where('corporation_id', $corpId)->orderBy('name')->paginate($perPage);
     }
 
     /**
      * Entity relationship
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function groups()
     {

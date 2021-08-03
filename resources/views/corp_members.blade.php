@@ -9,6 +9,8 @@
         </p>
     @endforeach
 
+    {{ $corpMembers->links() }}
+
     <form action="/character/add" method="post">
         <hr>
         <h5>Add missing character from Core</h5>

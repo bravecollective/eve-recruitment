@@ -4,17 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\Permission\AccountRole;
 use App\Models\User;
+use Eloquent;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Config;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 /**
  * App\Http\Controllers\CorpMembersController
  *
- * @method static \Illuminate\Database\Eloquent\Builder|CorpMembersController newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|CorpMembersController newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|CorpMembersController query()
- * @mixin \Eloquent
+ * @method static Builder|CorpMembersController newModelQuery()
+ * @method static Builder|CorpMembersController newQuery()
+ * @method static Builder|CorpMembersController query()
+ * @mixin Eloquent
  */
 class CorpMembersController extends Model
 {
@@ -22,7 +25,7 @@ class CorpMembersController extends Model
     /**
      * Get a listing of corp members
      *
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
+     * @return Factory|RedirectResponse|View
      */
     public function viewCorpMembers($corp_id)
     {
