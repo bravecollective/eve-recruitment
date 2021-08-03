@@ -334,6 +334,16 @@ class AccountRole extends Model
         return AccountRole::where('account_id', Auth::user()->id)->whereIn('role_id', $role_ids->pluck('id')->toArray())->exists();
     }
 
+    /**
+     * Delete all roles from an account
+     *
+     * @param int $account_id Database account ID
+     */
+    public static function clearAccountRoles($account_id)
+    {
+        AccountRole::where('account_id', $account_id)->delete();
+    }
+
     protected function setKeysForSaveQuery($query)
     {
         $query->where('account_id', $this->getAttribute('account_id'))

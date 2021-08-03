@@ -8,6 +8,9 @@ use App\Models\Permission\AccountRole;
 use App\Models\Permission\AutoRole;
 use App\Models\Permission\Role;
 use App\Models\User;
+use Illuminate\Http\Client\Response;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Auth;
 use Socialite;
 
@@ -26,7 +29,7 @@ class AuthController extends Controller
     /**
      * Obtain the user information from Eve Online and core
      *
-     * @return Response
+     * @return Redirector|RedirectResponse
      */
     public function handleProviderCallback()
     {
@@ -34,6 +37,9 @@ class AuthController extends Controller
         $user = Socialite::driver('eveonline')->user();
         $core_users = CoreConnection::getCharactersForUser($user->id);
         $main = null;
+        $valid_roles = false;
+        $alliace_whitelist = explode(',', env('ALLIANCE_WHITELIST'));
+        $corporation_whitelist = explode(',', env('CORPORATION_WHITELIST'));
 
         if ($core_users == null)
             return redirect('/')->with('error', 'User does not exist in core');
@@ -43,7 +49,11 @@ class AuthController extends Controller
             if ($user->main == true)
                 $main = $user;
 
-            if ($user->validToken === false)
+            if (in_array($user->corporation->id, $corporation_whitelist) || ($user->corporation->alliance !== null &&
+                in_array($user->corporation->alliance->id, $alliace_whitelist)))
+                $valid_roles = true;
+
+            if ($user->validToken !== true)
                 return redirect('/')->with('error', 'One or more of your characters has an invalid ESI token in Core. Please re-authorize all of your characters.');
         }
 
@@ -73,6 +83,10 @@ class AuthController extends Controller
 
         // Assign auto roles
         AutoRole::assignAutoRoles($dbAccount);
+
+        // If none of the chars are in the alliance or corporation whitelist, drop roles
+        if (!$valid_roles)
+            AccountRole::clearAccountRoles($dbAccount->id);
 
         Auth::login($dbAccount);
 
