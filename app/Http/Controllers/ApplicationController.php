@@ -14,9 +14,20 @@ use App\Models\Permission\AccountRole;
 use App\Models\RecruitmentAd;
 use App\Models\RecruitmentRequirement;
 use App\Models\User;
+use Exception;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 use Maknz\Slack\Client;
+use Seat\Eseye\Exceptions\EsiScopeAccessDeniedException;
+use Seat\Eseye\Exceptions\InvalidAuthenticationException;
+use Seat\Eseye\Exceptions\InvalidContainerDataException;
+use Seat\Eseye\Exceptions\RequestFailedException;
+use Seat\Eseye\Exceptions\UriDataMissingException;
+use Swagger\Client\Eve\ApiException;
+use Throwable;
 
 class ApplicationController extends Controller
 {
@@ -25,8 +36,8 @@ class ApplicationController extends Controller
      * Load an application
      *
      * @param $id
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @return Factory|RedirectResponse|View
+     * @throws InvalidContainerDataException
      */
     function viewApplication($id)
     {
@@ -47,7 +58,7 @@ class ApplicationController extends Controller
             $sp = $esi->getSkillpoints();
             $isk = $esi->getWalletBalance();
             $titles = $esi->getTitles();
-        } catch(\Exception $e) {
+        } catch(Exception) {
             $sp = $isk = $titles = null;
         }
 
@@ -81,10 +92,13 @@ class ApplicationController extends Controller
      * View ESI for a corp member. The return value must be updated as viewApplication's return values are
      *
      * @param $char_id
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @return Factory|RedirectResponse|View
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws InvalidAuthenticationException
+     * @throws RequestFailedException
+     * @throws UriDataMissingException
+     * @throws ApiException
      */
     public function viewCharacterEsi($char_id)
     {
@@ -116,13 +130,13 @@ class ApplicationController extends Controller
             $sp = $esi->getSkillpoints();
             $isk = $esi->getWalletBalance();
             $titles = $esi->getTitles();
-        } catch(\Exception $e) {
+        } catch(Exception $e) {
             $sp = $isk = $titles = null;
         }
 
         try {
             $clones = $esi->getCloneInfo();
-        } catch(\Exception $e) {
+        } catch(Exception $e) {
             $clones = null;
         }
 
@@ -146,9 +160,9 @@ class ApplicationController extends Controller
      * Load application warnings
      *
      * @param $id
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Swagger\Client\Eve\ApiException
+     * @return RedirectResponse
+     * @throws InvalidContainerDataException
+     * @throws ApiException
      */
     public function loadWarnings($id)
     {
@@ -170,8 +184,8 @@ class ApplicationController extends Controller
      * Load character overview (used on the application page)
      *
      * @param $char_id
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Throwable
+     * @throws InvalidContainerDataException
+     * @throws Throwable
      */
     public function loadOverview($char_id)
     {
@@ -206,9 +220,9 @@ class ApplicationController extends Controller
      * Load user skills
      *
      * @param $char_id
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Swagger\Client\Eve\ApiException
-     * @throws \Throwable
+     * @throws InvalidContainerDataException
+     * @throws ApiException
+     * @throws Throwable
      */
     public function loadSkills($char_id)
     {
@@ -241,11 +255,11 @@ class ApplicationController extends Controller
      * Load user mail
      *
      * @param $char_id
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
-     * @throws \Swagger\Client\Eve\ApiException
-     * @throws \Throwable
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException
+     * @throws ApiException
+     * @throws Throwable
      */
     public function loadMail($char_id)
     {
@@ -263,7 +277,7 @@ class ApplicationController extends Controller
      * Load assets tab
      *
      * @param $char_id
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function loadAssets($char_id)
     {
@@ -280,7 +294,7 @@ class ApplicationController extends Controller
      * Load assets journal tab
      *
      * @param $char_id
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function loadJournal($char_id)
     {
@@ -297,9 +311,9 @@ class ApplicationController extends Controller
      * Load a user's market information
      *
      * @param $char_id
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Swagger\Client\Eve\ApiException
-     * @throws \Throwable
+     * @throws InvalidContainerDataException
+     * @throws ApiException
+     * @throws Throwable
      */
     public function loadMarket($char_id)
     {
@@ -317,11 +331,11 @@ class ApplicationController extends Controller
      * Load a user's notifications
      *
      * @param $char_id
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
-     * @throws \Swagger\Client\Eve\ApiException
-     * @throws \Throwable
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException
+     * @throws ApiException
+     * @throws Throwable
      */
     public function loadNotifications($char_id)
     {
@@ -334,6 +348,9 @@ class ApplicationController extends Controller
         die(json_encode(['success' => true, 'message' => $res]));
     }
 
+    /**
+     * @throws InvalidContainerDataException
+     */
     public function loadKillmails($char_id)
     {
         $this->checkPermissions($char_id);
@@ -349,11 +366,11 @@ class ApplicationController extends Controller
      * Load a user's contracts
      *
      * @param $char_id
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
-     * @throws \Swagger\Client\Eve\ApiException
-     * @throws \Throwable
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException
+     * @throws ApiException
+     * @throws Throwable
      */
     public function loadContracts($char_id)
     {
@@ -370,9 +387,9 @@ class ApplicationController extends Controller
      * Check if a user can fly a fit
      *
      * @param $char_id
-     * @throws \Seat\Eseye\Exceptions\EsiScopeAccessDeniedException
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
-     * @throws \Seat\Eseye\Exceptions\UriDataMissingException
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException|ApiException
      */
     public function checkFit(Request $r, $char_id)
     {
@@ -385,7 +402,7 @@ class ApplicationController extends Controller
 
         try {
             $itemIDs = EveFittingEFTParser::EveFittingRender($fit);
-        } catch(\Exception $e) {
+        } catch(Exception) {
             die(json_encode(['success' => false, 'message' => 'Invalid fit']));
         }
 
@@ -406,8 +423,10 @@ class ApplicationController extends Controller
     /**
      * Check if a character meets a skillplan
      *
+     * @param Request $r
      * @param $char_id
-     * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
+     * @throws ApiException
+     * @throws InvalidContainerDataException
      */
     public function checkSkillplan(Request $r, $char_id)
     {
@@ -479,6 +498,7 @@ class ApplicationController extends Controller
     /**
      * Update the state of an application
      *
+     * @param Request $r
      * @param $id
      */
     function updateState(Request $r, $id)
@@ -506,7 +526,7 @@ class ApplicationController extends Controller
      * View applications to a recruitment ad
      *
      * @param $id
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
+     * @return Factory|RedirectResponse|View
      */
     function viewApplications($id)
     {
@@ -538,6 +558,7 @@ class ApplicationController extends Controller
 
     /**
      * Load applications via ajax on tab change
+     * @param Request $r
      * @param $id
      */
     function loadAjaxApplications(Request $r, $id)
@@ -592,7 +613,7 @@ class ApplicationController extends Controller
      * Load an ad from the slug
      *
      * @param $slug
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
+     * @return Factory|RedirectResponse|View
      */
     public function loadAdBySlug($slug)
     {
@@ -674,7 +695,7 @@ class ApplicationController extends Controller
             try {
                 $client = new Client($app->recruitmentAd->application_notification_url);
                 $client->send("*Revoked Application* - " . $app->recruitmentAd->group_name . " \nCharacter: {$app->account->main()->name}\nURL: " . env('APP_URL', '') . "/application/{$app->id}");
-            } catch (\Exception $e) { }
+            } catch (Exception $e) { }
         }
 
         return redirect('/')->with('info', 'Application revoked');
