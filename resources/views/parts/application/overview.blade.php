@@ -44,6 +44,14 @@
                         <strong>Current Ship</strong>
                         {{ $character_info['current_ship'] }}
                     </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center bg-dark text-white">
+                        <strong>Last Login</strong>
+                        {{ $login_details['last_login']->format('Y-m-d H:i:s') }}
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center bg-dark text-white">
+                        <strong>Last Logout</strong>
+                        {{ $login_details['last_logout']->format('Y-m-d H:i:s') }}
+                    </div>
                 </ul>
                 <br />
                 <a href="https://zkillboard.com/character/{{ $character->character_id }}/" target=_blank class="btn btn-primary">zKillboard</a>

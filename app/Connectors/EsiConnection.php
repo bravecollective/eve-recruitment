@@ -103,6 +103,21 @@ class EsiConnection
     }
 
     /**
+     * Get the user's last login information
+     */
+    public function getLoginDetails() {
+        $model = new LocationApi($this->client, $this->config);
+
+        try {
+            $login_info = $model->getCharactersCharacterIdOnline($this->char_id, $this->char_id);
+        } catch(ApiException) {
+            return null;
+        }
+
+        return $login_info;
+    }
+
+    /**
      * Get a user's wallet balance
      *
      * @return string
@@ -113,7 +128,7 @@ class EsiConnection
 
         try {
             $balance = number_format($model->getCharactersCharacterIdWallet($this->char_id, $this->char_id));
-        } catch(ApiException $e) {
+        } catch(ApiException) {
             return null;
         }
 
@@ -125,7 +140,9 @@ class EsiConnection
      *
      * @return EsiResponse
      * @throws EsiScopeAccessDeniedException
+     * @throws InvalidAuthenticationException
      * @throws InvalidContainerDataException
+     * @throws RequestFailedException
      * @throws UriDataMissingException
      */
     public function getCorpHistory()

@@ -125,18 +125,19 @@ class ApplicationController extends Controller
         $deleted_chars = CoreConnection::getRemovedCharacters($char_id);
         $added_chars = CoreConnection::getAddedCharacters($char_id);
         $contacts = $esi->getContacts();
+        $login_details = $esi->getLoginDetails();
 
         try {
             $sp = $esi->getSkillpoints();
             $isk = $esi->getWalletBalance();
             $titles = $esi->getTitles();
-        } catch(Exception $e) {
+        } catch(Exception) {
             $sp = $isk = $titles = null;
         }
 
         try {
             $clones = $esi->getCloneInfo();
-        } catch(Exception $e) {
+        } catch(Exception) {
             $clones = null;
         }
 
@@ -152,6 +153,7 @@ class ApplicationController extends Controller
             'deleted_characters' => $deleted_chars,
             'added_characters' => $added_chars,
             'titles' => $titles,
+            'login_details' => $login_details,
             'userApplications' => Application::getUserApplicationsForRecruiter($char),
         ]);
     }
@@ -200,6 +202,7 @@ class ApplicationController extends Controller
         $contacts = $esi->getContacts();
         $deleted_chars = CoreConnection::getRemovedCharacters($char_id);
         $added_chars = CoreConnection::getAddedCharacters($char_id);
+        $login_details = $esi->getLoginDetails();
 
         $res = view('parts/application/overview', [
             'application' => true,
@@ -210,6 +213,7 @@ class ApplicationController extends Controller
             'corp_history' => $corp_history,
             'contacts' => $contacts,
             'deleted_characters' => $deleted_chars,
+            'login_details' => $login_details,
             'added_characters' => $added_chars,
         ])->render();
 
