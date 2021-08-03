@@ -320,7 +320,7 @@ class AccountRole extends Model
     public static function recruiterCanViewEsi($character_id)
     {
         $account = User::where('character_id', $character_id)->first()->account;
-        $open_ad_ids = Application::where('account_id', $account->id)->get();
+        $open_ad_ids = Application::where('account_id', $account->id)->where('status', '<>', Application::REVOKED)->get();
 
         if (!$open_ad_ids)
             return false;
