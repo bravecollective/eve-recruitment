@@ -105,7 +105,7 @@ class User extends Model
             $dbUser->character_id = $user->id;
             $dbUser->corporation_id = $user->corporation->id;
             $dbUser->corporation_name = $user->corporation->name;
-            $dbUser->has_valid_token = $user->validToken;
+            $dbUser->has_valid_token = ($user->validToken !== null) ? $user->validToken : false;
 
             if ($user->corporation->alliance !== null)
             {
