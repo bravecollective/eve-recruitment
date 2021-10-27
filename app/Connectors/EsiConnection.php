@@ -263,7 +263,6 @@ class EsiConnection
             'location' => $location,
             'birthday' => explode('T', $public_data->birthday)[0],
             'gender' => ucfirst($public_data->gender),
-            'ancestry' => $this->getAncestry($public_data->ancestry_id),
             'bloodline' => $this->getBloodline($public_data->bloodline_id),
             'race' => $this->getRace($public_data->race_id),
             'current_ship' => ($ship != null) ? $ship->getShipName() . " (" . $this->getTypeName($ship->getShipTypeId()) . ")" : null,

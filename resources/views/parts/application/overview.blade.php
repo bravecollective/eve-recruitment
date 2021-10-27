@@ -21,10 +21,6 @@
                         {{ $character_info['race'] }}
                     </div>
                     <div class="list-group-item d-flex justify-content-between align-items-center bg-dark text-white">
-                        <strong>Ancestry</strong>
-                        {{ $character_info['ancestry'] }}
-                    </div>
-                    <div class="list-group-item d-flex justify-content-between align-items-center bg-dark text-white">
                         <strong>Bloodline</strong>
                         {{ $character_info['bloodline'] }}
                     </div>
