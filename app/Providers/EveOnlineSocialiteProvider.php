@@ -1,6 +1,7 @@
 <?php
 namespace App\Providers;
 
+use Illuminate\Auth\AuthenticationException;
 use Laravel\Socialite\Two\ProviderInterface;
 use Laravel\Socialite\Two\AbstractProvider;
 use Laravel\Socialite\Two\User;
@@ -10,54 +11,58 @@ class EveOnlineSocialiteProvider extends AbstractProvider implements ProviderInt
 
     protected $scopeSeparator = ' ';
 
-    /**
-     * Get the authentication URL for the provider.
-     *
-     * @param  string $state
-     * @return string
-     */
-    protected function getAuthUrl($state)
+    protected function getAuthUrl($state): string
     {
         return $this->buildAuthUrlFromBase(
-            'https://login.eveonline.com/v2/oauth/authorize', $state
+            'https://login.eveonline.com/v2/oauth/authorize',
+            $state
         );
     }
 
-    /**
-     * Get the token URL for the provider.
-     *
-     * @return string
-     */
-    protected function getTokenUrl()
+    protected function getTokenUrl(): string
     {
         return 'https://login.eveonline.com/v2/oauth/token';
     }
 
-    /**
-     * Get the raw user for the given access token.
-     *
-     * @param  string $token
-     * @return array
-     */
-    protected function getUserByToken($token)
+    protected function getUserByToken($token): array
     {
-        $response = $this->getHttpClient()->get(
-            'https://login.eveonline.com/oauth/verify', [
-            'headers' => [
-                'Authorization' => 'Bearer ' . $token
-            ],
-        ]);
+        // TODO verify issuer, verify signature
 
-        return json_decode($response->getBody()->getContents(), true);
+        $payload = json_decode(
+            base64_decode(
+                str_replace(
+                    '_',
+                    '/',
+                    str_replace(
+                        '-',
+                        '+',
+                        explode('.', $token)[1]
+                    )
+                )
+            )
+        );
+
+        if ($payload->iss !== "login.eveonline.com") {
+            // Potential attack
+            throw new \Exception("Invalid JWT issuer");
+        }
+
+        $scopes = isset($payload->scp) ?
+            (is_string($payload->scp) ? $payload->scp : implode(' ', $payload->scp)) :
+            '';
+
+        return [
+            'CharacterID' => (int) str_replace('CHARACTER:EVE:', '', $payload->sub),
+            'CharacterName' => $payload->name,
+            'ExpiresOn' => gmdate('Y-m-d\TH:i:s', $payload->exp),
+            'Scopes' => $scopes,
+            #'TokenType' => 'Character',
+            'CharacterOwnerHash' => $payload->owner,
+            #'IntellectualProperty' => 'EVE',
+        ];
     }
 
-    /**
-     * Map the raw user array to a Socialite User instance.
-     *
-     * @param  array $user
-     * @return \Laravel\Socialite\Two\User
-     */
-    protected function mapUserToObject(array $user)
+    protected function mapUserToObject(array $user): User
     {
         return (new User)->setRaw($user)->map([
             'id' => $user['CharacterID'],
@@ -69,9 +74,8 @@ class EveOnlineSocialiteProvider extends AbstractProvider implements ProviderInt
 
     /**
      * @param string $code
-     * @return array
      */
-    protected function getTokenFields($code)
+    protected function getTokenFields($code): array
     {
         return array_merge(parent::getTokenFields($code), [
             'grant_type' => 'authorization_code',
