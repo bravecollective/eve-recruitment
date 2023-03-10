@@ -126,6 +126,7 @@ class GroupAdController extends Controller
         return view('ad_permissions', [
             'ad' => $ad,
             'recruiters' => RecruitmentAd::getRecruiters($ad_id),
+            'adminAccounts' => RecruitmentAd::getManagers($ad_id),
             'roles' => Role::where('recruitment_id', $ad_id)->get()
         ]);
     }

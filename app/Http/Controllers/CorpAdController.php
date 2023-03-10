@@ -31,6 +31,7 @@ class CorpAdController extends Controller
         return view('ad_permissions', [
             'ad' => $ad,
             'recruiters' => RecruitmentAd::getRecruiters($ad->id),
+            'adminAccounts' => RecruitmentAd::getDirectors($ad->id),
             'roles' => Role::where('recruitment_id', $ad->id)->get()
         ]);
     }

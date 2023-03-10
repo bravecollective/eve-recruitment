@@ -35,10 +35,27 @@
     @foreach($recruiters as $recruiter)
         <div class="row">
             <div class="col-auto">
-                <img src="https://image.eveonline.com/Character/{{ $recruiter->main_user_id }}_32.jpg" />
+                <img src="https://image.eveonline.com/Character/{{ $recruiter->main_user_id }}_32.jpg" alt=""/>
             </div>
             <div class="col-5">
                 {{ $recruiter->name }}
+            </div>
+        </div><br />
+    @endforeach
+    </div>
+    <div class="col-12 col-md-6 col-xl-2">
+        <div class="row">
+            <h2>
+                @if($ad->corp_id) Directors @else Managers @endif
+            </h2>
+        </div>
+    @foreach($adminAccounts as $adminAccount)
+        <div class="row">
+            <div class="col-auto">
+                <img src="https://image.eveonline.com/Character/{{ $adminAccount->main_user_id }}_32.jpg" alt=""/>
+            </div>
+            <div class="col-5">
+                {{ $adminAccount->name }}
             </div>
         </div><br />
     @endforeach

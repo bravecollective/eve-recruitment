@@ -40,20 +40,19 @@ class RecruitmentAd extends Model
 {
     protected $table = 'recruitment_ad';
 
-    /**
-     * Get the recruiters for a recruitment ad
-     *
-     * @param $ad_id
-     * @return mixed
-     */
     public static function getRecruiters($ad_id)
     {
-        $ad = RecruitmentAd::find($ad_id);
-        $role_id = Role::where('name', $ad->group_name . ' recruiter')->first()->id;
+        return self::getAdminsAccounts($ad_id, 'recruiter');
+    }
 
-        return AccountRole::join('account', 'account_role.account_id', '=', 'account.id')
-            ->join('user', 'user.character_id', '=', 'account.main_user_id')
-            ->where('role_id', $role_id)->get();
+    public static function getManagers($ad_id)
+    {
+        return self::getAdminsAccounts($ad_id, 'manager');
+    }
+
+    public static function getDirectors($ad_id)
+    {
+        return self::getAdminsAccounts($ad_id, 'director');
     }
 
     /**
@@ -64,5 +63,21 @@ class RecruitmentAd extends Model
     public function requirements()
     {
         return $this->hasMany('App\Models\RecruitmentRequirement', 'recruitment_id');
+    }
+
+    /**
+     * Get the recruiters for a recruitment ad
+     *
+     * @param $ad_id
+     * @return mixed
+     */
+    private static function getAdminsAccounts($ad_id, string $role)
+    {
+        $ad = RecruitmentAd::find($ad_id);
+        $role_id = Role::where('name', "$ad->group_name $role")->first()->id;
+
+        return AccountRole::join('account', 'account_role.account_id', '=', 'account.id')
+            ->join('user', 'user.character_id', '=', 'account.main_user_id')
+            ->where('role_id', $role_id)->get();
     }
 }
