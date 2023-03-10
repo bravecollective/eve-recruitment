@@ -32,7 +32,8 @@ class CorpAdController extends Controller
             'ad' => $ad,
             'recruiters' => RecruitmentAd::getRecruiters($ad->id),
             'adminAccounts' => RecruitmentAd::getDirectors($ad->id),
-            'roles' => Role::where('recruitment_id', $ad->id)->get()
+            'roles' => Role::where('recruitment_id', $ad->id)->get(),
+            'autoRoles' => RecruitmentAd::getAutoRoles($ad->id),
         ]);
     }
 

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Permission\AccountRole;
+use App\Models\Permission\AutoRole;
 use App\Models\Permission\Role;
 use Illuminate\Database\Eloquent\Model;
 
@@ -53,6 +54,44 @@ class RecruitmentAd extends Model
     public static function getDirectors($ad_id)
     {
         return self::getAdminsAccounts($ad_id, 'director');
+    }
+
+    public static function getAutoRoles($adId)
+    {
+        $data = [];
+
+        $roleIds = [];
+        foreach (Role::where('recruitment_id', $adId)->get() as $role) {
+            $roleIds[] = $role['id'];
+            $data[$role['id']] = [
+                'roleId' => $role['id'],
+                'roleName' => $role['name'],
+                'coreGroups' => [],
+            ];
+        }
+
+        $coreGroupIds = [];
+        foreach (AutoRole::whereIn('role_id', $roleIds)->get() as $autoRole) {
+            $coreGroupIds[] = $autoRole['core_group_id'];
+            $data[$autoRole['role_id']]['coreGroups'][$autoRole['core_group_id']] = [
+                'id' => $autoRole['core_group_id'],
+                'name' => null,
+            ];
+        }
+
+        foreach (CoreGroup::whereIn('id', $coreGroupIds)->get() as $coreGroup) {
+            foreach ($data as $roleId => $roleData) {
+                if (isset($roleData['coreGroups'][$coreGroup['id']])) {
+                    $data[$roleId]['coreGroups'][$coreGroup['id']]['name'] = $coreGroup['name'];
+                }
+            }
+        }
+
+        // remove keys and return
+        return array_values(array_map(function ($role) {
+            $role['coreGroups'] = array_values($role['coreGroups']);
+            return $role;
+        }, $data));
     }
 
     /**

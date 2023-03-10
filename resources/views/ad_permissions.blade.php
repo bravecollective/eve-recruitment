@@ -27,6 +27,26 @@
                 </div>
             </div>
         @endforeach
+
+        <br>
+        <div class="row">
+            <h5>Auto Roles</h5>
+        </div>
+        @foreach($autoRoles as $autoRole)
+            <div class="row">
+                <div class="col">
+                    {{ $autoRole['roleName'] }}:
+                    @if (empty($autoRole['coreGroups']))
+                        <small>(no groups configured)</small>
+                    @endif
+                    <ul>
+                        @foreach($autoRole['coreGroups'] as $coreGroups)
+                            <li>{{ $coreGroups['name'] }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        @endforeach
     </div>
     <div class="col-12 col-md-6 col-xl-2">
         <div class="row">
