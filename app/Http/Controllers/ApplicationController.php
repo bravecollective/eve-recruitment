@@ -74,7 +74,6 @@ class ApplicationController extends Controller
         }
 
         $tooltips = implode("<br>", $tooltips);
-
         return view('application', [
             'alts' => $application->account->alts(),
             'character' => $application->account->main(),
