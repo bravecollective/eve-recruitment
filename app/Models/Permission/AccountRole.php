@@ -208,10 +208,6 @@ class AccountRole extends Model
             $ads[] = $ad;
         }
 
-        $owned_ads = RecruitmentAd::where('created_by', Auth::user()->id)->where('corp_id', null)->get();
-        foreach ($owned_ads as $ad)
-            $ads[] = $ad;
-
         // array_unique is needed to avoid returning duplicates when the user has both director and recruiter permissions
         return array_unique($ads, SORT_REGULAR);
     }
@@ -248,7 +244,7 @@ class AccountRole extends Model
 
                 $role_id = $role_id->id;
                 $role = AccountRole::where('account_id', Auth::user()->id)->where('role_id', $role_id)->first();
-                return ($group_ad->created_by == Auth::user()->id || !!$role);
+                return !!$role;
             default:
                 break;
         }
