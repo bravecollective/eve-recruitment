@@ -5,7 +5,7 @@
 1. Copy `.env.example` to `.env`
 1. Assign values in `.env`
 1. Point webserver to `/public` directory
-1. If desired, replace `invTypes.sql` and `invGroups.sql` in `database/dumps`
+1. If desired, replace `invTypes.sql` and `invGroups.sql` in `database/dumps` (from https://www.fuzzwork.co.uk/dump/)
 1. Run migrations: `php artisan migrate`
 1. Update `config/constants.php` to include any additional permissions
 1. Run database seeder: `php artisan db:seed`
