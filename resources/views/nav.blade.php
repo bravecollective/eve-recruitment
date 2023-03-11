@@ -20,7 +20,8 @@
                 <form class="form-inline mb-0" method="POST" action="/character/search">
                     <div class="input-group">
                         <input type="hidden" name="_token" value="{{ csrf_token() }}" />
-                        <input class="form-control" name="search" type="text" placeholder="Character search..." />
+                        <input class="form-control" name="search" type="text" required minlength="3"
+                               placeholder="Character search..." />
                         <div class="input-group-append">
                             <button type="submit" class="btn btn-outline-secondary"><span class="fa fa-search"></span></button>
                         </div>

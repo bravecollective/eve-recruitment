@@ -10,7 +10,6 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Input;
 
 class SearchController extends Controller
 {
@@ -38,6 +37,11 @@ class SearchController extends Controller
      */
     public function navbarCharacterSearch(Request $r)
     {
+        $search = trim($r->input('search'));
+        if (strlen($search) < 3) {
+            return view('search_results', ['results' => []]);
+        }
+
         $user = Auth::user();
 
         if (!$user->hasRole('admin') && !$user->hasRoleLike('%recruiter') && !$user->hasRoleLike('%director'))
@@ -69,7 +73,7 @@ class SearchController extends Controller
         $res = DB::table('user')
             ->select('user.*')
             ->leftJoin('application', 'application.account_id', '=', 'user.account_id')
-            ->where('name', 'like', '%' . $r->input('search') . '%')
+            ->where('name', 'like', '%' . $search . '%')
             ->where(function (Builder $query) use ($corps, $adIds) {
                 $query
                     ->whereIn('user.corporation_id', $corps)
