@@ -238,15 +238,15 @@
             @foreach($contacts as $contact)
                 @switch($contact->getContactType())
                     @case("character")
-                    @php($evewho_link = "https://evewho.com/pilot/" . str_replace(' ', '+', $contact->contact_name))
+                    @php($evewho_link = "https://evewho.com/character/" . $contact->getContactId())
                     @php($img_link = "https://image.eveonline.com/Character/" . $contact->getContactId() . "_64.jpg")
                     @break
                     @case("corporation")
-                    @php($evewho_link = "https://evewho.com/corp/" . str_replace(' ', '+', $contact->contact_name))
+                    @php($evewho_link = "https://evewho.com/corporation/" . $contact->getContactId())
                     @php($img_link = "https://image.eveonline.com/Corporation/" . $contact->getContactId() . "_64.png")
                     @break
                     @case("alliance")
-                    @php($evewho_link = "https://evewho.com/alli/" . str_replace(' ', '+', $contact->contact_name))
+                    @php($evewho_link = "https://evewho.com/alliance/" . $contact->getContactId())
                     @php($img_link = "https://image.eveonline.com/Alliance/" . $contact->getContactId() . "_64.png")
                     @break
                     @case("faction")
