@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Connectors\CoreConnection;
+use App\Connectors\SlackClient;
 use App\Models\Account;
 use App\Models\Application;
 use App\Models\ApplicationChangelog;
@@ -20,7 +21,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
-use Maknz\Slack\Client;
 use Seat\Eseye\Exceptions\EsiScopeAccessDeniedException;
 use Seat\Eseye\Exceptions\InvalidAuthenticationException;
 use Seat\Eseye\Exceptions\InvalidContainerDataException;
@@ -696,7 +696,7 @@ class ApplicationController extends Controller
         if ($app->recruitmentAd->application_notification_url !== null)
         {
             try {
-                $client = new Client($app->recruitmentAd->application_notification_url);
+                $client = new SlackClient($app->recruitmentAd->application_notification_url);
                 $client->send("*Revoked Application* - " . $app->recruitmentAd->group_name . " \nCharacter: {$app->account->main()->name}\nURL: " . env('APP_URL', '') . "/application/{$app->id}");
             } catch (Exception $e) { }
         }

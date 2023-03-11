@@ -3,10 +3,10 @@
 namespace App\Models;
 
 use App\Connectors\EsiConnection;
+use App\Connectors\SlackClient;
 use App\Models\Permission\AccountRole;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
-use Maknz\Slack\Client;
 
 /**
  * App\Models\Application
@@ -161,7 +161,7 @@ class Application extends Model
         if ($dbApp->recruitmentAd->application_notification_url !== null)
         {
             try {
-                $client = new Client($dbApp->recruitmentAd->application_notification_url);
+                $client = new SlackClient($dbApp->recruitmentAd->application_notification_url);
                 $client->send("*New Application* - " . $dbApp->recruitmentAd->group_name . "\nCharacter: {$dbApp->account->main()->name}\nURL: " . env('APP_URL', '') . "/application/{$dbApp->id}");
             } catch (\Exception $e) { }
         }
