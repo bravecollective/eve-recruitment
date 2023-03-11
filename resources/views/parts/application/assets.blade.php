@@ -18,11 +18,11 @@
                         </div>
                         <div id="children-{{ $location_info['id'] }}" class="collapse" aria-labelledby="parent-{{ $location_info['id'] }}" data-parent="#top-level-accordian">
                             <div class="list-group">
-                            @foreach($location_info['containers'] as $asset)
-                                @include('parts/application/asset_location', ['asset' => $asset])
+                            @foreach($location_info['containers'] as $key => $asset)
+                                @include('parts/application/asset_location', ['asset' => $asset, 'key' => $key])
                             @endforeach
                             @foreach($location_info['items'] as $asset)
-                                @include('parts/application/asset_location', ['asset' => $asset])
+                                @include('parts/application/asset_location', ['asset' => $asset, 'key' => $key])
                             @endforeach
                             </div>
                         </div>
