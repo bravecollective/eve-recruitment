@@ -128,7 +128,7 @@ class CorpAdController extends Controller
         if (!$dbAd)
             die(json_encode(['success' => false, 'message' => 'Invalid question ID']));
 
-        if ($dbAd->corp_id == null && $dbAd->created_by != Auth::user()->id)
+        if ($dbAd->corp_id == null && !Auth::user()->hasRole('group admin'))
             die(json_encode(['success' => false, 'message' => 'Unauthorized']));
 
         $corp_name = ($dbAd->corp_id != null) ? User::where('corporation_id', $dbAd->corp_id)->first()->coropration_name : null;
