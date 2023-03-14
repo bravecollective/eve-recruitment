@@ -1,5 +1,10 @@
 # EVE Online Recruitment App
 
+## Requirements
+- A [Neucore](https://github.com/tkhamez/neucore) installation.
+- Webserver with PHP 8.
+- A MariaDB/MySQL database.
+
 ## Deployment
 1. Install requirements: `composer install`
 1. Copy `.env.example` to `.env`
@@ -16,7 +21,8 @@
 
 ## Roles
 Each recruitment ad (either corporation or group) has two roles associated with it: `{name} recruiter`, and `{name}
-director`. The former allows seeing corp members (for corps), and applications. The latter allows managing the ad.
+director` or `{name} manager`. The former allows seeing corp members (for corps), and applications. The latter 
+allows managing the ad.
 
 The role `admin` is incredibly powerful, and can assign any role to any character registered on the website.
 The role `group admin` allows creation of group ads.
