@@ -21,7 +21,7 @@
                             @foreach($location_info['containers'] as $key => $asset)
                                 @include('parts/application/asset_location', ['asset' => $asset, 'key' => $key])
                             @endforeach
-                            @foreach($location_info['items'] as $asset)
+                            @foreach($location_info['items'] as $key => $asset)
                                 @include('parts/application/asset_location', ['asset' => $asset, 'key' => $key])
                             @endforeach
                             </div>
