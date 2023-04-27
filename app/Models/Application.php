@@ -300,7 +300,6 @@ class Application extends Model
             self::DENIED,
             self::ON_HOLD,
             self::REVIEW_REQUESTED,
-            self::TRIAL,
             self::OPEN,
             self::IN_PROGRESS,
         ];
