@@ -35,4 +35,4 @@ networks:
   recruitment:
     name: recruitment_dev
     #external:
-    #  name: neucore_dev
+      #name: neucore_dev # Provided by https://github.com/tkhamez/neucore, CORE_URL = http://neucore_dev_http
