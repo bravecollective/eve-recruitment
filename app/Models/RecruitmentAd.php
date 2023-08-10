@@ -56,6 +56,9 @@ class RecruitmentAd extends Model
         return self::getAdminsAccounts($ad_id, 'director');
     }
 
+    /**
+     * Returns all roles for the advert with Neucore groups for auto-assignment.
+     */
     public static function getAutoRoles($adId)
     {
         $data = [];

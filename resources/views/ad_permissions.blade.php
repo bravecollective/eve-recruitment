@@ -1,5 +1,13 @@
 @extends('default')
 @section('content')
+
+@php
+/* @var array $autoRoles */
+$autoRoleIds = array_map(function (array $autoRole) {
+     return !empty($autoRole['coreGroups']) ? $autoRole['roleId'] : null;
+ }, $autoRoles);
+@endphp
+
 <h1>{{ $ad->group_name }} Permissions</h1>
 <div class="row">
     <div class="col-12 col-md-6 col-xl-4">
@@ -22,7 +30,8 @@
         @foreach($roles as $role)
             <div class="role row" style="margin-left: 0.1em;">
                 <div class="col-8 form-check form-check-inline">
-                    <input autocomplete="off" type="checkbox" class="form-check-input role-checkbox" id="{{ $role->id }}" />
+                    <input autocomplete="off" type="checkbox" class="form-check-input role-checkbox"
+                           id="{{ $role->id }}" {{ in_array($role->id, $autoRoleIds) ? 'disabled' : '' }} />
                     <label class="text-white form-check-label" for="{{ $role->id }}">{{ $role->name }}</label>
                 </div>
             </div>
