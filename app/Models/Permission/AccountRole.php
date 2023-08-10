@@ -286,13 +286,16 @@ class AccountRole extends Model
     }
 
     /**
-     * Delete permissions that aren't persistent
+     * Delete permissions that aren't persistent and roles that are currently auto-assigned.
      *
      * @param $account_id
      */
     public static function deleteNotPersistentRoles($account_id)
     {
         AccountRole::where('account_id', $account_id)->where('set', 0)->delete();
+
+        $roleIds = AutoRole::select('role_id')->distinct()->get()->pluck('role_id')->toArray();
+        AccountRole::where('account_id', $account_id)->whereIn('role_id', $roleIds)->delete();
     }
 
     /**
