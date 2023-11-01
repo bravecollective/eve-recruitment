@@ -1,7 +1,6 @@
 <?php
 namespace App\Providers;
 
-use Illuminate\Auth\AuthenticationException;
 use Laravel\Socialite\Two\ProviderInterface;
 use Laravel\Socialite\Two\AbstractProvider;
 use Laravel\Socialite\Two\User;
@@ -24,10 +23,11 @@ class EveOnlineSocialiteProvider extends AbstractProvider implements ProviderInt
         return 'https://login.eveonline.com/v2/oauth/token';
     }
 
+    /**
+     * @throws \Exception
+     */
     protected function getUserByToken($token): array
     {
-        // TODO verify issuer, verify signature
-
         $payload = json_decode(
             base64_decode(
                 str_replace(
@@ -42,7 +42,7 @@ class EveOnlineSocialiteProvider extends AbstractProvider implements ProviderInt
             )
         );
 
-        if ($payload->iss !== "login.eveonline.com") {
+        if ($payload->iss !== "https://login.eveonline.com") {
             // Potential attack
             throw new \Exception("Invalid JWT issuer");
         }
