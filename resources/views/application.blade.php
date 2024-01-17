@@ -138,7 +138,7 @@
     <div class="col-auto">
         <button type="button" class="btn btn-primary" id="load-esi-button" onclick="loadEsiData();">Load ESI Data</button>
     </div>
-@if(\Illuminate\Support\Facades\Auth::user()->hasRole('admin') && isset($application))
+@if((Auth::user()->hasRole('admin') || Auth::user()->hasRole('supervisor')) && isset($application))
     <div class="col-auto">
         <button type="button" class="btn btn-danger" id="load-esi-button" onclick="deleteApplication();">Delete Application</button>
     </div>
@@ -545,7 +545,7 @@
 
             return false;
         }
-    @if(\Illuminate\Support\Facades\Auth::user()->hasRole('admin') && isset($application))
+    @if((Auth::user()->hasRole('admin') || Auth::user()->hasRole('supervisor')) && isset($application))
         function deleteApplication()
     {
         if (confirm('Are you sure?'))

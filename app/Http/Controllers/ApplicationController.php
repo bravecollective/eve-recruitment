@@ -707,7 +707,7 @@ class ApplicationController extends Controller
     public function deleteApplication($application_id)
     {
         $app = Application::find($application_id);
-        if (!Auth::user()->hasRole('admin'))
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->hasRole('supervisor'))
             return redirect('/')->with('error', 'Unauthorized');
         else if (!$app)
             return redirect('/')->with('error', 'Invalid application ID');
@@ -718,14 +718,14 @@ class ApplicationController extends Controller
 
     public function applicationGenerator()
     {
-        if (!Auth::user()->hasRole('admin'))
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->hasRole('supervisor'))
             return redirect('/')->with('error', 'Unauthorized');
 
         return view('application_generator', ['groups' => RecruitmentAd::all()->sortBy('group_name')]);
     }
 
     public function createApplication(Request $r) {
-        if (!Auth::user()->hasRole('admin'))
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->hasRole('supervisor'))
             return redirect('/')->with('error', 'Unauthorized');
 
         $user_id = $r->input('char_id');

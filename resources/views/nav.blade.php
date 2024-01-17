@@ -89,19 +89,21 @@
                 </div>
             </li>
             @endif
-            @role('admin')
+            @if(Auth::user()->hasRole('admin') || Auth::user()->hasRole('supervisor'))
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="admin_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Admin
                 </a>
                 <div class="dropdown-menu" aria-labelledby="admin_dropdown">
+                    @role('admin')
                     <a class="dropdown-item" href="/admin/roles">Global Roles</a>
                     <a class="dropdown-item" href="/admin/roles/auto">Auto Assigned Roles</a>
                     <a class="dropdown-item" href="/admin/coregroups">Known Core Groups</a>
+                    @endrole
                     <a class="dropdown-item" href="/admin/generator">Application Generator</a>
                 </div>
             </li>
-            @endrole
+            @endif
             <li class="divider-vertical"></li>
             <li class="nav-item">
                 <span class="navbar-brand">
