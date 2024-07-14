@@ -1264,9 +1264,6 @@ class EsiConnection
      *
      * @param $race_id
      * @return mixed
-     * @throws EsiScopeAccessDeniedException
-     * @throws InvalidContainerDataException
-     * @throws UriDataMissingException
      */
     public function getRace($race_id)
     {
@@ -1276,7 +1273,12 @@ class EsiConnection
             $races = Cache::get($cache_key);
         else
         {
-            $res = $this->eseye->invoke('get', '/universe/races');
+            try {
+                $res = $this->eseye->invoke('get', '/universe/races');
+            } catch (Exception $e) {
+                Log::error('EsiConnection->getRace(): ' . $e->getMessage());
+                $res = (object)['raw' => '[]'];
+            }
             $races = json_decode($res->raw);
             Cache::add($cache_key, $races, env('CACHE_TIME', 3264));
         }
