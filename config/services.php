@@ -44,6 +44,11 @@ return [
         'client_id' => env('EVEONLINE_CLIENT_ID'),
         'client_secret' => env('EVEONLINE_CLIENT_SECRET'),
         'redirect' => env('EVEONLINE_REDIRECT'),
+        'token_url' => env('EVEONLINE_TOKEN_URL', 'https://login.eveonline.com/v2/oauth/token'),
+        'esi_domain' => env('EVEONLINE_ESI_DOMAIN', 'esi.evetech.net'),
     ],
 
+    'slack' => [
+        'hooks_domain' => env('SLACK_HOOKS_DOMAIN', 'hooks.slack.com'),
+    ],
 ];

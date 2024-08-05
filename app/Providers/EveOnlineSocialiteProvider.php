@@ -1,6 +1,7 @@
 <?php
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Config;
 use Laravel\Socialite\Two\ProviderInterface;
 use Laravel\Socialite\Two\AbstractProvider;
 use Laravel\Socialite\Two\User;
@@ -20,7 +21,7 @@ class EveOnlineSocialiteProvider extends AbstractProvider implements ProviderInt
 
     protected function getTokenUrl(): string
     {
-        return 'https://login.eveonline.com/v2/oauth/token';
+        return (string)Config::get('services.eveonline.token_url');
     }
 
     /**

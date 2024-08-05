@@ -2,13 +2,19 @@
 
 namespace App\Connectors;
 
+use Illuminate\Support\Facades\Config;
+
 class SlackClient
 {
     private string $endpoint;
 
     public function __construct(string $endpoint)
     {
-        $this->endpoint = $endpoint;
+        $this->endpoint = str_replace(
+            'hooks.slack.com',
+            Config::get('services.slack.hooks_domain'),
+            $endpoint
+        );
     }
 
     public function send(string $text): void

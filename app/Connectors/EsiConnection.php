@@ -7,6 +7,7 @@ use App\Models\User;
 use DateTime;
 use Exception;
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Seat\Eseye\Containers\EsiResponse;
 use Seat\Eseye\Exceptions\EsiScopeAccessDeniedException;
@@ -94,6 +95,7 @@ class EsiConnection
         $eseye_config = \Seat\Eseye\Configuration::getInstance();
         $eseye_config->logfile_location = storage_path() . '/logs';
         $eseye_config->file_cache_location = storage_path() . '/framework/cache';
+        $eseye_config->esi_host = Config::get('services.eveonline.esi_domain');
 
         $this->eseye = new Eseye();
         $this->config = $config;
