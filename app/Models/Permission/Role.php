@@ -76,13 +76,13 @@ class Role extends Model
      */
     public static function createDirectorRoles($account)
     {
-        $alliace_whitelist = explode(',', config('eve-recruitment.alliance_whitelist'));
+        $alliance_whitelist = explode(',', config('eve-recruitment.alliance_whitelist'));
         $corporation_whitelist = explode(',', config('eve-recruitment.corporation_whitelist'));
         $characters = $account->characters;
 
         foreach ($characters as $character)
         {
-            if (!in_array($character->alliance_id, $alliace_whitelist) && !in_array($character->corporation_id, $corporation_whitelist))
+            if (!in_array($character->alliance_id, $alliance_whitelist) && !in_array($character->corporation_id, $corporation_whitelist))
                 continue;
 
             $role = Role::where('name', $character->corporation_name . " director")->where('slug', 'director')->first();
