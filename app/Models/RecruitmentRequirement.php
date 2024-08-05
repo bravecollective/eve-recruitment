@@ -119,8 +119,8 @@ class RecruitmentRequirement extends Model
     public static function getPossibleRequirements($id = -1)
     {
         $output = [];
-        $alliance_whitelist = explode(',', env('ALLIANCE_WHITELIST'));
-        $corporation_whitelist = explode(',', env('CORPORATION_WHITELIST'));
+        $alliance_whitelist = explode(',', config('eve-recruitment.alliance_whitelist'));
+        $corporation_whitelist = explode(',', config('eve-recruitment.corporation_whitelist'));
         $core_groups = CoreGroup::all();
         $alliances = User::select(['alliance_id', 'alliance_name'])->whereIn('alliance_id', $alliance_whitelist)->groupBy(['alliance_id', 'alliance_name'])->get();
         $corporations1 = User::select(['corporation_id', 'corporation_name'])->whereIn('alliance_id', $alliance_whitelist)->groupBy(['corporation_id', 'corporation_name'])->get();

@@ -76,8 +76,8 @@ class Role extends Model
      */
     public static function createDirectorRoles($account)
     {
-        $alliace_whitelist = explode(',', env('ALLIANCE_WHITELIST'));
-        $corporation_whitelist = explode(',', env('CORPORATION_WHITELIST'));
+        $alliace_whitelist = explode(',', config('eve-recruitment.alliance_whitelist'));
+        $corporation_whitelist = explode(',', config('eve-recruitment.corporation_whitelist'));
         $characters = $account->characters;
 
         foreach ($characters as $character)

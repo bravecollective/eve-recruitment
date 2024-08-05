@@ -162,7 +162,7 @@ class Application extends Model
         {
             try {
                 $client = new SlackClient($dbApp->recruitmentAd->application_notification_url);
-                $client->send("*New Application* - " . $dbApp->recruitmentAd->group_name . "\nCharacter: {$dbApp->account->main()->name}\nURL: " . env('APP_URL', '') . "/application/{$dbApp->id}");
+                $client->send("*New Application* - " . $dbApp->recruitmentAd->group_name . "\nCharacter: {$dbApp->account->main()->name}\nURL: " . config('app.url') . "/application/{$dbApp->id}");
             } catch (\Exception $e) { }
         }
 
