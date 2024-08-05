@@ -38,8 +38,8 @@ class AuthController extends Controller
         $core_users = CoreConnection::getCharactersForUser($user->id);
         $main = null;
         $valid_roles = false;
-        $alliace_whitelist = explode(',', env('ALLIANCE_WHITELIST'));
-        $corporation_whitelist = explode(',', env('CORPORATION_WHITELIST'));
+        $alliance_whitelist = explode(',', config('eve-recruitment.alliance_whitelist'));
+        $corporation_whitelist = explode(',', config('eve-recruitment.corporation_whitelist'));
 
         if ($core_users == null)
             return redirect('/')->with('error', 'User does not exist in core');
@@ -50,7 +50,7 @@ class AuthController extends Controller
                 $main = $user;
 
             if (in_array($user->corporation->id, $corporation_whitelist) || ($user->corporation->alliance !== null &&
-                in_array($user->corporation->alliance->id, $alliace_whitelist)))
+                in_array($user->corporation->alliance->id, $alliance_whitelist)))
                 $valid_roles = true;
 
             if ($user->validToken !== true)

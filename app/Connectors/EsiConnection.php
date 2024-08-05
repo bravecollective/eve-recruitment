@@ -89,8 +89,8 @@ class EsiConnection
     public function __construct($char_id)
     {
         $config = new Configuration();
-        $config->setHost(env('CORE_URL') . '/api/app/v1/esi');
-        $config->setAccessToken(base64_encode(env('CORE_APP_ID') . ':' . env('CORE_APP_SECRET')));
+        $config->setHost(config('eve-recruitment.core_url') . '/api/app/v1/esi');
+        $config->setAccessToken(base64_encode(config('eve-recruitment.core_app_id') . ':' . config('eve-recruitment.core_app_secret')));
 
         $eseye_config = \Seat\Eseye\Configuration::getInstance();
         $eseye_config->logfile_location = storage_path() . '/logs';

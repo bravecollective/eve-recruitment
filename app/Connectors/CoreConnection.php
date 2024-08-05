@@ -14,9 +14,9 @@ class CoreConnection
     private static function generateWebRequest($url, $post = false)
     {
         $c = curl_init();
-        $headers = ['Authorization: Bearer ' . base64_encode(env('CORE_APP_ID') . ':' . env('CORE_APP_SECRET'))];
+        $headers = ['Authorization: Bearer ' . base64_encode(config('eve-recruitment.core_app_id') . ':' . config('eve-recruitment.core_app_secret'))];
 
-        curl_setopt($c, CURLOPT_URL, env('CORE_URL') . $url);
+        curl_setopt($c, CURLOPT_URL, config('eve-recruitment.core_url'). $url);
         curl_setopt($c, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
 

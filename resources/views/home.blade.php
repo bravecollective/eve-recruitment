@@ -1,9 +1,9 @@
 @extends('default')
 @section('content')
-    <h1 class="display-4">{{ env('APP_NAME') }}</h1>
+    <h1 class="display-4">{{ config('app.name') }}</h1>
     <hr class="my-4">
 @auth
-    <p>To make any changes to your characters, please use <a href="{{ env('CORE_URL') }}" target="_blank">Brave Core</a>.</p>
+    <p>To make any changes to your characters, please use <a href="{{ config('eve-recruitment.core_url') }}" target="_blank">Brave Core</a>.</p>
     <p>Once changes are made, you must logout and back in here for them to take effect.</p>
     <div class="row">
         <div class="col-lg-8">
@@ -45,7 +45,7 @@
     </div>
 @else
     <p>Welcome, capsuleer!</p>
-    <p>Before logging in below, please ensure you have created an account on <a href="{{ env('CORE_URL') }}" target="_blank">Brave Core</a>.</p>
+    <p>Before logging in below, please ensure you have created an account on <a href="{{ config('eve-recruitment.core_url') }}" target="_blank">Brave Core</a>.</p>
     <p>Once you have created an account and have added all of your alts, use the link below to login.</p>
     <a href="/login"><img src="/img/EVE_SSO_Login_Buttons_Large_Black.png" alt="Login with EVE Online"></a>
 @endauth
