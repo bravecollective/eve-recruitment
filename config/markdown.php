@@ -37,11 +37,17 @@ return [
     | This option specifies what extensions will be automatically enabled.
     | Simply provide your extension class names here.
     |
-    | Default: []
+    | Default: [
+    |              League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension::class,
+    |              League\CommonMark\Extension\Table\TableExtension::class,
+    |          ]
     |
     */
 
-    'extensions' => [],
+    'extensions' => [
+        League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension::class,
+        League\CommonMark\Extension\Table\TableExtension::class,
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -62,6 +68,31 @@ return [
         'block_separator' => "\n",
         'inner_separator' => "\n",
         'soft_break'      => "\n",
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Commonmark Configuration
+    |--------------------------------------------------------------------------
+    |
+    | This option specifies an array of options for commonmark.
+    |
+    | Default: [
+    |              'enable_em' => true,
+    |              'enable_strong' => true,
+    |              'use_asterisk' => true,
+    |              'use_underscore' => true,
+    |              'unordered_list_markers' => ['-', '+', '*'],
+    |          ]
+    |
+    */
+
+    'commonmark' => [
+        'enable_em'              => true,
+        'enable_strong'          => true,
+        'use_asterisk'           => true,
+        'use_underscore'         => true,
+        'unordered_list_markers' => ['-', '+', '*'],
     ],
 
     /*
@@ -153,6 +184,25 @@ return [
     |
     */
 
-    'max_nesting_level' => INF,
+    'max_nesting_level' => PHP_INT_MAX,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Slug Normalizer
+    |--------------------------------------------------------------------------
+    |
+    | This option specifies an array of options for slug normalization.
+    |
+    | Default: [
+    |              'max_length' => 255,
+    |              'unique' => 'document',
+    |          ]
+    |
+    */
+
+    'slug_normalizer' => [
+        'max_length' => 255,
+        'unique'     => 'document',
+    ],
 
 ];

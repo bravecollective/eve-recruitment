@@ -14,7 +14,7 @@
 1. Point webserver to `/public` directory
 1. If desired, replace `invTypes.sql` and `invGroups.sql` in `database/dumps` (from https://www.fuzzwork.co.uk/dump/)
 1. Run migrations: `php artisan migrate`
-1. Run database seeder: `php artisan db:seed`
+1. Run the installer: `php artisan app:install`
 1. Ensure php's `max_execution_time` is set to at least 300
 1. Add the following to your crontab:  
   ```* * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1```
