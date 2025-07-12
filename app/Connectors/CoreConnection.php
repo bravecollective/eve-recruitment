@@ -97,4 +97,16 @@ class CoreConnection
         $output = self::generateWebRequest('/api/app/v2/main/' . $characterId);
         return $output->id;
     }
+
+    /**
+     * Get an ESI Access Token for a given character
+     *
+     * @param $characterId
+     * @return array|null
+     */
+    public static function getAccessTokenForCharacter($characterId)
+    {
+        $output = self::generateWebRequest('/api/app/v1/esi/access-token/' . $characterId);
+        return $output;
+    }
 }
