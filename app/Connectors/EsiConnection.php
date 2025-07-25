@@ -2,6 +2,7 @@
 
 namespace App\Connectors;
 
+use App\Connectors\CoreConnection;
 use App\Models\ESINameResponse;
 use App\Models\User;
 use DateTime;
@@ -85,12 +86,23 @@ class EsiConnection
      *
      * @param int $char_id Char ID to create the instance for
      * @throws InvalidContainerDataException
+     * @throws ErrorException
      */
     public function __construct($char_id)
     {
         $config = new Configuration();
-        $config->setHost(env('CORE_URL') . '/api/app/v1/esi');
-        $config->setAccessToken(base64_encode(env('CORE_APP_ID') . ':' . env('CORE_APP_SECRET')));
+        $guzzle_options = ['timeout' => 0];
+
+        if(env('CORE_USE_ACCESS_TOKEN', false)) {
+          // Request access token from Neucore and hit ESI directly
+          $config->setHost('https://' . Config::get('services.eveonline.esi_domain'));
+          $config->setAccessToken($this->getAccessToken($char_id));
+        } else {
+          // Use Neucore ESI proxy
+          $config->setHost(env('CORE_URL') . '/api/app/v1/esi');
+          $config->setAccessToken(base64_encode(env('CORE_APP_ID') . ':' . env('CORE_APP_SECRET')));
+          $guzzle_options['headers'] = ['Neucore-EveCharacter' => $char_id];
+        }
 
         $eseye_config = \Seat\Eseye\Configuration::getInstance();
         $eseye_config->logfile_location = storage_path() . '/logs';
@@ -101,7 +113,27 @@ class EsiConnection
         $this->config = $config;
         $this->char_id = $char_id;
 
-        $this->client = new Client(['timeout' => 0]);
+        $this->client = new Client($guzzle_options);
+    }
+
+    /**
+     * Get access token for given character ID
+     * 
+     * @param int $char_id Char ID to get the token for
+     * @throws ErrorException
+     */
+    private function getAccessToken($char_id) {
+      $cache_key = "access_token_{$char_id}";
+      if (Cache::has($cache_key))
+        return Cache::get($cache_key);
+
+      $token = CoreConnection::getAccessTokenForCharacter($char_id);
+      if ($token === null) {
+        Log::error("Failed to get token for character {$char_id}");
+        throw new \ErrorException("Failed to get token for character {$char_id}");
+      }
+      Cache::add($cache_key, $token->token, Carbon::parse($token->expires)->diffInMinutes(now()));
+      return $token->token;
     }
 
     /**
@@ -111,7 +143,7 @@ class EsiConnection
         $model = new LocationApi($this->client, $this->config);
 
         try {
-            $login_info = $model->getCharactersCharacterIdOnline($this->char_id, $this->char_id);
+            $login_info = $model->getCharactersCharacterIdOnline($this->char_id);
         } catch(ApiException) {
             return null;
         }
@@ -129,7 +161,7 @@ class EsiConnection
         $model = new WalletApi($this->client, $this->config);
 
         try {
-            $balance = number_format($model->getCharactersCharacterIdWallet($this->char_id, $this->char_id));
+            $balance = number_format($model->getCharactersCharacterIdWallet($this->char_id));
         } catch(ApiException) {
             return null;
         }
@@ -220,20 +252,20 @@ class EsiConnection
         $locationModel = new LocationApi($this->client, $this->config);
 
         try {
-            $ship = $locationModel->getCharactersCharacterIdShip($this->char_id, $this->char_id);
+            $ship = $locationModel->getCharactersCharacterIdShip($this->char_id);
         } catch (Exception $e) {
             $ship = null;
         }
 
         try {
             $skillsModel = new SkillsApi($this->client, $this->config);
-            $attributes = $skillsModel->getCharactersCharacterIdAttributes($this->char_id, $this->char_id);
+            $attributes = $skillsModel->getCharactersCharacterIdAttributes($this->char_id);
         } catch(Exception $e) {
             $attributes = null;
         }
 
         try {
-            $location = $locationModel->getCharactersCharacterIdLocation($this->char_id, $this->char_id);
+            $location = $locationModel->getCharactersCharacterIdLocation($this->char_id);
         } catch (Exception $e) {
             $location = null;
         }
@@ -289,7 +321,7 @@ class EsiConnection
             return Cache::get($cache_key);
 
         $model = new CharacterApi($this->client, $this->config);
-        $titles = $model->getCharactersCharacterIdTitlesWithHttpInfo($this->char_id, $this->char_id);
+        $titles = $model->getCharactersCharacterIdTitlesWithHttpInfo($this->char_id);
         $out = [];
 
         foreach ($titles[0] as $title)
@@ -311,11 +343,11 @@ class EsiConnection
     {
         $model = new ClonesApi($this->client, $this->config);
 
-        $implants = $model->getCharactersCharacterIdImplants($this->char_id, $this->char_id);
+        $implants = $model->getCharactersCharacterIdImplants($this->char_id);
         foreach ($implants as $idx => $implant)
             $implants[$idx] = $this->getTypeName($implant);
 
-        $clones = $model->getCharactersCharacterIdClones($this->char_id, $this->char_id);
+        $clones = $model->getCharactersCharacterIdClones($this->char_id);
         $home = $clones->getHomeLocation();
 
         try {
@@ -492,14 +524,14 @@ class EsiConnection
             return Cache::get($mailCacheKey);
         else
         {
-            $mail_http = $model->getCharactersCharacterIdMailWithHttpInfo($this->char_id, $this->char_id);
+            $mail_http = $model->getCharactersCharacterIdMailWithHttpInfo($this->char_id);
             $mail = $temp = $mail_http[0];
 
             while (count($temp) >= 50) // If count is < 50, there's no new mail to request
             {
                 $last_mail_id = end($mail)->getMailId();
                 reset($mail);
-                $temp = $model->getCharactersCharacterIdMail($this->char_id, $this->char_id, null, null, $last_mail_id);
+                $temp = $model->getCharactersCharacterIdMail($this->char_id, null, null, null, $last_mail_id);
 
                 $mail = array_merge($mail, $temp);
 
@@ -539,13 +571,13 @@ class EsiConnection
         $model = new MailApi($this->client, $this->config);
         $ids = [];
 
-        $mail = $model->getCharactersCharacterIdMailMailId($this->char_id, $mailId, $this->char_id);
+        $mail = $model->getCharactersCharacterIdMailMailId($this->char_id, $mailId);
 
         if (Cache::has($mailBodyCacheKey . $mailId))
             $mail->contents = Cache::get($mailBodyCacheKey . $mailId);
         else
         {
-            $mail->contents = $model->getCharactersCharacterIdMailMailId($this->char_id, $mailId, $this->char_id)->getBody();
+            $mail->contents = $model->getCharactersCharacterIdMailMailId($this->char_id, $mailId)->getBody();
             Cache::add($mailBodyCacheKey . $mailId, $mail->contents, env('CACHE_TIME', 3264));
         }
 
@@ -628,7 +660,7 @@ class EsiConnection
             return Cache::get($cache_key);
 
         $model = new SkillsApi($this->client, $this->config);
-        $skills = $model->getCharactersCharacterIdSkillsWithHttpInfo($this->char_id, $this->char_id);
+        $skills = $model->getCharactersCharacterIdSkillsWithHttpInfo($this->char_id);
         $unprocessed_skills = $skills[0]->getSkills();
         $out = [];
 
@@ -675,7 +707,7 @@ class EsiConnection
             return Cache::get($cache_key);
 
         $model = new SkillsApi($this->client, $this->config);
-        $queue = $model->getCharactersCharacterIdSkillqueueWithHttpInfo($this->char_id, $this->char_id);
+        $queue = $model->getCharactersCharacterIdSkillqueueWithHttpInfo($this->char_id);
         $out = [];
 
         foreach ($queue[0] as $skill)
@@ -723,12 +755,12 @@ class EsiConnection
             return Cache::get($cache_key);
 
         $model = new AssetsApi($this->client, $this->config);
-        $assets = $model->getCharactersCharacterIdAssetsWithHttpInfo($this->char_id, $this->char_id);
+        $assets = $model->getCharactersCharacterIdAssetsWithHttpInfo($this->char_id);
         $out = [];
         $parentItems = [];
 
         for ($i = 2; $i <= $assets[2]['X-Pages'][0]; $i++)
-            $assets[0] = array_merge($assets[0], $model->getCharactersCharacterIdAssets($this->char_id, $this->char_id, null, $i));
+            $assets[0] = array_merge($assets[0], $model->getCharactersCharacterIdAssets($this->char_id, null, null, $i));
 
         // 1a. Asset safety is a bitch. That needs to happen first
         foreach ($assets[0] as $idx => $item)
@@ -791,7 +823,7 @@ class EsiConnection
 
         // 4a. Fetch container item names
         foreach (array_chunk($names_to_fetch, 1000) as $chunk) {
-            $res = $model->postCharactersCharacterIdAssetsNames($this->char_id, $chunk, $this->char_id);
+            $res = $model->postCharactersCharacterIdAssetsNames($this->char_id, $chunk);
             foreach ($res as $data)
                 $names[$data->getItemId()] = $data->getName();
         }
@@ -912,7 +944,7 @@ class EsiConnection
             return Cache::get($cache_key);
 
         $model = new WalletApi($this->client, $this->config);
-        $res = $model->getCharactersCharacterIdWalletTransactionsWithHttpInfo($this->char_id, $this->char_id);
+        $res = $model->getCharactersCharacterIdWalletTransactionsWithHttpInfo($this->char_id);
         $out = [];
 
         foreach ($res[0] as $transaction)
@@ -946,7 +978,7 @@ class EsiConnection
             return Cache::get($cache_key);
 
         $model = new MarketApi($this->client, $this->config);
-        $res = $model->getCharactersCharacterIdOrdersWithHttpInfo($this->char_id, $this->char_id);
+        $res = $model->getCharactersCharacterIdOrdersWithHttpInfo($this->char_id);
         $out = [];
 
         foreach ($res[0] as $order)
@@ -984,7 +1016,7 @@ class EsiConnection
             return Cache::get($cache_key);
 
         $model = new CharacterApi($this->client, $this->config);
-        $notifications = $model->getCharactersCharacterIdNotificationsWithHttpInfo($this->char_id, $this->char_id);
+        $notifications = $model->getCharactersCharacterIdNotificationsWithHttpInfo($this->char_id);
         $out = [];
 
         foreach ($notifications[0] as $notification)
@@ -1036,7 +1068,7 @@ class EsiConnection
             return Cache::get($cache_key);
 
         $model = new ContractsApi($this->client, $this->config);
-        $contracts = $model->getCharactersCharacterIdContractsWithHttpInfo($this->char_id, $this->char_id);
+        $contracts = $model->getCharactersCharacterIdContractsWithHttpInfo($this->char_id);
         $out = [];
 
         $character_ids = [];
@@ -1048,7 +1080,7 @@ class EsiConnection
 
         foreach ($contracts[0] as $contract)
         {
-            $model_items = $model->getCharactersCharacterIdContractsContractIdItems($this->char_id, $contract->getContractId(), $this->char_id);
+            $model_items = $model->getCharactersCharacterIdContractsContractIdItems($this->char_id, $contract->getContractId());
             $items = [];
 
             foreach ($model_items as $item)
@@ -1188,11 +1220,11 @@ class EsiConnection
             return Cache::get($cache_key);
 
         $model = new WalletApi($this->client, $this->config);
-        $journal = $model->getCharactersCharacterIdWalletJournalWithHttpInfo($this->char_id, $this->char_id, null, $page);
+        $journal = $model->getCharactersCharacterIdWalletJournalWithHttpInfo($this->char_id, null, null, $page);
 
         for ($i = 2; $i <= $journal[2]['X-Pages'][0]; $i++)
         {
-            $second = $model->getCharactersCharacterIdWalletJournal($this->char_id, $this->char_id, null, $i);
+            $second = $model->getCharactersCharacterIdWalletJournal($this->char_id, null, null, $i);
 
             if (!is_array($second))
                 continue;
@@ -1249,7 +1281,7 @@ class EsiConnection
 
         $model = new SkillsApi($this->client, $this->config);
         try {
-            $sp = $model->getCharactersCharacterIdSkillsWithHttpInfo($this->char_id, $this->char_id);
+            $sp = $model->getCharactersCharacterIdSkillsWithHttpInfo($this->char_id);
         } catch(ApiException $e) {
             return null;
         }
@@ -1363,7 +1395,7 @@ class EsiConnection
             return Cache::get($cache_key);
 
         $model = new KillmailsApi($this->client, $this->config);
-        $data = $model->getCharactersCharacterIdKillmailsRecent($this->char_id, $this->char_id);
+        $data = $model->getCharactersCharacterIdKillmailsRecent($this->char_id);
         $killmailHashes = array_map(function ($e) { return ['id' => $e->getKillmailId(), 'hash' => $e->getKillmailHash()]; }, $data);
         $killmails = [];
 
@@ -1412,7 +1444,7 @@ class EsiConnection
     public function getContacts()
     {
         $model = new ContactsApi($this->client, $this->config);
-        $contacts = $model->getCharactersCharacterIdContacts($this->char_id, $this->char_id);
+        $contacts = $model->getCharactersCharacterIdContacts($this->char_id);
         $ids = array_map(function ($e) { return ['id' => $e->getContactId(), 'type' => $e->getContactType()]; }, $contacts);
 
         $IDs = $this->lookupNames($ids);
@@ -1496,7 +1528,7 @@ class EsiConnection
     {
 
         $model = new MailApi($this->client, $this->config);
-        $lists = $model->getCharactersCharacterIdMailListsWithHttpInfo($this->char_id, $this->char_id);
+        $lists = $model->getCharactersCharacterIdMailListsWithHttpInfo($this->char_id);
 
         foreach ($lists[0] as $list)
         {
@@ -1667,7 +1699,7 @@ class EsiConnection
             return Cache::get($cache_key);
 
         $model = new UniverseApi($this->client, $this->config);
-        $res = $model->getUniverseStructuresStructureId($structure_id, $this->char_id)->getName();
+        $res = $model->getUniverseStructuresStructureId($structure_id)->getName();
 
         Cache::add($cache_key, $res, env('CACHE_TIME', 3264));
         return $res;
