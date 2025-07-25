@@ -46,4 +46,15 @@ class Type extends Model
 {
     protected $table = 'invTypes';
     public $timestamps = false;
+
+    /**
+     * Group relation
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function group()
+    {
+        return $this->hasOne('App\Models\Group', 'groupID', 'groupID');
+    }
+
 }

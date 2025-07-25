@@ -196,49 +196,24 @@ class Application extends Model
             $warnings[] = "User was previously denied";
 
         $users = User::where('account_id', $application->account_id)->get();
-        $hic = $cyno = $cyno5 = false;
 
         foreach ($users as $user)
         {
             $esi = new EsiConnection($user->character_id);
-            $skills = $esi->getSkills();
+            $skills = $esi->getSearchableSkills();
 
-            foreach ($skills as $catName => $category)
-            {
-                if ($catName == "Spaceship Command" && !$hic)
-                {
-                    foreach ($category as $name => $skill)
-                    {
-                        if ($name == "Heavy Interdiction Cruisers")
-                            $hic = true;
-                    }
-                }
-                else if ($catName == "Navigation" && !$cyno)
-                {
-                    foreach ($category as $name => $skill)
-                    {
-                        if ($name == "Cynosural Field Theory")
-                        {
-                            $cyno = true;
-                            if ($skill['trained'] == 5)
-                                $cyno5 = true;
-                        }
-                    }
-                }
+            if (isset($skills["Heavy Interdiction Cruisers"])) {
+                $warnings[] = ["type" => "HIC Pilot", "character" => $user->name];
             }
 
-            if ($hic && $cyno && $cyno5)
-                break; // This can only break once all 3 are triggered, since the rest of the chars won't change anything
+            if (isset($skills["Cynosural Field Theory"]) and $skills["Cynosural Field Theory"]["level"] == 5) {
+                $warnings[] = ["type" => "Covert Cyno Pilot", "character" => $user->name];
+            }
+            elseif (isset($skills["Cynosural Field Theory"])) {
+                $warnings[] = ["type" => "Cyno Pilot", "character" => $user->name];
+            }
+
         }
-
-        if ($cyno == true)
-            $warnings[] = "Cyno trained";
-
-        if ($cyno5 == true)
-            $warnings[] = "Cyno V trained";
-
-        if ($hic == true)
-            $warnings[] = "A character in this app can fly a HIC";
 
         return $warnings;
     }
