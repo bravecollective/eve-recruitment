@@ -112,7 +112,7 @@ class AccountRole extends Model
 
         // 4. Get corp names, where necessary
         foreach ($ads as $ad)
-            $ad->corp_name = ($ad->corp_id == null) ? null : (new EsiConnection($account_id))->getCorporationName($ad->corp_id);
+            $ad->corp_name = ($ad->corp_id == null) ? null : (new EsiConnection())->getCorporationName($ad->corp_id);
 
         return $ads->all();
     }

@@ -88,20 +88,23 @@ class EsiConnection
      * @throws InvalidContainerDataException
      * @throws ErrorException
      */
-    public function __construct($char_id)
+    public function __construct($char_id = null)
     {
         $config = new Configuration();
         $guzzle_options = ['timeout' => 0];
 
-        if(env('CORE_USE_ACCESS_TOKEN', false)) {
-          // Request access token from Neucore and hit ESI directly
-          $config->setHost('https://' . Config::get('services.eveonline.esi_domain'));
-          $config->setAccessToken($this->getAccessToken($char_id));
+        if(is_null($char_id)) {
+            // Allow some limited access to functions without an associated character
+            $config->setHost('https://' . Config::get('services.eveonline.esi_domain'));
+        } elseif(env('CORE_USE_ACCESS_TOKEN', false)) {
+            // Request access token from Neucore and hit ESI directly
+            $config->setHost('https://' . Config::get('services.eveonline.esi_domain'));
+            $config->setAccessToken($this->getAccessToken($char_id));
         } else {
-          // Use Neucore ESI proxy
-          $config->setHost(env('CORE_URL') . '/api/app/v1/esi');
-          $config->setAccessToken(base64_encode(env('CORE_APP_ID') . ':' . env('CORE_APP_SECRET')));
-          $guzzle_options['headers'] = ['Neucore-EveCharacter' => $char_id];
+            // Use Neucore ESI proxy
+            $config->setHost(env('CORE_URL') . '/api/app/v1/esi');
+            $config->setAccessToken(base64_encode(env('CORE_APP_ID') . ':' . env('CORE_APP_SECRET')));
+            $guzzle_options['headers'] = ['Neucore-EveCharacter' => $char_id];
         }
 
         $eseye_config = \Seat\Eseye\Configuration::getInstance();
@@ -123,17 +126,17 @@ class EsiConnection
      * @throws ErrorException
      */
     private function getAccessToken($char_id) {
-      $cache_key = "access_token_{$char_id}";
-      if (Cache::has($cache_key))
-        return Cache::get($cache_key);
+        $cache_key = "access_token_{$char_id}";
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
 
-      $token = CoreConnection::getAccessTokenForCharacter($char_id);
-      if ($token === null) {
-        Log::error("Failed to get token for character {$char_id}");
-        throw new \ErrorException("Failed to get token for character {$char_id}");
-      }
-      Cache::add($cache_key, $token->token, Carbon::parse($token->expires)->diffInMinutes(now()));
-      return $token->token;
+        $token = CoreConnection::getAccessTokenForCharacter($char_id);
+        if ($token === null) {
+            Log::error("Failed to get token for character {$char_id}");
+            throw new \ErrorException("Failed to get token for character {$char_id}");
+        }
+        Cache::add($cache_key, $token->token, Carbon::parse($token->expires)->diffInMinutes(now()));
+        return $token->token;
     }
 
     /**
