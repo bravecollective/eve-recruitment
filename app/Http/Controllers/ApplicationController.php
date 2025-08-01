@@ -417,10 +417,10 @@ class ApplicationController extends Controller
             if ($itemID < 0)
                 continue;
             if (!$esi->characterCanUseItem($itemID))
-                die(json_encode(['success' => true, 'message' => 'Character can not fly ship']));
+                die(json_encode(['success' => true, 'message' => '<div class="text-danger">Character can not fly ship</div>']));
         }
 
-        die(json_encode(['success' => true, 'message' => 'Character can fly ship']));
+        die(json_encode(['success' => true, 'message' => '<div class="text-success">Character can fly ship</div>']));
     }
 
     /**
@@ -480,6 +480,45 @@ class ApplicationController extends Controller
 
         $res = $esi->checkSkillplan($levels);
         die(json_encode(['success' => true, 'message' => $res]));
+    }
+
+
+    /**
+     * Check if a character has a set of assets
+     *
+     * @param $char_id
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidContainerDataException
+     * @throws UriDataMissingException|ApiException
+     */
+    public function checkAssets(Request $r, $char_id)
+    {
+        $this->checkPermissions($char_id);
+        $esi = new EsiConnection($char_id);
+        $assets = $r->input('assets');
+
+        if (!$assets)
+            die(json_encode(['success' => false, 'message' => 'Invalid Assets Listing']));
+
+        $assets_list = explode("\n", $assets);
+
+        $found_assets = $esi->getTypeIDs($assets_list);
+
+        if (empty($found_assets))
+            die(json_encode(['success' => false, 'message' => 'Invalid Assets Listing']));
+
+        $character_assets = $esi->getUniqueAssets();
+
+        $output = [];
+
+        foreach ($found_assets as $type_id => $type_name) {
+            $output[] = [
+                "Name" => htmlspecialchars($type_name), 
+                "Found" => isset($character_assets[$type_id])
+            ];
+        }
+
+        die(json_encode(['success' => true, 'data' => $output]));
     }
 
     /**

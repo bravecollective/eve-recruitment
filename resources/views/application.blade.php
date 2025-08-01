@@ -511,40 +511,83 @@
 
         $.post('/api/esi/' + char_id + '/fit_check', data, function (e) {
             e = JSON.parse(e);
-            $(".checker-output").text(e.message);
+            if (e.success === true)
+                $(".checker-output").html(e.message);
+            else
+                $(".checker-output").text(e.message);
         });
 
         return false;
     }
 
-        function checkSkillplan(f)
-        {
-            let skillplan = f[0].value;
-            if (!skillplan)
-                return false;
-
-            let data = {
-                _token: "{{ csrf_token() }}",
-                skillplan: skillplan
-            };
-
-            $.post('/api/esi/' + char_id + '/skillplan_check', data, function (e) {
-                e = JSON.parse(e);
-
-                if (e.success === true)
-                {
-                    let skills = e.message;
-                    if (skills.length > 0)
-                        $(".checker-output").html('Missing skills:<pre class="text-white">' + skills.join('\n') + '</pre>', 10000);
-                    else
-                        $(".checker-output").text('Skill requirements met');
-                }
-                else
-                    $(".checker-output").text(e.message);
-            });
-
+    function checkSkillplan(f)
+    {
+        let skillplan = f[0].value;
+        if (!skillplan)
             return false;
-        }
+
+        let data = {
+            _token: "{{ csrf_token() }}",
+            skillplan: skillplan
+        };
+
+        $.post('/api/esi/' + char_id + '/skillplan_check', data, function (e) {
+            e = JSON.parse(e);
+
+            if (e.success === true)
+            {
+                let skills = e.message;
+                if (skills.length > 0)
+                    $(".checker-output").html('Missing skills: <pre class="text-danger">' + skills.join('\n') + '</pre>', 10000);
+                else
+                    $(".checker-output").html('<div class="text-success">Skill requirements met</div>');
+            }
+            else
+                $(".checker-output").text(e.message);
+        });
+
+        return false;
+    }
+
+    function checkAssets(f)
+    {
+        let assets = f[0].value;
+        if (!assets)
+            return false;
+
+        let data = {
+            _token: "{{ csrf_token() }}",
+            assets: assets
+        };
+
+        $.post('/api/esi/' + char_id + '/assets_check', data, function (e) {
+            e = JSON.parse(e);
+
+            if (e.success === true)
+            {
+
+                let lines = [];
+                let asset_list = e.data;
+
+                for (each_asset of asset_list) {
+                    
+                    if (each_asset["Found"])
+                        lines.push('<div class="text-success">' + each_asset["Name"] + '</div>');
+                    else
+                        lines.push('<div class="text-danger">' + each_asset["Name"] + '</div>');
+
+                }
+
+                $(".checker-output").html(lines.join("\n"));
+
+            }
+            else
+                $(".checker-output").text(e.message);
+        });
+
+        return false;
+    }
+
     @if((Auth::user()->hasRole('admin') || Auth::user()->hasRole('supervisor')) && isset($application))
         function deleteApplication()
     {

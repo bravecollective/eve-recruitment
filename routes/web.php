@@ -84,6 +84,7 @@ Route::get('/api/esi/{char_id}/killmails', 'ApplicationController@loadKillmails'
 Route::get('/api/esi/{char_id}/contracts', 'ApplicationController@loadContracts');
 Route::post('/api/esi/{char_id}/fit_check', 'ApplicationController@checkFit');
 Route::post('/api/esi/{char_id}/skillplan_check', 'ApplicationController@checkSkillplan');
+Route::post('/api/esi/{char_id}/assets_check', 'ApplicationController@checkAssets');
 
 // Recruitment ad
 Route::get('/{slug}', 'ApplicationController@loadAdBySlug');

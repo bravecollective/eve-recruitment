@@ -20,4 +20,13 @@
             <button type="submit" class="btn btn-success">Check Skillplan</button>
         </form>
     </div>
+    <div class="col-12 col-xl-3">
+        <h4>Check Assets</h4>
+        <form class="form" onsubmit="return checkAssets(this)">
+            <textarea class="form-control" placeholder="Paste Assets..." rows="15"></textarea>
+            <small>Invalid item names are ignored</small>
+            <br />
+            <button type="submit" class="btn btn-success">Check Assets</button>
+        </form>
+    </div>
 </div>

@@ -815,6 +815,49 @@ class EsiConnection
     }
 
     /**
+     * Get a list of unique asset names belonging to the user
+     *
+     * @return array
+     * @throws ApiException
+     */
+    public function getUniqueAssets()
+    {
+
+        $cache_key = "unique_assets_{$this->char_id}";
+        $unique_type_ids = [];
+
+        if (Cache::has($cache_key))
+            return Cache::get($cache_key);
+
+        $model = new AssetsApi($this->client, $this->config);
+
+        $assets = [];
+
+        $i = 1;
+        $max_page = 1;
+        do {
+
+            $assetRequests = $model->getCharactersCharacterIdAssetsWithHttpInfo($this->char_id, null, null, $i);
+            $max_page = $assetRequests[2]['X-Pages'][0];
+            $assets = array_merge($assets, $assetRequests[0]);
+            $i++;
+
+        } while ($i <= $max_page);
+
+        foreach ($assets as $idx => $item)
+        {
+            if (!in_array($item->getTypeId(), $unique_type_ids))
+                $unique_type_ids[] = $item->getTypeId();
+        }
+
+        $out = $this->getTypeNames($unique_type_ids);
+
+        Cache::add($cache_key, $out, $this->getCacheExpirationTime($assetRequests));
+        return $out;
+
+    }
+
+    /**
      * Get a user's assets
      *
      * @return array
@@ -2010,6 +2053,30 @@ class EsiConnection
         foreach (array_chunk($type_ids, 1000) as $chunk) {
 
             $itemsQuery = Type::whereIn('typeID', $chunk);
+
+            foreach ($itemsQuery->cursor() as $eachItem) {
+                $results[$eachItem->typeID] = $eachItem->typeName;
+            }
+            
+        }
+
+        return $results;
+    }
+
+    /**
+     * Given an array of type names, get any known IDs
+     *
+     * @param $type_ids
+     * @return array
+     */
+    public function getTypeIDs($type_names)
+    {
+
+        $results = [];
+
+        foreach (array_chunk($type_names, 1000) as $chunk) {
+
+            $itemsQuery = Type::whereIn('typeName', $chunk);
 
             foreach ($itemsQuery->cursor() as $eachItem) {
                 $results[$eachItem->typeID] = $eachItem->typeName;
