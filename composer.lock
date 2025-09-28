@@ -5527,16 +5527,16 @@
         },
         {
             "name": "tkhamez/swagger-eve-php",
-            "version": "11.0.0",
+            "version": "11.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tkhamez/swagger-eve-php.git",
-                "reference": "cecba7b2d2cefb2ef00de95f6ce9ce94c1fd311c"
+                "reference": "6d370b81924ea4d31f412c8c1653ed2b0547465a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tkhamez/swagger-eve-php/zipball/cecba7b2d2cefb2ef00de95f6ce9ce94c1fd311c",
-                "reference": "cecba7b2d2cefb2ef00de95f6ce9ce94c1fd311c",
+                "url": "https://api.github.com/repos/tkhamez/swagger-eve-php/zipball/6d370b81924ea4d31f412c8c1653ed2b0547465a",
+                "reference": "6d370b81924ea4d31f412c8c1653ed2b0547465a",
                 "shasum": ""
             },
             "require": {
@@ -5580,9 +5580,10 @@
             ],
             "support": {
                 "issues": "https://github.com/tkhamez/swagger-eve-php/issues",
-                "source": "https://github.com/tkhamez/swagger-eve-php/tree/11.0.0"
+                "source": "https://github.com/tkhamez/swagger-eve-php/tree/11.0.1"
             },
-            "time": "2025-07-12T12:51:12+00:00"
+            "abandoned": "tkhamez/eve-api",
+            "time": "2025-07-26T10:47:50+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
