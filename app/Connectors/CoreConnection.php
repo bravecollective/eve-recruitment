@@ -2,46 +2,24 @@
 
 namespace App\Connectors;
 
+use Illuminate\Support\Facades\Log;
+
 class CoreConnection
 {
-
-    /**
-     * Generate the cURL request to core. Only used by class methods
-     * @param $url string The URL to send the request to, in the form /path/to/endpoint
-     * @param $post [true|false] If the request should be transmitted as post. Defualt is false, which is GET.
-     * @return array|null JSON data returned from core
-     */
-    private static function generateWebRequest($url, $post = false)
-    {
-        $c = curl_init();
-        $headers = ['Authorization: Bearer ' . base64_encode(env('CORE_APP_ID') . ':' . env('CORE_APP_SECRET'))];
-
-        curl_setopt($c, CURLOPT_URL, env('CORE_URL') . $url);
-        curl_setopt($c, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
-
-        if ($post === true)
-            curl_setopt($c, CURLOPT_POST, 1);
-
-        $output = curl_exec($c);
-        curl_close($c);
-
-        return json_decode($output);
-    }
-
     /**
      * Get the characters associated with a user ID
+     *
      * @param $userId int The ID of the user
      * @return array|null JSON array of characters, or null if none were found
      */
     public static function getCharactersForUser($userId)
     {
-        $output = self::generateWebRequest('/api/app/v1/characters/' . $userId);
-        return $output;
+        return self::generateWebRequest('/api/app/v1/characters/' . $userId);
     }
 
     /**
      * Get the account ID for a character
+     *
      * @param $userId int The ID of the user
      * @return int The account ID
      */
@@ -53,13 +31,13 @@ class CoreConnection
 
     /**
      * Get the core groups associated with a userID
+     *
      * @param $userId int The ID of the user
      * @return array|null JSON array of groups, or null if none were found
      */
     public static function getCharacterGroups($userId)
     {
-        $output = self::generateWebRequest('/api/app/v2/groups/' . $userId);
-        return $output;
+        return self::generateWebRequest('/api/app/v2/groups/' . $userId);
     }
 
     /**
@@ -70,8 +48,7 @@ class CoreConnection
      */
     public static function getRemovedCharacters($characterId)
     {
-        $output = self::generateWebRequest('/api/app/v1/removed-characters/' . $characterId);
-        return $output;
+        return self::generateWebRequest('/api/app/v1/removed-characters/' . $characterId);
     }
 
     /**
@@ -106,7 +83,34 @@ class CoreConnection
      */
     public static function getAccessTokenForCharacter($characterId)
     {
-        $output = self::generateWebRequest('/api/app/v1/esi/access-token/' . $characterId);
-        return $output;
+        return self::generateWebRequest('/api/app/v1/esi/access-token/' . $characterId);
+    }
+
+    /**
+     * Generate the cURL request to core. Only used by class methods.
+     *
+     * @param string $url The URL to send the request to, in the form /path/to/endpoint
+     * @return string|array|object|null JSON data returned from Core.
+     */
+    private static function generateWebRequest(string $url): string|array|object|null
+    {
+        $c = curl_init();
+
+        $headers = ['Authorization: Bearer ' . base64_encode(env('CORE_APP_ID') . ':' . env('CORE_APP_SECRET'))];
+
+        curl_setopt($c, CURLOPT_URL, env('CORE_URL') . $url);
+        curl_setopt($c, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+
+        $output = curl_exec($c);
+
+        if (curl_errno($c)) {
+            Log::warning(curl_error($c));
+            return null;
+        }
+
+        curl_close($c);
+
+        return json_decode($output);
     }
 }
