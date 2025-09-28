@@ -114,31 +114,6 @@ class EsiConnection
     }
 
     /**
-     * Get access token for given character ID
-     *
-     * @param int $char_id Char ID to get the token for
-     * @throws \ErrorException
-     */
-    private function getAccessToken($char_id): string
-    {
-        $cache_key = "access_token_$char_id";
-        if (Cache::has($cache_key)) {
-            return Cache::get($cache_key);
-        }
-
-        $token = CoreConnection::getAccessTokenForCharacter($char_id);
-        if ($token === null) {
-            Log::error("Failed to get token for character $char_id");
-            throw new \ErrorException("Failed to get token for character $char_id");
-        }
-        $accessToken = (string) $token->token;
-
-        Cache::add($cache_key, $accessToken, Carbon::parse($token->expires)->diffInMinutes(now()));
-
-        return $accessToken;
-    }
-
-    /**
      * Get the user's last login information
      */
     public function getLoginDetails()
@@ -488,30 +463,6 @@ class EsiConnection
         }
 
         return $missing;
-    }
-
-    /**
-     * Given a skill name and level, check if the user has it
-     *
-     * @throws ApiException
-     */
-    private function userHasSkillLevel($skill, $level): bool
-    {
-        static $skills = null;
-
-        if (!$skills) {
-            $skills = $this->getSkills();
-        }
-
-        foreach ($skills as $category) {
-            foreach ($category as $skillName => $attributes) {
-                if ($skillName == $skill && $attributes['trained'] >= $level) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     /**
@@ -995,89 +946,6 @@ class EsiConnection
         return $out;
     }
 
-    private function addStationItem(&$out, &$parentItems, $item, $type_names, $market_prices): void
-    {
-        $item_price = (int) ($market_prices[$item->getTypeId()] ?? 0);
-        $price = $item_price * $item->getQuantity();
-        $location_id = $item->getLocationId();
-
-        if (!array_key_exists($location_id, $out)) {
-            $location = $this->getLocationName($item->getLocationId());
-            $out[$location_id] = [
-                'id' => $location_id,
-                'name' => $location,
-                'value' => 0,
-                'items' => [],
-                'containers' => [],
-            ];
-        }
-
-        $parentItems[$item->getItemId()] = [
-            'name' => ($type_names[$item->getTypeId()] ?? ("Unknown Type " . $item->getTypeId())),
-            'quantity' => number_format($item->getQuantity()),
-            'item_id' => $item->getItemId(),
-            'type_id' => $item->getTypeId(),
-            'id' => $item->getTypeId(),
-            'price' => $price,
-            'value' => $price,
-            'location' => $this->getLocationName($item->getLocationId()),
-            'container' => false,
-            'items' => [],
-        ];
-
-        $out[$item->getLocationId()]['items'][] = &$parentItems[$item->getItemId()];
-    }
-
-    private static function sortLocations($a, $b): int
-    {
-        $v1 = (int) filter_var($a['value'], FILTER_SANITIZE_NUMBER_INT);
-        $v2 = (int) filter_var($b['value'], FILTER_SANITIZE_NUMBER_INT);
-
-        if ($v1 == $v2) {
-            return 0;
-        }
-
-        return ($v1 > $v2) ? -1 : 1;
-    }
-
-    /**
-     * Given an array of type IDs, get any known market prices
-     *
-     * @throws EsiScopeAccessDeniedException
-     * @throws InvalidAuthenticationException
-     * @throws InvalidContainerDataException
-     * @throws RequestFailedException
-     * @throws UriDataMissingException
-     */
-    private function getMarketPrices($type_ids): array
-    {
-        $results = [];
-
-        static $lookup_table = null;
-        $cache_key = "market_prices";
-
-        if ($lookup_table == null) {
-            if (Cache::has($cache_key)) {
-                $market = Cache::get($cache_key);
-            } else {
-                $res = $this->eseye->invoke('get', '/markets/prices/');
-                $market = json_decode($res->raw);
-                if (!is_array($market)) {
-                    return [];
-                }
-                Cache::add($cache_key, $market, 60);
-            }
-
-            foreach ($market as $entry) {
-                if (in_array($entry->type_id, $type_ids)) {
-                    $results[$entry->type_id] = (float) $entry->adjusted_price;
-                }
-            }
-        }
-
-        return $results;
-    }
-
     /**
      * Get a user's wallet transactions
      *
@@ -1343,45 +1211,6 @@ class EsiConnection
         Cache::add($cache_key, $out, $this->getCacheExpirationTime($contracts));
 
         return $out;
-    }
-
-    /**
-     * Given a location ID, figure out what type it is and return the name
-     */
-    private function getLocationName($id): string
-    {
-        $cache_key = "user_location_{$this->char_id}_$id";
-
-        if (Cache::has($cache_key)) {
-            return Cache::get($cache_key);
-        }
-
-        if ($id >= 60000000 && $id <= 64000000) {
-            try {
-                $res = $this->getStationName($id);
-                Cache::add($cache_key, $res, env('CACHE_TIME', 3264));
-                return $res;
-            } catch (Exception) {
-            }
-        } else {
-            if ($id == 2004) {
-                return "Asset Safety";
-            } else {
-                if ($id >= 40000000 && $id <= 50000000) {
-                    return "Deleted PI Structure";
-                }
-            }
-        }
-
-        try {
-            $res = $this->getStructureName($id);
-            Cache::add($cache_key, $res, env('CACHE_TIME', 3264));
-            return $res;
-        } catch (Exception) {
-        }
-
-        Cache::add($cache_key, "Unknown Location", env('CACHE_TIME', 3264));
-        return "Unknown Location";
     }
 
     /**
@@ -2201,5 +2030,176 @@ class EsiConnection
         $time = $time[2]['Expires'][0];
         $time = Carbon::parse($time);
         return $time->diffInMinutes(now());
+    }
+
+    /**
+     * Get access token for given character ID
+     *
+     * @param int $char_id Char ID to get the token for
+     * @throws \ErrorException
+     */
+    private function getAccessToken($char_id): string
+    {
+        $cache_key = "access_token_$char_id";
+        if (Cache::has($cache_key)) {
+            return Cache::get($cache_key);
+        }
+
+        $token = CoreConnection::getAccessTokenForCharacter($char_id);
+        if ($token === null) {
+            Log::error("Failed to get token for character $char_id");
+            throw new \ErrorException("Failed to get token for character $char_id");
+        }
+        $accessToken = (string) $token->token;
+
+        Cache::add($cache_key, $accessToken, Carbon::parse($token->expires)->diffInMinutes(now()));
+
+        return $accessToken;
+    }
+
+    /**
+     * Given a skill name and level, check if the user has it
+     *
+     * @throws ApiException
+     */
+    private function userHasSkillLevel($skill, $level): bool
+    {
+        static $skills = null;
+
+        if (!$skills) {
+            $skills = $this->getSkills();
+        }
+
+        foreach ($skills as $category) {
+            foreach ($category as $skillName => $attributes) {
+                if ($skillName == $skill && $attributes['trained'] >= $level) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private function addStationItem(&$out, &$parentItems, $item, $type_names, $market_prices): void
+    {
+        $item_price = (int) ($market_prices[$item->getTypeId()] ?? 0);
+        $price = $item_price * $item->getQuantity();
+        $location_id = $item->getLocationId();
+
+        if (!array_key_exists($location_id, $out)) {
+            $location = $this->getLocationName($item->getLocationId());
+            $out[$location_id] = [
+                'id' => $location_id,
+                'name' => $location,
+                'value' => 0,
+                'items' => [],
+                'containers' => [],
+            ];
+        }
+
+        $parentItems[$item->getItemId()] = [
+            'name' => ($type_names[$item->getTypeId()] ?? ("Unknown Type " . $item->getTypeId())),
+            'quantity' => number_format($item->getQuantity()),
+            'item_id' => $item->getItemId(),
+            'type_id' => $item->getTypeId(),
+            'id' => $item->getTypeId(),
+            'price' => $price,
+            'value' => $price,
+            'location' => $this->getLocationName($item->getLocationId()),
+            'container' => false,
+            'items' => [],
+        ];
+
+        $out[$item->getLocationId()]['items'][] = &$parentItems[$item->getItemId()];
+    }
+
+    private static function sortLocations($a, $b): int
+    {
+        $v1 = (int) filter_var($a['value'], FILTER_SANITIZE_NUMBER_INT);
+        $v2 = (int) filter_var($b['value'], FILTER_SANITIZE_NUMBER_INT);
+
+        if ($v1 == $v2) {
+            return 0;
+        }
+
+        return ($v1 > $v2) ? -1 : 1;
+    }
+
+    /**
+     * Given an array of type IDs, get any known market prices
+     *
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidAuthenticationException
+     * @throws InvalidContainerDataException
+     * @throws RequestFailedException
+     * @throws UriDataMissingException
+     */
+    private function getMarketPrices($type_ids): array
+    {
+        $results = [];
+
+        static $lookup_table = null;
+        $cache_key = "market_prices";
+
+        if ($lookup_table == null) {
+            if (Cache::has($cache_key)) {
+                $market = Cache::get($cache_key);
+            } else {
+                $res = $this->eseye->invoke('get', '/markets/prices/');
+                $market = json_decode($res->raw);
+                if (!is_array($market)) {
+                    return [];
+                }
+                Cache::add($cache_key, $market, 60);
+            }
+
+            foreach ($market as $entry) {
+                if (in_array($entry->type_id, $type_ids)) {
+                    $results[$entry->type_id] = (float) $entry->adjusted_price;
+                }
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * Given a location ID, figure out what type it is and return the name
+     */
+    private function getLocationName($id): string
+    {
+        $cache_key = "user_location_{$this->char_id}_$id";
+
+        if (Cache::has($cache_key)) {
+            return Cache::get($cache_key);
+        }
+
+        if ($id >= 60000000 && $id <= 64000000) {
+            try {
+                $res = $this->getStationName($id);
+                Cache::add($cache_key, $res, env('CACHE_TIME', 3264));
+                return $res;
+            } catch (Exception) {
+            }
+        } else {
+            if ($id == 2004) {
+                return "Asset Safety";
+            } else {
+                if ($id >= 40000000 && $id <= 50000000) {
+                    return "Deleted PI Structure";
+                }
+            }
+        }
+
+        try {
+            $res = $this->getStructureName($id);
+            Cache::add($cache_key, $res, env('CACHE_TIME', 3264));
+            return $res;
+        } catch (Exception) {
+        }
+
+        Cache::add($cache_key, "Unknown Location", env('CACHE_TIME', 3264));
+        return "Unknown Location";
     }
 }
