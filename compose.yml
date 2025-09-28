@@ -1,9 +1,7 @@
-# export UID && docker-compose up
+# export UID && docker compose up
 # http://localhost:8000/
-# export UID && docker-compose exec recruitment_php /bin/sh
-# export UID && docker-compose exec recruitment_node /bin/sh
-
-version: '3.5'
+# export UID && docker compose exec recruitment_php /bin/sh
+# export UID && docker compose exec recruitment_node /bin/sh
 
 services:
   recruitment_php:
@@ -22,6 +20,7 @@ services:
     tty: true
     volumes: [ ".:/app" ]
     working_dir: /app
+    networks: [recruitment]
 
   recruitment_http:
     container_name: recruitment_http_dev
@@ -34,5 +33,6 @@ services:
 networks:
   recruitment:
     name: recruitment_dev
-    #external:
-      #name: neucore_dev # Provided by https://github.com/tkhamez/neucore, CORE_URL = http://neucore_dev_http
+    # External network provided by https://github.com/tkhamez/neucore, CORE_URL = http://neucore_dev_http
+    #name: neucore_dev
+    #external: true
