@@ -21,12 +21,12 @@ class CoreConnection
      * Get the account ID for a character
      *
      * @param $userId int The ID of the user
-     * @return int The account ID
+     * @return ?int The account ID
      */
     public static function getCharacterAccount($userId)
     {
         $output = self::generateWebRequest('/api/app/v1/player/' . $userId);
-        return $output->id;
+        return $output?->id;
     }
 
     /**
@@ -43,7 +43,6 @@ class CoreConnection
     /**
      * Get users removed from a core account
      *
-     * @param $characterId
      * @return array|null
      */
     public static function getRemovedCharacters($characterId)
@@ -53,11 +52,8 @@ class CoreConnection
 
     /**
      * Get users moved from another core account to this account
-     *
-     * @param $characterId
-     * @return array|null
      */
-    public static function getAddedCharacters($characterId)
+    public static function getAddedCharacters($characterId): array
     {
         $output =  self::generateWebRequest('/api/app/v1/incoming-characters/' . $characterId);
         return is_array($output) ? $output : [];
@@ -66,20 +62,18 @@ class CoreConnection
     /**
      * Get the main from the core account based on character ID
      *
-     * @param $characterId
-     * @return array|null
+     * @return ?int
      */
     public static function getMainFromCharacterID($characterId)
     {
         $output = self::generateWebRequest('/api/app/v2/main/' . $characterId);
-        return $output->id;
+        return $output?->id;
     }
 
     /**
      * Get an ESI Access Token for a given character
      *
-     * @param $characterId
-     * @return array|null
+     * @return object|null
      */
     public static function getAccessTokenForCharacter($characterId)
     {
