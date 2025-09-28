@@ -120,10 +120,12 @@ class EsiConnection
      * @param int $char_id Char ID to get the token for
      * @throws \ErrorException
      */
-    private function getAccessToken($char_id) {
+    private function getAccessToken($char_id)
+    {
         $cache_key = "access_token_$char_id";
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         $token = CoreConnection::getAccessTokenForCharacter($char_id);
         if ($token === null) {
@@ -137,12 +139,13 @@ class EsiConnection
     /**
      * Get the user's last login information
      */
-    public function getLoginDetails() {
+    public function getLoginDetails()
+    {
         $model = new LocationApi($this->client, $this->config);
 
         try {
             $login_info = $model->getCharactersCharacterIdOnline($this->char_id);
-        } catch(ApiException) {
+        } catch (ApiException) {
             return null;
         }
 
@@ -160,7 +163,7 @@ class EsiConnection
 
         try {
             $balance = number_format($model->getCharactersCharacterIdWallet($this->char_id));
-        } catch(ApiException) {
+        } catch (ApiException) {
             return null;
         }
 
@@ -181,25 +184,25 @@ class EsiConnection
     public function getCorpHistory()
     {
         $history = $this->eseye->invoke('get', '/characters/{character_id}/corporationhistory/', [
-            'character_id' => $this->char_id
+            'character_id' => $this->char_id,
         ]);
 
         $data = json_decode($history->raw);
 
         // Get corporation names and alliance information
-        foreach ($data as $idx => $d)
-        {
+        foreach ($data as $idx => $d) {
             $corp_info = $this->eseye->invoke('get', '/corporations/{corporation_id}/', [
-                'corporation_id' => $d->corporation_id
+                'corporation_id' => $d->corporation_id,
             ]);
             $d->corporation_name = $corp_info->name;
 
             $history = [];
             $alliance_history = $this->eseye->invoke('get', '/corporations/{corporation_id}/alliancehistory/', [
-                'corporation_id' => $d->corporation_id
+                'corporation_id' => $d->corporation_id,
             ]);
-            foreach ($alliance_history as $h)
+            foreach ($alliance_history as $h) {
                 $history[] = $h;
+            }
 
             usort($history, function ($a, $b) {
                 $a = new \DateTime($a->start_date);
@@ -211,11 +214,9 @@ class EsiConnection
             $alliance_id = null;
             $charStart = new \DateTime($d->start_date);
 
-            foreach ($history as $h)
-            {
+            foreach ($history as $h) {
                 $alliStart = new \DateTime($h->start_date);
-                if ($charStart > $alliStart)
-                {
+                if ($charStart > $alliStart) {
                     $alliance_id = property_exists($h, 'alliance_id') ? $h->alliance_id : null;
                     break;
                 }
@@ -261,7 +262,7 @@ class EsiConnection
         try {
             $skillsModel = new SkillsApi($this->client, $this->config);
             $attributes = $skillsModel->getCharactersCharacterIdAttributes($this->char_id);
-        } catch(Exception) {
+        } catch (Exception) {
             $attributes = null;
         }
 
@@ -271,28 +272,28 @@ class EsiConnection
             $location = null;
         }
 
-        if ($location !== null)
-        {
+        if ($location !== null) {
             try {
-                if ($location->getStructureId() == null && $location->getStationId() == null)
+                if ($location->getStructureId() == null && $location->getStationId() == null) {
                     $location->structure_name =
                         "In Space (" . $this->getSystemName($location->getSolarSystemId()) . ")";
-                else if ($location->getStructureId() != null)
-                    $location->structure_name = $this->getStructureName($location->getStructureId());
-                else
-                    $location->structure_name = $this->getStationName($location->getStationId());
-            } catch(Exception) {
+                } else {
+                    if ($location->getStructureId() != null) {
+                        $location->structure_name = $this->getStructureName($location->getStructureId());
+                    } else {
+                        $location->structure_name = $this->getStationName($location->getStationId());
+                    }
+                }
+            } catch (Exception) {
                 $location->structure_name = "- Undockable Structure -";
             }
-        }
-        else
-        {
+        } else {
             $location = new stdClass();
             $location->structure_name = "- Undockable Structure -";
         }
 
         $public_data = $this->eseye->invoke('get', '/characters/{character_id}/', [
-            "character_id" => $this->char_id
+            "character_id" => $this->char_id,
         ]);
 
         return [
@@ -307,7 +308,7 @@ class EsiConnection
             'security_status' => round($public_data->security_status, 4),
             'region' => $location instanceof GetCharactersCharacterIdLocationOk ?
                 $this->getRegionName($location->getSolarSystemId()) : null,
-            'attributes' => $attributes
+            'attributes' => $attributes,
         ];
     }
 
@@ -321,15 +322,17 @@ class EsiConnection
     {
         $cache_key = "character_titles_$this->char_id";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         $model = new CharacterApi($this->client, $this->config);
         $titles = $model->getCharactersCharacterIdTitlesWithHttpInfo($this->char_id);
         $out = [];
 
-        foreach ($titles[0] as $title)
+        foreach ($titles[0] as $title) {
             $out[] = strip_tags($title->getName());
+        }
 
         $out = implode(', ', $out);
 
@@ -348,8 +351,9 @@ class EsiConnection
         $model = new ClonesApi($this->client, $this->config);
 
         $implants = $model->getCharactersCharacterIdImplants($this->char_id);
-        foreach ($implants as $idx => $implant)
+        foreach ($implants as $idx => $implant) {
             $implants[$idx] = $this->getTypeName($implant);
+        }
 
         $clones = $model->getCharactersCharacterIdClones($this->char_id);
         $home = $clones->getHomeLocation();
@@ -357,16 +361,15 @@ class EsiConnection
         try {
             $home->location_name =
                 $this->getLocationBasedOnStationType($home->getLocationType(), $home->getLocationId());
-        } catch(Exception) {
+        } catch (Exception) {
             $home->location_name = "- Undockable Station -";
         }
 
-        foreach ($clones->getJumpClones() as $clone)
-        {
+        foreach ($clones->getJumpClones() as $clone) {
             try {
                 $clone->location_name =
                     $this->getLocationBasedOnStationType($clone->getLocationType(), $clone->getLocationId());
-            } catch(Exception) {
+            } catch (Exception) {
                 $clone->location_name = "- Undockable Station -";
             }
         }
@@ -395,7 +398,7 @@ class EsiConnection
             184,
             1285,
             1289,
-            1290
+            1290,
         ];
         $requiredSkillDogmaAttributesLevels = [
             277,
@@ -403,40 +406,39 @@ class EsiConnection
             279,
             1286,
             1287,
-            1288
+            1288,
         ];
         $requiredSkills = [];
 
         $attributes = $this->eseye->invoke('get', '/universe/types/{type_id}/', [
-            'type_id' => $item_id
+            'type_id' => $item_id,
         ])->dogma_attributes;
 
-        foreach ($attributes as $attribute)
-        {
-            if (in_array($attribute->attribute_id, $requiredSkillDogmaAttributes))
-            {
+        foreach ($attributes as $attribute) {
+            if (in_array($attribute->attribute_id, $requiredSkillDogmaAttributes)) {
                 $idx = array_search($attribute->attribute_id, $requiredSkillDogmaAttributes);
 
-                if (!array_key_exists($idx, $requiredSkills))
+                if (!array_key_exists($idx, $requiredSkills)) {
                     $requiredSkills[$idx] = [];
+                }
 
                 $requiredSkills[$idx]['skill'] = $this->getTypeName(floor($attribute->value));
-            }
-            else if (in_array($attribute->attribute_id, $requiredSkillDogmaAttributesLevels))
-            {
-                $idx = array_search($attribute->attribute_id, $requiredSkillDogmaAttributesLevels);
+            } else {
+                if (in_array($attribute->attribute_id, $requiredSkillDogmaAttributesLevels)) {
+                    $idx = array_search($attribute->attribute_id, $requiredSkillDogmaAttributesLevels);
 
-                if (!array_key_exists($idx, $requiredSkills))
-                    $requiredSkills[$idx] = [];
+                    if (!array_key_exists($idx, $requiredSkills)) {
+                        $requiredSkills[$idx] = [];
+                    }
 
-                $requiredSkills[$idx]['level'] = (int) number_format($attribute->value);
+                    $requiredSkills[$idx]['level'] = (int)number_format($attribute->value);
+                }
             }
         }
 
         $skills = $this->getSearchableSkills();
 
-        foreach ($requiredSkills as $requirement)
-        {
+        foreach ($requiredSkills as $requirement) {
             if (!(
                 isset($skills[$requirement['skill']])
                 and $skills[$requirement['skill']]["level"] >= $requirement['level']
@@ -460,12 +462,11 @@ class EsiConnection
 
         $skills = $this->getSearchableSkills();
 
-        foreach ($skillplan as $skill => $level)
-        {
+        foreach ($skillplan as $skill => $level) {
             if (!(
-                    isset($skills[$skill])
-                    and $skills[$skill]["level"] >= $level
-                )) {
+                isset($skills[$skill])
+                and $skills[$skill]["level"] >= $level
+            )) {
                 switch ($level) {
                     case 1:
                         $level = 'I';
@@ -506,15 +507,15 @@ class EsiConnection
     {
         static $skills = null;
 
-        if (!$skills)
+        if (!$skills) {
             $skills = $this->getSkills();
+        }
 
-        foreach ($skills as $category)
-        {
-            foreach ($category as $skillName => $attributes)
-            {
-                if ($skillName == $skill && $attributes['trained'] >= $level)
+        foreach ($skills as $category) {
+            foreach ($category as $skillName => $attributes) {
+                if ($skillName == $skill && $attributes['trained'] >= $level) {
                     return true;
+                }
             }
         }
 
@@ -535,10 +536,9 @@ class EsiConnection
         $mailCacheKey = "mail_$this->char_id";
         $model = new MailApi($this->client, $this->config);
 
-        if (Cache::has($mailCacheKey))
+        if (Cache::has($mailCacheKey)) {
             return Cache::get($mailCacheKey);
-        else
-        {
+        } else {
             $mail_http = $model->getCharactersCharacterIdMailWithHttpInfo($this->char_id);
             $mail = $temp = $mail_http[0];
 
@@ -550,26 +550,26 @@ class EsiConnection
 
                 $mail = array_merge($mail, $temp);
 
-                if (count($mail) >= self::MAX_MAILS_TO_LOAD)
+                if (count($mail) >= self::MAX_MAILS_TO_LOAD) {
                     break;
+                }
             }
         }
 
         $ids = [];
-        array_map(function ($e) use(&$ids) {
+        array_map(function ($e) use (&$ids) {
             $ids[] = ['id' => $e->getFrom(), 'type' => 'character'];
         }, $mail);
         // Attempt to filter out mailing lists
         $ids = array_filter($ids, function ($e) {
             return (
-                !($e['id'] >= 145000000 and $e['id'] <= 146000000)
+            !($e['id'] >= 145000000 and $e['id'] <= 146000000)
             );
         });
 
         $senders = $this->lookupNames($ids);
 
-        foreach ($mail as $m)
-        {
+        foreach ($mail as $m) {
             $names = array_filter($senders, function ($e) use ($m) {
                 return $e->id == $m->getFrom();
             });
@@ -596,25 +596,22 @@ class EsiConnection
 
         $mail = $model->getCharactersCharacterIdMailMailId($this->char_id, $mailId);
 
-        if (Cache::has($mailBodyCacheKey . $mailId))
+        if (Cache::has($mailBodyCacheKey . $mailId)) {
             $mail->contents = Cache::get($mailBodyCacheKey . $mailId);
-        else
-        {
+        } else {
             $mail->contents = $model->getCharactersCharacterIdMailMailId($this->char_id, $mailId)->getBody();
             Cache::add($mailBodyCacheKey . $mailId, $mail->contents, env('CACHE_TIME', 3264));
         }
 
         $mail->recipients = [];
 
-        foreach ($mail->getRecipients() as $recipient)
-        {
-            switch ($recipient->getRecipientType())
-            {
+        foreach ($mail->getRecipients() as $recipient) {
+            switch ($recipient->getRecipientType()) {
                 case 'character':
                     $mail->recipients[] = [
                         'type' => 'character',
                         'id' => $recipient->getRecipientId(),
-                        'name' => null
+                        'name' => null,
                     ];
                     break;
 
@@ -622,7 +619,7 @@ class EsiConnection
                     $mail->recipients[] = [
                         'type' => 'corporation',
                         'id' => $recipient->getRecipientId(),
-                        'name' => null
+                        'name' => null,
                     ];
                     break;
 
@@ -630,7 +627,7 @@ class EsiConnection
                     $mail->recipients[] = [
                         'type' => 'alliance',
                         'id' => $recipient->getRecipientId(),
-                        'name' => null
+                        'name' => null,
                     ];
                     break;
 
@@ -638,7 +635,7 @@ class EsiConnection
                     $mail->recipients[] = [
                         'type' => 'mailing list',
                         'name' => $this->getMailingListName($recipient->getRecipientId()),
-                        'id' => $recipient->getRecipientId()
+                        'id' => $recipient->getRecipientId(),
                     ];
                     break;
 
@@ -647,25 +644,28 @@ class EsiConnection
             }
 
             if (in_array($recipient->getRecipientType(), ['character', 'corporation', 'alliance']) &&
-                !in_array(['id' => $recipient->getRecipientId(), 'type' => $recipient->getRecipientType()], $ids))
+                !in_array(['id' => $recipient->getRecipientId(), 'type' => $recipient->getRecipientType()], $ids)) {
                 $ids[] = ['id' => $recipient->getRecipientId(), 'type' => $recipient->getRecipientType()];
+            }
         }
 
-        if (count($ids) == 0)
+        if (count($ids) == 0) {
             return $mail;
+        }
 
         $data = $this->lookupNames($ids);
         $new_ids = [];
 
-        foreach ($data as $d)
+        foreach ($data as $d) {
             $new_ids[$d->id] = $d->name;
+        }
 
-        foreach ($mail->recipients as &$recipient)
-        {
-            if ($recipient['name'] == null)
+        foreach ($mail->recipients as &$recipient) {
+            if ($recipient['name'] == null) {
                 $recipient['name'] = array_key_exists($recipient['id'], $new_ids) ?
                     $new_ids[$recipient['id']] :
                     'Unknown recipient';
+            }
         }
 
         return $mail;
@@ -681,8 +681,9 @@ class EsiConnection
     {
         $cache_key = "skill_search_$this->char_id";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         $model = new SkillsApi($this->client, $this->config);
         $skills = $model->getCharactersCharacterIdSkillsWithHttpInfo($this->char_id);
@@ -691,8 +692,7 @@ class EsiConnection
 
         // Get Skill Names and Categories
         $unique_type_ids = [];
-        foreach ($unprocessed_skills as $skill)
-        {
+        foreach ($unprocessed_skills as $skill) {
             if (!in_array($skill->getSkillId(), $unique_type_ids)) {
                 $unique_type_ids[] = $skill->getSkillId();
             }
@@ -700,9 +700,7 @@ class EsiConnection
         $type_names = $this->getTypeNames($unique_type_ids);
         $group_names = $this->getGroupNames($unique_type_ids);
 
-        foreach ($unprocessed_skills as $skill)
-        {
-
+        foreach ($unprocessed_skills as $skill) {
             $skill_name = ($type_names[$skill->getSkillId()] ?? ("Unknown Skill " . $skill->getSkillId()));
             $skill_category = ($group_names[$skill->getSkillId()] ?? "Unknown Group ");
 
@@ -711,7 +709,7 @@ class EsiConnection
                 'category' => $skill_category,
                 'skillpoints' => $skill->getSkillpointsInSkill(),
                 'level' => $skill->getActiveSkillLevel(),
-                'trained' => $skill->getTrainedSkillLevel()
+                'trained' => $skill->getTrainedSkillLevel(),
             ];
         }
 
@@ -729,8 +727,9 @@ class EsiConnection
     {
         $cache_key = "skills_$this->char_id";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         $model = new SkillsApi($this->client, $this->config);
         $skills = $model->getCharactersCharacterIdSkillsWithHttpInfo($this->char_id);
@@ -739,8 +738,7 @@ class EsiConnection
 
         // Get Skill Names and Categories
         $unique_type_ids = [];
-        foreach ($unprocessed_skills as $skill)
-        {
+        foreach ($unprocessed_skills as $skill) {
             if (!in_array($skill->getSkillId(), $unique_type_ids)) {
                 $unique_type_ids[] = $skill->getSkillId();
             }
@@ -748,14 +746,11 @@ class EsiConnection
         $type_names = $this->getTypeNames($unique_type_ids);
         $group_names = $this->getGroupNames($unique_type_ids);
 
-        foreach ($unprocessed_skills as $skill)
-        {
-
+        foreach ($unprocessed_skills as $skill) {
             $skill_name = ($type_names[$skill->getSkillId()] ?? ("Unknown Skill " . $skill->getSkillId()));
             $skill_category = ($group_names[$skill->getSkillId()] ?? "Unknown Group ");
 
-            if (!array_key_exists($skill_category, $out))
-            {
+            if (!array_key_exists($skill_category, $out)) {
                 $out[$skill_category] = [];
                 $out[$skill_category]['skillpoints'] = 0;
             }
@@ -765,12 +760,13 @@ class EsiConnection
             $out[$skill_category][$skill_name] = [
                 'skillpoints' => $skill->getSkillpointsInSkill(),
                 'level' => $skill->getActiveSkillLevel(),
-                'trained' => $skill->getTrainedSkillLevel()
+                'trained' => $skill->getTrainedSkillLevel(),
             ];
         }
 
-        foreach ($out as &$category)
+        foreach ($out as &$category) {
             ksort($category);
+        }
 
         ksort($out);
 
@@ -788,15 +784,15 @@ class EsiConnection
     {
         $cache_key = "skill_queue_$this->char_id";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         $model = new SkillsApi($this->client, $this->config);
         $queue = $model->getCharactersCharacterIdSkillqueueWithHttpInfo($this->char_id);
         $out = [];
 
-        foreach ($queue[0] as $skill)
-        {
+        foreach ($queue[0] as $skill) {
             $out[] = [
                 'skill' => $this->getTypeName($skill->getSkillId()),
                 'end_level' => $skill->getFinishedLevel(),
@@ -806,8 +802,7 @@ class EsiConnection
 
         $out['queue_end'] = null;
 
-        if (count($queue[0]) > 0)
-        {
+        if (count($queue[0]) > 0) {
             $queue_end_date = end($queue[0])->getFinishDate();
             $out['queue_end'] = ($queue_end_date) ? $queue_end_date->format('Y-m-d H:i') : null;
             reset($queue[0]);
@@ -827,12 +822,12 @@ class EsiConnection
      */
     public function getUniqueAssets()
     {
-
         $cache_key = "unique_assets_$this->char_id";
         $unique_type_ids = [];
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         $model = new AssetsApi($this->client, $this->config);
 
@@ -846,10 +841,10 @@ class EsiConnection
             $i++;
         } while ($i <= $max_page);
 
-        foreach ($assets as $item)
-        {
-            if (!in_array($item->getTypeId(), $unique_type_ids))
+        foreach ($assets as $item) {
+            if (!in_array($item->getTypeId(), $unique_type_ids)) {
                 $unique_type_ids[] = $item->getTypeId();
+            }
         }
 
         $out = $this->getTypeNames($unique_type_ids);
@@ -878,11 +873,12 @@ class EsiConnection
         $stationContentLocationFlags = [
             "Deliveries",
             "Hangar",
-            "HangarAll"
+            "HangarAll",
         ];
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         $model = new AssetsApi($this->client, $this->config);
 
@@ -899,13 +895,14 @@ class EsiConnection
         } while ($i <= $max_page);
 
         // 0a. Get information that needs further processing
-        foreach ($assets as $item)
-        {
-            if ($item->getIsSingleton())
+        foreach ($assets as $item) {
+            if ($item->getIsSingleton()) {
                 $names_to_fetch[] = $item->getItemId();
+            }
 
-            if (!in_array($item->getTypeId(), $unique_type_ids))
+            if (!in_array($item->getTypeId(), $unique_type_ids)) {
                 $unique_type_ids[] = $item->getTypeId();
+            }
         }
 
         // 0b. Get type names
@@ -917,15 +914,16 @@ class EsiConnection
         // 0d. Fetch container item names
         foreach (array_chunk($names_to_fetch, 1000) as $chunk) {
             $res = $model->postCharactersCharacterIdAssetsNames($this->char_id, $chunk);
-            foreach ($res as $data)
+            foreach ($res as $data) {
                 $names[$data->getItemId()] = $data->getName();
+            }
         }
 
         // 1a. Asset safety is a bitch. That needs to happen first
-        foreach ($assets as $idx => $item)
-        {
-            if ($item->getLocationFlag() != "AssetSafety")
+        foreach ($assets as $idx => $item) {
+            if ($item->getLocationFlag() != "AssetSafety") {
                 continue;
+            }
 
             $this->addStationItem($out, $parentItems, $item, $type_names, $market_prices);
             unset($assets[$idx]);
@@ -947,14 +945,14 @@ class EsiConnection
         }
 
         // 2. Add second-level container subitems
-        foreach ($assets as $item)
-        {
+        foreach ($assets as $item) {
             // We don't need to do the station content location check again since those were all unset in the
             // previous for loop
-            if (!array_key_exists($item->getLocationId(), $parentItems))
-                continue; // TODO: Nested containers
+            if (!array_key_exists($item->getLocationId(), $parentItems)) {
+                continue;
+            } // TODO: Nested containers
 
-            $item_price = (int) ($market_prices[$item->getTypeId()] ?? 0);
+            $item_price = (int)($market_prices[$item->getTypeId()] ?? 0);
             $price = $item_price * $item->getQuantity();
             $parentItems[$item->getLocationId()]['items'][] = [
                 'name' => ($type_names[$item->getTypeId()] ?? ("Unknown Type " . $item->getTypeId())),
@@ -965,7 +963,7 @@ class EsiConnection
                 'price' => $price,
                 'value' => $price,
                 'location' => $this->getLocationName($item->getLocationId()),
-                'items' => []
+                'items' => [],
             ];
 
             $parentItems[$item->getLocationId()]['value'] += $price;
@@ -973,18 +971,17 @@ class EsiConnection
         }
 
         // 3. Calculate the value of each location/container
-        foreach ($out as &$location_items)
-        {
+        foreach ($out as &$location_items) {
             $location_price = 0;
-            foreach ($location_items['items'] as $item)
-                $location_price += (int) filter_var($item['value'], FILTER_SANITIZE_NUMBER_INT);
+            foreach ($location_items['items'] as $item) {
+                $location_price += (int)filter_var($item['value'], FILTER_SANITIZE_NUMBER_INT);
+            }
 
             $location_items['value'] = number_format($location_price);
         }
 
         // 4a. Add names to items and sort based on ISK value
-        foreach ($out as &$location)
-        {
+        foreach ($out as &$location) {
             // 4b. Convert items that are actually containers to containers
             foreach ($location['items'] as $key => &$item) {
                 $name = $names[$item['item_id']] ?? 'Unknown Item Name';
@@ -1009,20 +1006,20 @@ class EsiConnection
         return $out;
     }
 
-    private function addStationItem(&$out, &$parentItems, $item, $type_names, $market_prices) {
-        $item_price = (int) ($market_prices[$item->getTypeId()] ?? 0);
+    private function addStationItem(&$out, &$parentItems, $item, $type_names, $market_prices)
+    {
+        $item_price = (int)($market_prices[$item->getTypeId()] ?? 0);
         $price = $item_price * $item->getQuantity();
         $location_id = $item->getLocationId();
 
-        if (!array_key_exists($location_id, $out))
-        {
+        if (!array_key_exists($location_id, $out)) {
             $location = $this->getLocationName($item->getLocationId());
             $out[$location_id] = [
                 'id' => $location_id,
                 'name' => $location,
                 'value' => 0,
                 'items' => [],
-                'containers' => []
+                'containers' => [],
             ];
         }
 
@@ -1036,18 +1033,20 @@ class EsiConnection
             'value' => $price,
             'location' => $this->getLocationName($item->getLocationId()),
             'container' => false,
-            'items' => []
+            'items' => [],
         ];
 
         $out[$item->getLocationId()]['items'][] = &$parentItems[$item->getItemId()];
     }
 
-    private static function sort_locations ($a, $b) {
-        $v1 = (int) filter_var($a['value'], FILTER_SANITIZE_NUMBER_INT);
-        $v2 = (int) filter_var($b['value'], FILTER_SANITIZE_NUMBER_INT);
+    private static function sort_locations($a, $b)
+    {
+        $v1 = (int)filter_var($a['value'], FILTER_SANITIZE_NUMBER_INT);
+        $v2 = (int)filter_var($b['value'], FILTER_SANITIZE_NUMBER_INT);
 
-        if ($v1 == $v2)
+        if ($v1 == $v2) {
             return 0;
+        }
 
         return ($v1 > $v2) ? -1 : 1;
     }
@@ -1068,20 +1067,19 @@ class EsiConnection
         static $lookup_table = null;
         $cache_key = "market_prices";
 
-        if ($lookup_table == null)
-        {
-            if (Cache::has($cache_key))
+        if ($lookup_table == null) {
+            if (Cache::has($cache_key)) {
                 $market = Cache::get($cache_key);
-            else
-            {
+            } else {
                 $res = $this->eseye->invoke('get', '/markets/prices/');
                 $market = json_decode($res->raw);
                 Cache::add($cache_key, $market, 60);
             }
 
             $lookup_table = [];
-            foreach ($market as $entry)
+            foreach ($market as $entry) {
                 $lookup_table[$entry->type_id] = $entry->adjusted_price;
+            }
         }
 
         return (array_key_exists($type_id, $lookup_table) ? $lookup_table[$type_id] : 0);
@@ -1100,18 +1098,15 @@ class EsiConnection
      */
     private function getMarketPrices($type_ids)
     {
-
         $results = [];
 
         static $lookup_table = null;
         $cache_key = "market_prices";
 
-        if ($lookup_table == null)
-        {
-            if (Cache::has($cache_key))
+        if ($lookup_table == null) {
+            if (Cache::has($cache_key)) {
                 $market = Cache::get($cache_key);
-            else
-            {
+            } else {
                 $res = $this->eseye->invoke('get', '/markets/prices/');
                 $market = json_decode($res->raw);
                 Cache::add($cache_key, $market, 60);
@@ -1125,7 +1120,6 @@ class EsiConnection
         }
 
         return $results;
-
     }
 
     /**
@@ -1138,8 +1132,9 @@ class EsiConnection
     {
         $cache_key = "wallet_transactions_$this->char_id";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         $model = new WalletApi($this->client, $this->config);
         $res = $model->getCharactersCharacterIdWalletTransactionsWithHttpInfo($this->char_id);
@@ -1147,16 +1142,14 @@ class EsiConnection
 
         // Get Type Names
         $unique_type_ids = [];
-        foreach ($res[0] as $transaction)
-        {
+        foreach ($res[0] as $transaction) {
             if (!in_array($transaction->getTypeId(), $unique_type_ids)) {
                 $unique_type_ids[] = $transaction->getTypeId();
             }
         }
         $type_names = $this->getTypeNames($unique_type_ids);
 
-        foreach ($res[0] as $transaction)
-        {
+        foreach ($res[0] as $transaction) {
             $out[] = [
                 'date' => $transaction->getDate()->format('Y-m-d H:i:s'),
                 'client' => $this->getCharacterName($transaction->getClientId()),
@@ -1164,7 +1157,7 @@ class EsiConnection
                 'quantity' => $transaction->getQuantity(),
                 'change' => number_format((int) $transaction->getQuantity() * (int) $transaction->getUnitPrice()),
                 'buy' => $transaction->getIsBuy(),
-                'location' => $this->getLocationName($transaction->getLocationId())
+                'location' => $this->getLocationName($transaction->getLocationId()),
             ];
         }
 
@@ -1182,8 +1175,9 @@ class EsiConnection
     {
         $cache_key = "market_orders_$this->char_id";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         $model = new MarketApi($this->client, $this->config);
         $res = $model->getCharactersCharacterIdOrdersWithHttpInfo($this->char_id);
@@ -1191,16 +1185,14 @@ class EsiConnection
 
         // Get Type Names
         $unique_type_ids = [];
-        foreach ($res[0] as $order)
-        {
+        foreach ($res[0] as $order) {
             if (!in_array($order->getTypeId(), $unique_type_ids)) {
                 $unique_type_ids[] = $order->getTypeId();
             }
         }
         $type_names = $this->getTypeNames($unique_type_ids);
 
-        foreach ($res[0] as $order)
-        {
+        foreach ($res[0] as $order) {
             $out[] = [
                 'date' => $order->getIssued()->format('Y-m-d H:i:s'),
                 'time_remaining' => $order->getDuration() - floor((time() - $order->getIssued()->format('U')) / 86400),
@@ -1209,7 +1201,7 @@ class EsiConnection
                 'price' => number_format($order->getPrice(), 2),
                 'buy' => $order->getIsBuyOrder(),
                 'quantity_total' => $order->getVolumeTotal(),
-                'quantity_remain' => $order->getVolumeRemain()
+                'quantity_remain' => $order->getVolumeRemain(),
             ];
         }
 
@@ -1230,8 +1222,9 @@ class EsiConnection
     {
         $cache_key = "notifications_$this->char_id";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         $model = new CharacterApi($this->client, $this->config);
         $notifications = $model->getCharactersCharacterIdNotificationsWithHttpInfo($this->char_id);
@@ -1239,8 +1232,7 @@ class EsiConnection
 
         // Get Character/Corporation/Alliance Names
         $unique_ids = [];
-        foreach ($notifications[0] as $notification)
-        {
+        foreach ($notifications[0] as $notification) {
             if (
                 in_array($notification->getSenderType(), ['character', 'corporation', 'alliance']) &&
                 !in_array($notification->getSenderId(), $unique_ids)
@@ -1250,8 +1242,7 @@ class EsiConnection
         }
         $lookups = $this->lookupNames($unique_ids);
 
-        foreach ($notifications[0] as $notification)
-        {
+        foreach ($notifications[0] as $notification) {
             $lookup = array_filter($lookups, function ($e) use (&$notification) {
                 return $e->id == $notification->getSenderId();
             });
@@ -1261,7 +1252,7 @@ class EsiConnection
                 'sender' => $name,
                 'type' => $notification->getType(),
                 'variables' => Yaml::dump(Yaml::parse($notification->getText())),
-                'timestamp' => $notification->getTimestamp()->format('Y-m-d H:i')
+                'timestamp' => $notification->getTimestamp()->format('Y-m-d H:i'),
             ];
         }
 
@@ -1285,8 +1276,9 @@ class EsiConnection
     {
         $cache_key = "contracts_$this->char_id";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         $model = new ContractsApi($this->client, $this->config);
         $contracts = $model->getCharactersCharacterIdContractsWithHttpInfo($this->char_id);
@@ -1294,31 +1286,29 @@ class EsiConnection
         $unique_type_ids = [];
 
         $character_ids = [];
-        array_map(function ($e) use(&$character_ids) {
+        array_map(function ($e) use (&$character_ids) {
             $character_ids[] = ['id' => $e->getAcceptorId(), 'type' => 'character'];
             $character_ids[] = ['id' => $e->getIssuerId(), 'type' => 'character'];
         }, $contracts[0]);
         $character_names = $this->lookupNames($character_ids);
 
-        foreach ($contracts[0] as $contract)
-        {
+        foreach ($contracts[0] as $contract) {
             $model_items = $model->getCharactersCharacterIdContractsContractIdItems(
                 $this->char_id,
                 $contract->getContractId(),
             );
             $items = [];
 
-            foreach ($model_items as $item)
-            {
-
-                if (!in_array($item->getTypeId(), $unique_type_ids))
+            foreach ($model_items as $item) {
+                if (!in_array($item->getTypeId(), $unique_type_ids)) {
                     $unique_type_ids[] = $item->getTypeId();
+                }
 
                 $items[] = [
                     'id' => $item->getTypeId(),
                     'type' => null,
                     'quantity' => $item->getQuantity(),
-                    'price' => null
+                    'price' => null,
                 ];
             }
 
@@ -1327,8 +1317,7 @@ class EsiConnection
             $start = $this->getLocationName($contract->getStartLocationId());
             $end = $this->getLocationName($contract->getEndLocationId());
 
-            switch($type)
-            {
+            switch ($type) {
                 case 'item_exchange':
                 case 'auction':
                     $price = number_format($contract->getPrice());
@@ -1346,8 +1335,7 @@ class EsiConnection
 
             $assignee = $this->getCharacterName($contract->getAssigneeId());
 
-            if ($assignee == "Unknown Character")
-            {
+            if ($assignee == "Unknown Character") {
                 try {
                     $assignee = $this->getCorporationName($contract->getAssigneeId());
                 } catch (Exception) {
@@ -1361,10 +1349,11 @@ class EsiConnection
                 return $e->id == $contract->getAcceptorId();
             });
 
-            if ($contract->getAcceptorId() > 0)
+            if ($contract->getAcceptorId() > 0) {
                 $acceptor = sizeof($acceptor) > 0 ? array_pop($acceptor)->name : "Unknown Acceptor";
-            else
+            } else {
                 $acceptor = '';
+            }
 
             $issuer = array_filter($character_names, function ($e) use (&$contract) {
                 return $e->id == $contract->getIssuerId();
@@ -1394,10 +1383,8 @@ class EsiConnection
         $type_names = $this->getTypeNames($unique_type_ids);
         $market_prices = $this->getMarketPrices($unique_type_ids);
 
-        foreach ($out as &$each_contract)
-        {
-            foreach ($each_contract['items'] as &$each_item)
-            {
+        foreach ($out as &$each_contract) {
+            foreach ($each_contract['items'] as &$each_item) {
                 $each_item['type'] = $type_names[$each_item['id']] ?? ('Unknown Type ' . $each_item['type']);
                 $each_item['price'] = number_format(($market_prices[$each_item['id']] ?? 0) * $each_item['quantity']);
                 $each_item['quantity'] = number_format($each_item['quantity']);
@@ -1419,27 +1406,33 @@ class EsiConnection
     {
         $cache_key = "user_location_{$this->char_id}_$id";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
-        if ($id >= 60000000 && $id <= 64000000)
-        {
+        if ($id >= 60000000 && $id <= 64000000) {
             try {
                 $res = $this->getStationName($id);
                 Cache::add($cache_key, $res, env('CACHE_TIME', 3264));
                 return $res;
-            } catch (Exception) { }
+            } catch (Exception) {
+            }
+        } else {
+            if ($id == 2004) {
+                return "Asset Safety";
+            } else {
+                if ($id >= 40000000 && $id <= 50000000) {
+                    return "Deleted PI Structure";
+                }
+            }
         }
-        else if ($id == 2004)
-            return "Asset Safety";
-        else if ($id >= 40000000 && $id <= 50000000)
-            return "Deleted PI Structure";
 
         try {
             $res = $this->getStructureName($id);
             Cache::add($cache_key, $res, env('CACHE_TIME', 3264));
             return $res;
-        } catch (Exception) { }
+        } catch (Exception) {
+        }
 
         Cache::add($cache_key, "Unknown Location", env('CACHE_TIME', 3264));
         return "Unknown Location";
@@ -1458,23 +1451,24 @@ class EsiConnection
         $out = [];
         $ids = [];
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         $model = new WalletApi($this->client, $this->config);
         $journal = $model->getCharactersCharacterIdWalletJournalWithHttpInfo($this->char_id, null, null, $page);
 
-        for ($i = 2; $i <= $journal[2]['X-Pages'][0]; $i++)
-        {
+        for ($i = 2; $i <= $journal[2]['X-Pages'][0]; $i++) {
             $second = $model->getCharactersCharacterIdWalletJournal($this->char_id, null, null, $i);
 
-            if (!is_array($second))
+            if (!is_array($second)) {
                 continue;
+            }
 
             $journal[0] = array_merge($journal[0], $second);
         }
 
-        array_map(function ($e) use(&$ids) {
+        array_map(function ($e) use (&$ids) {
             $ids[] = ['id' => $e->getFirstPartyId(), 'type' => null];
             $ids[] = ['id' => $e->getSecondPartyId(), 'type' => null];
         }, $journal[0]);
@@ -1483,8 +1477,7 @@ class EsiConnection
         $account_id = User::where('character_id', $this->char_id)->first()->account_id;
         $alts = User::where('account_id', $account_id)->get()->pluck('name')->toArray();
 
-        foreach ($journal[0] as $entry)
-        {
+        foreach ($journal[0] as $entry) {
             $sender = array_filter($names, function ($e) use (&$entry) {
                 return $e->id == $entry->getFirstPartyId();
             });
@@ -1523,13 +1516,14 @@ class EsiConnection
     {
         $cache_key = "skillpoints_$this->char_id";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         $model = new SkillsApi($this->client, $this->config);
         try {
             $sp = $model->getCharactersCharacterIdSkillsWithHttpInfo($this->char_id);
-        } catch(ApiException) {
+        } catch (ApiException) {
             return null;
         }
 
@@ -1550,10 +1544,9 @@ class EsiConnection
     {
         $cache_key = "races";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             $races = Cache::get($cache_key);
-        else
-        {
+        } else {
             try {
                 $res = $this->eseye->invoke('get', '/universe/races');
             } catch (Exception $e) {
@@ -1564,9 +1557,11 @@ class EsiConnection
             Cache::add($cache_key, $races, env('CACHE_TIME', 3264));
         }
 
-        foreach ($races as $race)
-            if ($race->race_id == $race_id)
+        foreach ($races as $race) {
+            if ($race->race_id == $race_id) {
                 return $race->name;
+            }
+        }
 
         return 'UNKNOWN';
     }
@@ -1581,10 +1576,9 @@ class EsiConnection
     {
         $cache_key = "ancestries";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             $ancestries = Cache::get($cache_key);
-        else
-        {
+        } else {
             try {
                 $res = $this->eseye->invoke('get', '/universe/ancestries');
             } catch (\Exception) {
@@ -1595,9 +1589,11 @@ class EsiConnection
             Cache::add($cache_key, $ancestries, env('CACHE_TIME', 3264));
         }
 
-        foreach($ancestries as $ancestry)
-            if ($ancestry->id == $ancestry_id)
+        foreach ($ancestries as $ancestry) {
+            if ($ancestry->id == $ancestry_id) {
                 return $ancestry->name;
+            }
+        }
 
         return "UNKNOWN";
     }
@@ -1617,18 +1613,19 @@ class EsiConnection
     {
         $cache_key = "bloodlines";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             $bloodlines = Cache::get($cache_key);
-        else
-        {
+        } else {
             $res = $this->eseye->invoke('get', '/universe/bloodlines/');
             $bloodlines = json_decode($res->raw);
             Cache::add($cache_key, $bloodlines, env('CACHE_TIME', 3264));
         }
 
-        foreach ($bloodlines as $bloodline)
-            if ($bloodline->bloodline_id == $bloodline_id)
+        foreach ($bloodlines as $bloodline) {
+            if ($bloodline->bloodline_id == $bloodline_id) {
                 return $bloodline->name;
+            }
+        }
 
         return "UNKNOWN";
     }
@@ -1648,8 +1645,9 @@ class EsiConnection
     {
         $cache_key = "killmails_$this->char_id";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         $model = new KillmailsApi($this->client, $this->config);
         $data = $model->getCharactersCharacterIdKillmailsRecent($this->char_id);
@@ -1659,15 +1657,13 @@ class EsiConnection
         $killmails = [];
         $unique_type_ids = [];
 
-        foreach ($killmailHashes as $killmailHash)
-        {
+        foreach ($killmailHashes as $killmailHash) {
             $data = $this->eseye->invoke('get', '/killmails/{killmail_id}/{killmail_hash}/', [
                 'killmail_id' => $killmailHash['id'],
-                'killmail_hash' => $killmailHash['hash']
+                'killmail_hash' => $killmailHash['hash'],
             ]);
 
-            foreach ($data->attackers as $attacker)
-            {
+            foreach ($data->attackers as $attacker) {
                 $attacker->name = property_exists($attacker, 'character_id') ?
                     $this->getCharacterName($attacker->character_id) :
                     null;
@@ -1678,12 +1674,14 @@ class EsiConnection
                     $this->getAllianceName($attacker->alliance_id) :
                     null;
 
-                if ($attacker->final_blow)
+                if ($attacker->final_blow) {
                     $data->final_blow = $attacker;
+                }
             }
 
-            if (!in_array($data->victim->ship_type_id, $unique_type_ids))
+            if (!in_array($data->victim->ship_type_id, $unique_type_ids)) {
                 $unique_type_ids[] = $data->victim->ship_type_id;
+            }
 
             $data->victim->name = property_exists($data->victim, 'character_id') ?
                 $this->getCharacterName($data->victim->character_id) :
@@ -1698,7 +1696,7 @@ class EsiConnection
             $data->solar_system = $this->eseye->invoke('get', '/universe/systems/' . $data->solar_system_id);
             $constellation = $this->eseye->invoke(
                 'get',
-                '/universe/constellations/' . $data->solar_system->constellation_id
+                '/universe/constellations/' . $data->solar_system->constellation_id,
             );
             $data->region = $this->eseye->invoke('get', '/universe/regions/' . $constellation->region_id);
             $killmails[] = $data;
@@ -1739,9 +1737,11 @@ class EsiConnection
         $IDs = $this->lookupNames($ids);
         $char_ids = [];
 
-        foreach ($contacts as $contact)
-            if ($contact->getContactType() == "character")
+        foreach ($contacts as $contact) {
+            if ($contact->getContactType() == "character") {
                 $char_ids[] = $contact->getContactId();
+            }
+        }
 
         $affiliations = [];
         if (count($char_ids) > 0) {
@@ -1749,56 +1749,57 @@ class EsiConnection
             $affiliations = json_decode($affiliations->raw);
         }
 
-        foreach ($contacts as $contact)
-        {
-            $names = array_filter($IDs,
-                    function ($e) use(&$contact) {
-                        return $e->id == $contact->getContactId();
-                    }
-                );
+        foreach ($contacts as $contact) {
+            $names = array_filter(
+                $IDs,
+                function ($e) use (&$contact) {
+                    return $e->id == $contact->getContactId();
+                },
+            );
             $name = array_pop($names);
             $contact->contact_name = $name->name;
             $contact->alliance_name = $contact->alliance_ticker = null;
 
-            if ($contact->getContactType() == "character")
-            {
-                $affiliation = array_filter($affiliations,
-                    function ($e) use(&$contact) {
+            if ($contact->getContactType() == "character") {
+                $affiliation = array_filter(
+                    $affiliations,
+                    function ($e) use (&$contact) {
                         return $e->character_id == $contact->getContactId();
-                    }
+                    },
                 );
                 $affiliation = array_pop($affiliation);
 
                 $contact->corp_id = $affiliation->corporation_id;
                 $contact->corp_name = $this->getCorporationName($contact->corp_id);
 
-                if (property_exists($affiliation, 'alliance_id'))
-                {
+                if (property_exists($affiliation, 'alliance_id')) {
                     $contact->alliance_name = $this->getAllianceName($affiliation->alliance_id);
                     $contact->alliance_ticker = $this->getAllianceTicker($affiliation->alliance_id);
                 }
-            }
-            else if ($contact->getContactType() == "corporation")
-            {
-                $corp_info = $this->eseye->invoke('get', '/corporations/{corporation_id}/', [
-                    'corporation_id' => $contact->getContactId()
-                ]);
+            } else {
+                if ($contact->getContactType() == "corporation") {
+                    $corp_info = $this->eseye->invoke('get', '/corporations/{corporation_id}/', [
+                        'corporation_id' => $contact->getContactId(),
+                    ]);
 
-                if (!isset($corp_info->alliance_id))
-                    continue;
+                    if (!isset($corp_info->alliance_id)) {
+                        continue;
+                    }
 
-                $contact->alliance_name = $this->getAllianceName($corp_info->alliance_id);
-                $contact->alliance_ticker = $this->getAllianceTicker($corp_info->alliance_id);
+                    $contact->alliance_name = $this->getAllianceName($corp_info->alliance_id);
+                    $contact->alliance_ticker = $this->getAllianceTicker($corp_info->alliance_id);
+                }
             }
         }
 
         // Reverse sort by standing
-        usort($contacts, function($a, $b) {
+        usort($contacts, function ($a, $b) {
             $a_standing = $a->getStanding();
             $b_standing = $b->getStanding();
 
-            if ($a_standing == $b_standing)
+            if ($a_standing == $b_standing) {
                 return 0;
+            }
 
             return ($a_standing > $b_standing) ? -1 : 1;
         });
@@ -1815,14 +1816,13 @@ class EsiConnection
      */
     public function getMailingListName($mailing_list_id)
     {
-
         $model = new MailApi($this->client, $this->config);
         $lists = $model->getCharactersCharacterIdMailListsWithHttpInfo($this->char_id);
 
-        foreach ($lists[0] as $list)
-        {
-            if ($list->getMailingListId() == $mailing_list_id)
+        foreach ($lists[0] as $list) {
+            if ($list->getMailingListId() == $mailing_list_id) {
                 return $list->getName();
+            }
         }
 
         return "Unknown mailing list";
@@ -1841,16 +1841,18 @@ class EsiConnection
      */
     public function getAllianceName($alliance_id)
     {
-        if ($alliance_id == null)
+        if ($alliance_id == null) {
             return null;
+        }
 
         $cache_key = "alliance_$alliance_id";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         $alliance_info = $this->eseye->invoke('get', '/alliances/{alliance_id}/', [
-            'alliance_id' => $alliance_id
+            'alliance_id' => $alliance_id,
         ]);
 
         Cache::add($cache_key, $alliance_info->name, env('CACHE_TIME', 3264));
@@ -1871,16 +1873,18 @@ class EsiConnection
      */
     public function getAllianceTicker($alliance_id)
     {
-        if ($alliance_id == null)
+        if ($alliance_id == null) {
             return null;
+        }
 
         $cache_key = "alliance_ticker_$alliance_id";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         $alliance_info = $this->eseye->invoke('get', '/alliances/{alliance_id}/', [
-            'alliance_id' => $alliance_id
+            'alliance_id' => $alliance_id,
         ]);
 
         Cache::add($cache_key, $alliance_info->ticker, env('CACHE_TIME', 3264));
@@ -1901,16 +1905,18 @@ class EsiConnection
      */
     public function getCorporationName($corporation_id)
     {
-        if ($corporation_id == null)
+        if ($corporation_id == null) {
             return null;
+        }
 
         $cache_key = "corporation_$corporation_id";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         $corp_info = $this->eseye->invoke('get', '/corporations/{corporation_id}/', [
-            'corporation_id' => $corporation_id
+            'corporation_id' => $corporation_id,
         ]);
 
         Cache::add($cache_key, $corp_info->name, env('CACHE_TIME', 3264));
@@ -1926,19 +1932,21 @@ class EsiConnection
      */
     public function getCharacterName($character_id)
     {
-        if ($character_id == null)
+        if ($character_id == null) {
             return null;
+        }
 
         $cache_key = "character_$character_id";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         try {
             $char = $this->eseye->invoke('get', '/characters/{character_id}/', [
-                'character_id' => $character_id
+                'character_id' => $character_id,
             ]);
-        } catch(Exception) {
+        } catch (Exception) {
             return "Unknown Character";
         }
 
@@ -1984,8 +1992,9 @@ class EsiConnection
     {
         $cache_key = "structure_$structure_id";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         $model = new UniverseApi($this->client, $this->config);
         $res = $model->getUniverseStructuresStructureId($structure_id)->getName();
@@ -2009,11 +2018,12 @@ class EsiConnection
     {
         $cache_key = "system_$system_id";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         $res = $this->eseye->invoke('get', '/universe/systems/{system_id}/', [
-            'system_id' => $system_id
+            'system_id' => $system_id,
         ]);
 
         Cache::add($cache_key, $res->name, env('CACHE_TIME', 3264));
@@ -2035,17 +2045,18 @@ class EsiConnection
     {
         $cache_key = "system_region_$system_id";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         $system = $this->eseye->invoke('get', '/universe/systems/{system_id}/', [
-            'system_id' => $system_id
+            'system_id' => $system_id,
         ]);
         $constellation = $this->eseye->invoke('get', '/universe/constellations/{constellation_id}/', [
-            'constellation_id' => $system->constellation_id
+            'constellation_id' => $system->constellation_id,
         ]);
         $region = $this->eseye->invoke('get', '/universe/regions/{region_id}/', [
-            'region_id' => $constellation->region_id
+            'region_id' => $constellation->region_id,
         ]);
 
         Cache::add($cache_key, $region->name, env('CACHE_TIME', 3264));
@@ -2068,11 +2079,12 @@ class EsiConnection
     {
         $cache_key = "station_$station_id";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         $res = $this->eseye->invoke('get', '/universe/stations/{station_id}/', [
-            'station_id' => $station_id
+            'station_id' => $station_id,
         ]);
 
         Cache::add($cache_key, $res->name, env('CACHE_TIME', 3264));
@@ -2091,7 +2103,6 @@ class EsiConnection
         $dbItem = Type::where('typeID', $type_id)->first();
 
         return $dbItem?->typeName;
-
     }
 
 
@@ -2103,17 +2114,14 @@ class EsiConnection
      */
     public function getTypeNames($type_ids)
     {
-
         $results = [];
 
         foreach (array_chunk($type_ids, 1000) as $chunk) {
-
             $itemsQuery = Type::whereIn('typeID', $chunk);
 
             foreach ($itemsQuery->cursor() as $eachItem) {
                 $results[$eachItem->typeID] = $eachItem->typeName;
             }
-
         }
 
         return $results;
@@ -2148,13 +2156,13 @@ class EsiConnection
     {
         $item = Type::where('typeID', $typeId)->first();
 
-        if (!$item)
+        if (!$item) {
             return null;
+        }
 
         $group = Group::where('groupID', $item->groupID)->first();
 
         return $group?->groupName;
-
     }
 
 
@@ -2166,17 +2174,14 @@ class EsiConnection
      */
     public function getGroupNames($type_ids)
     {
-
         $results = [];
 
         foreach (array_chunk($type_ids, 1000) as $chunk) {
-
             $itemsQuery = Type::with('group')->whereIn('typeID', $chunk);
 
             foreach ($itemsQuery->cursor() as $eachItem) {
                 $results[$eachItem->typeID] = $eachItem->group->groupName;
             }
-
         }
 
         return $results;
@@ -2195,16 +2200,19 @@ class EsiConnection
      */
     public function getUnknownTypeName($name_id)
     {
-        if (!$name_id)
+        if (!$name_id) {
             return null;
+        }
 
-        if ($name_id == 2)
+        if ($name_id == 2) {
             return "Insurance";
+        }
 
         $cache_key = "universe_names_$name_id";
 
-        if (Cache::has($cache_key))
+        if (Cache::has($cache_key)) {
             return Cache::get($cache_key);
+        }
 
         $res = $this->eseye->setBody([$name_id])->invoke('post', '/universe/names/');
 
@@ -2222,15 +2230,15 @@ class EsiConnection
      */
     public function lookupNames($ids)
     {
-        if (sizeof($ids) == 0)
+        if (sizeof($ids) == 0) {
             return [];
+        }
 
         $names = [];
         $ids = array_unique(array_column($ids, 'id'));
         $chunked_names = array_chunk($ids, 100);
 
-        foreach ($chunked_names as $lookupChunk)
-        {
+        foreach ($chunked_names as $lookupChunk) {
             try {
                 $res = $this->eseye->setBody($lookupChunk)->invoke('post', '/universe/names');
                 $res = json_decode($res->raw);
