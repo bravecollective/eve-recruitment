@@ -2,8 +2,6 @@
 
 namespace App\Connectors;
 
-use App\Connectors\CoreConnection;
-use App\Models\ESINameResponse;
 use App\Models\User;
 use DateTime;
 use Exception;
@@ -52,31 +50,23 @@ class EsiConnection
 
     /**
      * Store the configuration instance
-     *
-     * @var Configuration $config
      */
-    private $config;
+    private Configuration $config;
 
     /**
      * Character ID the instance is created for
-     *
-     * @var int $char_id
      */
-    private $char_id;
+    private ?int $char_id;
 
     /**
      * Eseye instance
-     *
-     * @var Eseye $eseye
      */
-    private $eseye;
+    private Eseye $eseye;
 
     /**
      * Guzzle client
-     *
-     * @var Client
      */
-    private $client;
+    private Client $client;
 
     // The maximum number of mails to load from ESI
     const MAX_MAILS_TO_LOAD = 200;
@@ -84,19 +74,21 @@ class EsiConnection
     /**
      * EsiModel constructor
      *
-     * @param int $char_id Char ID to create the instance for
+     * @param ?int $char_id Char ID to create the instance for
      * @throws InvalidContainerDataException
-     * @throws ErrorException
+     * @throws \ErrorException
      */
     public function __construct($char_id = null)
     {
+        $char_id = $char_id === null ? null : (int) $char_id;
+
         $config = new Configuration();
         $guzzle_options = ['timeout' => 0];
 
-        if(is_null($char_id)) {
+        if (is_null($char_id)) {
             // Allow some limited access to functions without an associated character
             $config->setHost('https://' . Config::get('services.eveonline.esi_domain'));
-        } elseif(env('CORE_USE_ACCESS_TOKEN', false)) {
+        } elseif (env('CORE_USE_ACCESS_TOKEN', false)) {
             // Request access token from Neucore and hit ESI directly
             $config->setHost('https://' . Config::get('services.eveonline.esi_domain'));
             $config->setAccessToken($this->getAccessToken($char_id));
@@ -108,8 +100,11 @@ class EsiConnection
         }
 
         $eseye_config = \Seat\Eseye\Configuration::getInstance();
+        /** @noinspection PhpUndefinedFieldInspection */
         $eseye_config->logfile_location = storage_path() . '/logs';
+        /** @noinspection PhpUndefinedFieldInspection */
         $eseye_config->file_cache_location = storage_path() . '/framework/cache';
+        /** @noinspection PhpUndefinedFieldInspection */
         $eseye_config->esi_host = Config::get('services.eveonline.esi_domain');
 
         $this->eseye = new Eseye();
@@ -121,19 +116,19 @@ class EsiConnection
 
     /**
      * Get access token for given character ID
-     * 
+     *
      * @param int $char_id Char ID to get the token for
-     * @throws ErrorException
+     * @throws \ErrorException
      */
     private function getAccessToken($char_id) {
-        $cache_key = "access_token_{$char_id}";
+        $cache_key = "access_token_$char_id";
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
 
         $token = CoreConnection::getAccessTokenForCharacter($char_id);
         if ($token === null) {
-            Log::error("Failed to get token for character {$char_id}");
-            throw new \ErrorException("Failed to get token for character {$char_id}");
+            Log::error("Failed to get token for character $char_id");
+            throw new \ErrorException("Failed to get token for character $char_id");
         }
         Cache::add($cache_key, $token->token, Carbon::parse($token->expires)->diffInMinutes(now()));
         return $token->token;
@@ -157,7 +152,7 @@ class EsiConnection
     /**
      * Get a user's wallet balance
      *
-     * @return string
+     * @return ?string
      */
     public function getWalletBalance()
     {
@@ -181,6 +176,7 @@ class EsiConnection
      * @throws InvalidContainerDataException
      * @throws RequestFailedException
      * @throws UriDataMissingException
+     * @throws Exception
      */
     public function getCorpHistory()
     {
@@ -234,7 +230,9 @@ class EsiConnection
 
             $d->formatted_start_date = $start->format("m-d-Y");
             $d->formatted_end_date = ($end != null) ? $end->format("m-d-Y") : null;
-            $d->duration = ($end != null) ? $start->diff($end)->format('%a days') : $start->diff(new DateTime())->format('%a days');
+            $d->duration = ($end != null) ?
+                $start->diff($end)->format('%a days') :
+                $start->diff(new DateTime())->format('%a days');
         }
 
         return $data;
@@ -256,20 +254,20 @@ class EsiConnection
 
         try {
             $ship = $locationModel->getCharactersCharacterIdShip($this->char_id);
-        } catch (Exception $e) {
+        } catch (Exception) {
             $ship = null;
         }
 
         try {
             $skillsModel = new SkillsApi($this->client, $this->config);
             $attributes = $skillsModel->getCharactersCharacterIdAttributes($this->char_id);
-        } catch(Exception $e) {
+        } catch(Exception) {
             $attributes = null;
         }
 
         try {
             $location = $locationModel->getCharactersCharacterIdLocation($this->char_id);
-        } catch (Exception $e) {
+        } catch (Exception) {
             $location = null;
         }
 
@@ -277,12 +275,13 @@ class EsiConnection
         {
             try {
                 if ($location->getStructureId() == null && $location->getStationId() == null)
-                    $location->structure_name = "In Space (" . $this->getSystemName($location->getSolarSystemId()) . ")";
+                    $location->structure_name =
+                        "In Space (" . $this->getSystemName($location->getSolarSystemId()) . ")";
                 else if ($location->getStructureId() != null)
                     $location->structure_name = $this->getStructureName($location->getStructureId());
                 else
                     $location->structure_name = $this->getStationName($location->getStationId());
-            } catch(Exception $e) {
+            } catch(Exception) {
                 $location->structure_name = "- Undockable Structure -";
             }
         }
@@ -302,7 +301,9 @@ class EsiConnection
             'gender' => ucfirst($public_data->gender),
             'bloodline' => $this->getBloodline($public_data->bloodline_id),
             'race' => $this->getRace($public_data->race_id),
-            'current_ship' => ($ship != null) ? $ship->getShipName() . " (" . $this->getTypeName($ship->getShipTypeId()) . ")" : null,
+            'current_ship' => ($ship != null) ?
+                $ship->getShipName() . " (" . $this->getTypeName($ship->getShipTypeId()) . ")" :
+                null,
             'security_status' => round($public_data->security_status, 4),
             'region' => $location instanceof GetCharactersCharacterIdLocationOk ?
                 $this->getRegionName($location->getSolarSystemId()) : null,
@@ -318,7 +319,7 @@ class EsiConnection
      */
     public function getTitles()
     {
-        $cache_key = "character_titles_{$this->char_id}";
+        $cache_key = "character_titles_$this->char_id";
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
@@ -354,16 +355,18 @@ class EsiConnection
         $home = $clones->getHomeLocation();
 
         try {
-            $home->location_name = $this->getLocationBasedOnStationType($home->getLocationType(), $home->getLocationId());
-        } catch(Exception $e) {
+            $home->location_name =
+                $this->getLocationBasedOnStationType($home->getLocationType(), $home->getLocationId());
+        } catch(Exception) {
             $home->location_name = "- Undockable Station -";
         }
 
         foreach ($clones->getJumpClones() as $clone)
         {
             try {
-                $clone->location_name = $this->getLocationBasedOnStationType($clone->getLocationType(), $clone->getLocationId());
-            } catch(Exception $e) {
+                $clone->location_name =
+                    $this->getLocationBasedOnStationType($clone->getLocationType(), $clone->getLocationId());
+            } catch(Exception) {
                 $clone->location_name = "- Undockable Station -";
             }
         }
@@ -380,6 +383,8 @@ class EsiConnection
      * @throws EsiScopeAccessDeniedException
      * @throws InvalidContainerDataException
      * @throws UriDataMissingException
+     * @throws RequestFailedException
+     * @throws InvalidAuthenticationException
      */
     public function characterCanUseItem($item_id)
     {
@@ -433,7 +438,7 @@ class EsiConnection
         foreach ($requiredSkills as $requirement)
         {
             if (!(
-                isset($skills[$requirement['skill']]) 
+                isset($skills[$requirement['skill']])
                 and $skills[$requirement['skill']]["level"] >= $requirement['level']
             )) {
                 return false;
@@ -446,7 +451,6 @@ class EsiConnection
     /**
      * Check if a user meets skillplan requirements
      *
-     * @param $skillplan
      * @return array
      * @throws ApiException
      */
@@ -459,7 +463,7 @@ class EsiConnection
         foreach ($skillplan as $skill => $level)
         {
             if (!(
-                    isset($skills[$skill]) 
+                    isset($skills[$skill])
                     and $skills[$skill]["level"] >= $level
                 )) {
                 switch ($level) {
@@ -496,12 +500,9 @@ class EsiConnection
     /**
      * Given a skill name and level, check if the user has it
      *
-     * @param $skill
-     * @param $level
-     * @return bool
      * @throws ApiException
      */
-    private function userHasSkillLevel($skill, $level)
+    private function userHasSkillLevel($skill, $level): bool
     {
         static $skills = null;
 
@@ -531,7 +532,7 @@ class EsiConnection
      */
     public function getMail()
     {
-        $mailCacheKey = "mail_{$this->char_id}";
+        $mailCacheKey = "mail_$this->char_id";
         $model = new MailApi($this->client, $this->config);
 
         if (Cache::has($mailCacheKey))
@@ -541,7 +542,7 @@ class EsiConnection
             $mail_http = $model->getCharactersCharacterIdMailWithHttpInfo($this->char_id);
             $mail = $temp = $mail_http[0];
 
-            while (count($temp) >= 50) // If count is < 50, there's no new mail to request
+            while (count($temp) >= 50) // If the count is < 50, there's no new mail to request
             {
                 $last_mail_id = end($mail)->getMailId();
                 reset($mail);
@@ -555,12 +556,14 @@ class EsiConnection
         }
 
         $ids = [];
-        array_map(function ($e) use(&$ids) { $ids[] = ['id' => $e->getFrom(), 'type' => 'character']; }, $mail);
+        array_map(function ($e) use(&$ids) {
+            $ids[] = ['id' => $e->getFrom(), 'type' => 'character'];
+        }, $mail);
         // Attempt to filter out mailing lists
-        $ids = array_filter($ids, function ($e) { 
+        $ids = array_filter($ids, function ($e) {
             return (
                 !($e['id'] >= 145000000 and $e['id'] <= 146000000)
-            ); 
+            );
         });
 
         $senders = $this->lookupNames($ids);
@@ -581,9 +584,9 @@ class EsiConnection
     }
 
     /**
-     * Get information about a single mail
+     * Get information about single mail
      *
-     * @param $mailId
+     * @throws ApiException
      */
     public function getMailDetails($mailId)
     {
@@ -660,7 +663,9 @@ class EsiConnection
         foreach ($mail->recipients as &$recipient)
         {
             if ($recipient['name'] == null)
-                $recipient['name'] = array_key_exists($recipient['id'], $new_ids) ? $new_ids[$recipient['id']] : 'Unknown recipient';
+                $recipient['name'] = array_key_exists($recipient['id'], $new_ids) ?
+                    $new_ids[$recipient['id']] :
+                    'Unknown recipient';
         }
 
         return $mail;
@@ -674,7 +679,7 @@ class EsiConnection
      */
     public function getSearchableSkills()
     {
-        $cache_key = "skill_search_{$this->char_id}";
+        $cache_key = "skill_search_$this->char_id";
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
@@ -697,7 +702,7 @@ class EsiConnection
 
         foreach ($unprocessed_skills as $skill)
         {
-            
+
             $skill_name = ($type_names[$skill->getSkillId()] ?? ("Unknown Skill " . $skill->getSkillId()));
             $skill_category = ($group_names[$skill->getSkillId()] ?? "Unknown Group ");
 
@@ -722,7 +727,7 @@ class EsiConnection
      */
     public function getSkills()
     {
-        $cache_key = "skills_{$this->char_id}";
+        $cache_key = "skills_$this->char_id";
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
@@ -745,7 +750,7 @@ class EsiConnection
 
         foreach ($unprocessed_skills as $skill)
         {
-            
+
             $skill_name = ($type_names[$skill->getSkillId()] ?? ("Unknown Skill " . $skill->getSkillId()));
             $skill_category = ($group_names[$skill->getSkillId()] ?? "Unknown Group ");
 
@@ -781,7 +786,7 @@ class EsiConnection
      */
     public function getSkillQueue()
     {
-        $cache_key = "skill_queue_{$this->char_id}";
+        $cache_key = "skill_queue_$this->char_id";
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
@@ -795,7 +800,7 @@ class EsiConnection
             $out[] = [
                 'skill' => $this->getTypeName($skill->getSkillId()),
                 'end_level' => $skill->getFinishedLevel(),
-                'paused' => (!method_exists($skill, 'getFinishDate') || $skill->getFinishDate() == null) ? true : false,
+                'paused' => !method_exists($skill, 'getFinishDate') || $skill->getFinishDate() == null,
             ];
         }
 
@@ -823,7 +828,7 @@ class EsiConnection
     public function getUniqueAssets()
     {
 
-        $cache_key = "unique_assets_{$this->char_id}";
+        $cache_key = "unique_assets_$this->char_id";
         $unique_type_ids = [];
 
         if (Cache::has($cache_key))
@@ -834,17 +839,14 @@ class EsiConnection
         $assets = [];
 
         $i = 1;
-        $max_page = 1;
         do {
-
             $assetRequests = $model->getCharactersCharacterIdAssetsWithHttpInfo($this->char_id, null, null, $i);
             $max_page = $assetRequests[2]['X-Pages'][0];
             $assets = array_merge($assets, $assetRequests[0]);
             $i++;
-
         } while ($i <= $max_page);
 
-        foreach ($assets as $idx => $item)
+        foreach ($assets as $item)
         {
             if (!in_array($item->getTypeId(), $unique_type_ids))
                 $unique_type_ids[] = $item->getTypeId();
@@ -854,18 +856,22 @@ class EsiConnection
 
         Cache::add($cache_key, $out, $this->getCacheExpirationTime($assetRequests));
         return $out;
-
     }
 
     /**
      * Get a user's assets
      *
      * @return array
+     * @throws EsiScopeAccessDeniedException
+     * @throws InvalidAuthenticationException
+     * @throws InvalidContainerDataException
+     * @throws RequestFailedException
+     * @throws UriDataMissingException
      * @throws ApiException
      */
     public function getAssets()
     {
-        $cache_key = "assets_{$this->char_id}";
+        $cache_key = "assets_$this->char_id";
         $names_to_fetch = [];
         $unique_type_ids = [];
         $names = [];
@@ -879,24 +885,21 @@ class EsiConnection
             return Cache::get($cache_key);
 
         $model = new AssetsApi($this->client, $this->config);
-        
+
         $assets = [];
         $out = [];
         $parentItems = [];
 
         $i = 1;
-        $max_page = 1;
         do {
-
             $assetRequests = $model->getCharactersCharacterIdAssetsWithHttpInfo($this->char_id, null, null, $i);
             $max_page = $assetRequests[2]['X-Pages'][0];
             $assets = array_merge($assets, $assetRequests[0]);
             $i++;
-
         } while ($i <= $max_page);
 
         // 0a. Get information that needs further processing
-        foreach ($assets as $idx => $item)
+        foreach ($assets as $item)
         {
             if ($item->getIsSingleton())
                 $names_to_fetch[] = $item->getItemId();
@@ -929,18 +932,21 @@ class EsiConnection
         }
 
         // 1b. Create parent container entries
-        foreach ($assets as $idx => $item)
-        {
-            // Items in asset safety wrap show up as "hangar" location flag. Since asset safety wrap is processed first,
-            // if the item's locaiton ID is in $parentItems it is asset safety wrap
-            if (array_key_exists($item->getLocationId(), $parentItems) || !in_array($item->getLocationFlag(), $stationContentLocationFlags))
+        foreach ($assets as $idx => $item) {
+            // Items in asset safety wrap show up as "hangar" location flag. Since asset safety wrap is
+            // processed first, if the item's location ID is in $parentItems it is asset safety wrap
+            if (
+                array_key_exists($item->getLocationId(), $parentItems) ||
+                !in_array($item->getLocationFlag(), $stationContentLocationFlags)
+            ) {
                 continue;
+            }
 
             $this->addStationItem($out, $parentItems, $item, $type_names, $market_prices);
             unset($assets[$idx]);
         }
 
-        // 2. Add second-level container sub-items
+        // 2. Add second-level container subitems
         foreach ($assets as $item)
         {
             // We don't need to do the station content location check again since those were all unset in the
@@ -1052,7 +1058,9 @@ class EsiConnection
      * @param $type_id
      * @return int|string
      * @throws EsiScopeAccessDeniedException
+     * @throws InvalidAuthenticationException
      * @throws InvalidContainerDataException
+     * @throws RequestFailedException
      * @throws UriDataMissingException
      */
     private function getMarketPrice($type_id)
@@ -1085,7 +1093,9 @@ class EsiConnection
      * @param $type_ids
      * @return array
      * @throws EsiScopeAccessDeniedException
+     * @throws InvalidAuthenticationException
      * @throws InvalidContainerDataException
+     * @throws RequestFailedException
      * @throws UriDataMissingException
      */
     private function getMarketPrices($type_ids)
@@ -1126,7 +1136,7 @@ class EsiConnection
      */
     public function getTransactions()
     {
-        $cache_key = "wallet_transactions_{$this->char_id}";
+        $cache_key = "wallet_transactions_$this->char_id";
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
@@ -1170,7 +1180,7 @@ class EsiConnection
      */
     public function getMarketOrders()
     {
-        $cache_key = "market_orders_{$this->char_id}";
+        $cache_key = "market_orders_$this->char_id";
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
@@ -1218,7 +1228,7 @@ class EsiConnection
      */
     public function getNotifications()
     {
-        $cache_key = "notifications_{$this->char_id}";
+        $cache_key = "notifications_$this->char_id";
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
@@ -1231,7 +1241,10 @@ class EsiConnection
         $unique_ids = [];
         foreach ($notifications[0] as $notification)
         {
-            if (in_array($notification->getSenderType(), ['character', 'corporation', 'alliance']) and !in_array($notification->getSenderId(), $unique_ids)) {
+            if (
+                in_array($notification->getSenderType(), ['character', 'corporation', 'alliance']) &&
+                !in_array($notification->getSenderId(), $unique_ids)
+            ) {
                 $unique_ids[] = ['id' => $notification->getSenderId(), 'type' => $notification->getSenderType()];
             }
         }
@@ -1239,7 +1252,9 @@ class EsiConnection
 
         foreach ($notifications[0] as $notification)
         {
-            $lookup = array_filter($lookups, function ($e) use(&$notification) { return $e->id == $notification->getSenderId(); });
+            $lookup = array_filter($lookups, function ($e) use (&$notification) {
+                return $e->id == $notification->getSenderId();
+            });
             $name = sizeof($lookup) > 0 ? array_pop($lookup)->name : 'Other';
 
             $out[] = [
@@ -1260,13 +1275,15 @@ class EsiConnection
      *
      * @return mixed
      * @throws EsiScopeAccessDeniedException
+     * @throws InvalidAuthenticationException
      * @throws InvalidContainerDataException
+     * @throws RequestFailedException
      * @throws UriDataMissingException
      * @throws ApiException
      */
     public function getContracts()
     {
-        $cache_key = "contracts_{$this->char_id}";
+        $cache_key = "contracts_$this->char_id";
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
@@ -1285,7 +1302,10 @@ class EsiConnection
 
         foreach ($contracts[0] as $contract)
         {
-            $model_items = $model->getCharactersCharacterIdContractsContractIdItems($this->char_id, $contract->getContractId());
+            $model_items = $model->getCharactersCharacterIdContractsContractIdItems(
+                $this->char_id,
+                $contract->getContractId(),
+            );
             $items = [];
 
             foreach ($model_items as $item)
@@ -1330,7 +1350,7 @@ class EsiConnection
             {
                 try {
                     $assignee = $this->getCorporationName($contract->getAssigneeId());
-                } catch (Exception $e) {
+                } catch (Exception) {
                     $assignee = "Unknown Assignee";
                 }
             }
@@ -1397,7 +1417,7 @@ class EsiConnection
      */
     private function getLocationName($id)
     {
-        $cache_key = "user_location_{$this->char_id}_{$id}";
+        $cache_key = "user_location_{$this->char_id}_$id";
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
@@ -1408,7 +1428,7 @@ class EsiConnection
                 $res = $this->getStationName($id);
                 Cache::add($cache_key, $res, env('CACHE_TIME', 3264));
                 return $res;
-            } catch (Exception $e) { }
+            } catch (Exception) { }
         }
         else if ($id == 2004)
             return "Asset Safety";
@@ -1419,7 +1439,7 @@ class EsiConnection
             $res = $this->getStructureName($id);
             Cache::add($cache_key, $res, env('CACHE_TIME', 3264));
             return $res;
-        } catch (Exception $e) { }
+        } catch (Exception) { }
 
         Cache::add($cache_key, "Unknown Location", env('CACHE_TIME', 3264));
         return "Unknown Location";
@@ -1434,7 +1454,7 @@ class EsiConnection
      */
     public function getJournal($page = 1)
     {
-        $cache_key = "wallet_journal_{$this->char_id}";
+        $cache_key = "wallet_journal_$this->char_id";
         $out = [];
         $ids = [];
 
@@ -1456,7 +1476,8 @@ class EsiConnection
 
         array_map(function ($e) use(&$ids) {
             $ids[] = ['id' => $e->getFirstPartyId(), 'type' => null];
-            $ids[] = ['id' => $e->getSecondPartyId(), 'type' => null]; }, $journal[0]);
+            $ids[] = ['id' => $e->getSecondPartyId(), 'type' => null];
+        }, $journal[0]);
 
         $names = $this->lookupNames($ids);
         $account_id = User::where('character_id', $this->char_id)->first()->account_id;
@@ -1464,10 +1485,14 @@ class EsiConnection
 
         foreach ($journal[0] as $entry)
         {
-            $sender = array_filter($names, function ($e) use(&$entry) { return $e->id == $entry->getFirstPartyId(); });
+            $sender = array_filter($names, function ($e) use (&$entry) {
+                return $e->id == $entry->getFirstPartyId();
+            });
             $sender = sizeof($sender) > 0 ? array_pop($sender)->name : "Unknown Sender";
 
-            $receiver = array_filter($names, function ($e) use(&$entry) { return $e->id == $entry->getSecondPartyId(); });
+            $receiver = array_filter($names, function ($e) use (&$entry) {
+                return $e->id == $entry->getSecondPartyId();
+            });
             $receiver = sizeof($receiver) > 0 ? array_pop($receiver)->name : "Unknown Receiver";
 
             $out[] = [
@@ -1496,7 +1521,7 @@ class EsiConnection
      */
     public function getSkillpoints()
     {
-        $cache_key = "skillpoints_{$this->char_id}";
+        $cache_key = "skillpoints_$this->char_id";
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
@@ -1504,7 +1529,7 @@ class EsiConnection
         $model = new SkillsApi($this->client, $this->config);
         try {
             $sp = $model->getCharactersCharacterIdSkillsWithHttpInfo($this->char_id);
-        } catch(ApiException $e) {
+        } catch(ApiException) {
             return null;
         }
 
@@ -1551,9 +1576,6 @@ class EsiConnection
      *
      * @param $ancestry_id
      * @return mixed
-     * @throws EsiScopeAccessDeniedException
-     * @throws InvalidContainerDataException
-     * @throws UriDataMissingException
      */
     public function getAncestry($ancestry_id)
     {
@@ -1565,7 +1587,7 @@ class EsiConnection
         {
             try {
                 $res = $this->eseye->invoke('get', '/universe/ancestries');
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 return "UNKNOWN";
             }
 
@@ -1586,7 +1608,9 @@ class EsiConnection
      * @param $bloodline_id
      * @return mixed
      * @throws EsiScopeAccessDeniedException
+     * @throws InvalidAuthenticationException
      * @throws InvalidContainerDataException
+     * @throws RequestFailedException
      * @throws UriDataMissingException
      */
     public function getBloodline($bloodline_id)
@@ -1613,17 +1637,25 @@ class EsiConnection
      * Get a user's killmails
      *
      * @return array
+     * @throws InvalidAuthenticationException
+     * @throws InvalidContainerDataException
+     * @throws RequestFailedException
+     * @throws UriDataMissingException
+     * @throws EsiScopeAccessDeniedException
+     * @throws ApiException
      */
     public function getKillmails()
     {
-        $cache_key = "killmails_{$this->char_id}";
+        $cache_key = "killmails_$this->char_id";
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
 
         $model = new KillmailsApi($this->client, $this->config);
         $data = $model->getCharactersCharacterIdKillmailsRecent($this->char_id);
-        $killmailHashes = array_map(function ($e) { return ['id' => $e->getKillmailId(), 'hash' => $e->getKillmailHash()]; }, $data);
+        $killmailHashes = array_map(function ($e) {
+            return ['id' => $e->getKillmailId(), 'hash' => $e->getKillmailHash()];
+        }, $data);
         $killmails = [];
         $unique_type_ids = [];
 
@@ -1636,32 +1668,48 @@ class EsiConnection
 
             foreach ($data->attackers as $attacker)
             {
-                $attacker->name = property_exists($attacker, 'character_id') ? $this->getCharacterName($attacker->character_id) : null;
-                $attacker->corporation_name = property_exists($attacker, 'corporation_id') ? $this->getCorporationName($attacker->corporation_id) : null;
-                $attacker->alliance_name = property_exists($attacker, 'alliance_id') ? $this->getAllianceName($attacker->alliance_id) : null;
+                $attacker->name = property_exists($attacker, 'character_id') ?
+                    $this->getCharacterName($attacker->character_id) :
+                    null;
+                $attacker->corporation_name = property_exists($attacker, 'corporation_id') ?
+                    $this->getCorporationName($attacker->corporation_id) :
+                    null;
+                $attacker->alliance_name = property_exists($attacker, 'alliance_id') ?
+                    $this->getAllianceName($attacker->alliance_id) :
+                    null;
 
-                if ($attacker->final_blow == true)
+                if ($attacker->final_blow)
                     $data->final_blow = $attacker;
             }
 
             if (!in_array($data->victim->ship_type_id, $unique_type_ids))
                 $unique_type_ids[] = $data->victim->ship_type_id;
 
-            $data->victim->name = property_exists($data->victim, 'character_id') ? $this->getCharacterName($data->victim->character_id) : null;
-            $data->victim->corporation_name = property_exists($data->victim, 'corporation_id') ? $this->getCorporationName($data->victim->corporation_id) : null;
-            $data->victim->alliance_name = property_exists($data->victim, 'alliance_id') ? $this->getAllianceName($data->victim->alliance_id) : null;
+            $data->victim->name = property_exists($data->victim, 'character_id') ?
+                $this->getCharacterName($data->victim->character_id) :
+                null;
+            $data->victim->corporation_name = property_exists($data->victim, 'corporation_id') ?
+                $this->getCorporationName($data->victim->corporation_id) :
+                null;
+            $data->victim->alliance_name = property_exists($data->victim, 'alliance_id') ?
+                $this->getAllianceName($data->victim->alliance_id) :
+                null;
 
             $data->solar_system = $this->eseye->invoke('get', '/universe/systems/' . $data->solar_system_id);
-            $constellation = $this->eseye->invoke('get', '/universe/constellations/' . $data->solar_system->constellation_id);
+            $constellation = $this->eseye->invoke(
+                'get',
+                '/universe/constellations/' . $data->solar_system->constellation_id
+            );
             $data->region = $this->eseye->invoke('get', '/universe/regions/' . $constellation->region_id);
             $killmails[] = $data;
         }
 
         $type_names = $this->getTypeNames($unique_type_ids);
 
-        foreach ($killmails as &$each_killmail)
-        {
-            $each_killmail->victim->ship_type_name = $type_names[$each_killmail->victim->ship_type_id] ?? ('Unknown Type ' . $each_killmail->victim->ship_type_id);
+        foreach ($killmails as &$each_killmail) {
+            $each_killmail->victim->ship_type_name =
+                $type_names[$each_killmail->victim->ship_type_id] ??
+                ('Unknown Type ' . $each_killmail->victim->ship_type_id);
         }
 
         Cache::add($cache_key, $killmails, env('CACHE_TIME', 3264));
@@ -1674,7 +1722,9 @@ class EsiConnection
      *
      * @return GetCharactersCharacterIdContacts200Ok[]
      * @throws EsiScopeAccessDeniedException
+     * @throws InvalidAuthenticationException
      * @throws InvalidContainerDataException
+     * @throws RequestFailedException
      * @throws UriDataMissingException
      * @throws ApiException
      */
@@ -1682,7 +1732,9 @@ class EsiConnection
     {
         $model = new ContactsApi($this->client, $this->config);
         $contacts = $model->getCharactersCharacterIdContacts($this->char_id);
-        $ids = array_map(function ($e) { return ['id' => $e->getContactId(), 'type' => $e->getContactType()]; }, $contacts);
+        $ids = array_map(function ($e) {
+            return ['id' => $e->getContactId(), 'type' => $e->getContactType()];
+        }, $contacts);
 
         $IDs = $this->lookupNames($ids);
         $char_ids = [];
@@ -1782,7 +1834,9 @@ class EsiConnection
      * @param $alliance_id
      * @return string|null
      * @throws EsiScopeAccessDeniedException
+     * @throws InvalidAuthenticationException
      * @throws InvalidContainerDataException
+     * @throws RequestFailedException
      * @throws UriDataMissingException
      */
     public function getAllianceName($alliance_id)
@@ -1790,7 +1844,7 @@ class EsiConnection
         if ($alliance_id == null)
             return null;
 
-        $cache_key = "alliance_{$alliance_id}";
+        $cache_key = "alliance_$alliance_id";
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
@@ -1810,7 +1864,9 @@ class EsiConnection
      * @param $alliance_id
      * @return mixed|null
      * @throws EsiScopeAccessDeniedException
+     * @throws InvalidAuthenticationException
      * @throws InvalidContainerDataException
+     * @throws RequestFailedException
      * @throws UriDataMissingException
      */
     public function getAllianceTicker($alliance_id)
@@ -1818,7 +1874,7 @@ class EsiConnection
         if ($alliance_id == null)
             return null;
 
-        $cache_key = "alliance_ticker_{$alliance_id}";
+        $cache_key = "alliance_ticker_$alliance_id";
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
@@ -1836,9 +1892,11 @@ class EsiConnection
      * Get the name of a corporation
      *
      * @param $corporation_id
-     * @return |null
+     * @return ?string
      * @throws EsiScopeAccessDeniedException
+     * @throws InvalidAuthenticationException
      * @throws InvalidContainerDataException
+     * @throws RequestFailedException
      * @throws UriDataMissingException
      */
     public function getCorporationName($corporation_id)
@@ -1846,7 +1904,7 @@ class EsiConnection
         if ($corporation_id == null)
             return null;
 
-        $cache_key = "corporation_{$corporation_id}";
+        $cache_key = "corporation_$corporation_id";
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
@@ -1871,7 +1929,7 @@ class EsiConnection
         if ($character_id == null)
             return null;
 
-        $cache_key = "character_{$character_id}";
+        $cache_key = "character_$character_id";
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
@@ -1880,7 +1938,7 @@ class EsiConnection
             $char = $this->eseye->invoke('get', '/characters/{character_id}/', [
                 'character_id' => $character_id
             ]);
-        } catch(Exception $e) {
+        } catch(Exception) {
             return "Unknown Character";
         }
 
@@ -1901,25 +1959,19 @@ class EsiConnection
      * @param $id
      * @return mixed|string|null
      * @throws EsiScopeAccessDeniedException
+     * @throws InvalidAuthenticationException
      * @throws InvalidContainerDataException
+     * @throws RequestFailedException
      * @throws UriDataMissingException
      * @throws ApiException
      */
     public function getLocationBasedOnStationType($type, $id)
     {
-        switch($type)
-        {
-            case "structure":
-                return $this->getStructureName($id);
-                break;
-
-            case "station":
-                return $this->getStationName($id);
-                break;
-
-            default:
-                return null;
-        }
+        return match ($type) {
+            "structure" => $this->getStructureName($id),
+            "station" => $this->getStationName($id),
+            default => null,
+        };
     }
 
     /**
@@ -1930,7 +1982,7 @@ class EsiConnection
      */
     public function getStructureName($structure_id)
     {
-        $cache_key = "structure_{$structure_id}";
+        $cache_key = "structure_$structure_id";
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
@@ -1948,12 +2000,14 @@ class EsiConnection
      * @param $system_id
      * @return mixed
      * @throws EsiScopeAccessDeniedException
+     * @throws InvalidAuthenticationException
      * @throws InvalidContainerDataException
+     * @throws RequestFailedException
      * @throws UriDataMissingException
      */
     public function getSystemName($system_id)
     {
-        $cache_key = "system_{$system_id}";
+        $cache_key = "system_$system_id";
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
@@ -1972,12 +2026,14 @@ class EsiConnection
      * @param $system_id
      * @return mixed
      * @throws EsiScopeAccessDeniedException
+     * @throws InvalidAuthenticationException
      * @throws InvalidContainerDataException
+     * @throws RequestFailedException
      * @throws UriDataMissingException
      */
     public function getRegionName($system_id)
     {
-        $cache_key = "system_region_{$system_id}";
+        $cache_key = "system_region_$system_id";
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
@@ -2003,12 +2059,14 @@ class EsiConnection
      * @param $station_id
      * @return mixed
      * @throws EsiScopeAccessDeniedException
+     * @throws InvalidAuthenticationException
      * @throws InvalidContainerDataException
+     * @throws RequestFailedException
      * @throws UriDataMissingException
      */
     public function getStationName($station_id)
     {
-        $cache_key = "station_{$station_id}";
+        $cache_key = "station_$station_id";
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
@@ -2032,10 +2090,8 @@ class EsiConnection
     {
         $dbItem = Type::where('typeID', $type_id)->first();
 
-        if (!$dbItem)
-            return null;
+        return $dbItem?->typeName;
 
-        return $dbItem->typeName;
     }
 
 
@@ -2057,7 +2113,7 @@ class EsiConnection
             foreach ($itemsQuery->cursor() as $eachItem) {
                 $results[$eachItem->typeID] = $eachItem->typeName;
             }
-            
+
         }
 
         return $results;
@@ -2066,22 +2122,18 @@ class EsiConnection
     /**
      * Given an array of type names, get any known IDs
      *
-     * @param $type_ids
+     * @param $type_names
      * @return array
      */
     public function getTypeIDs($type_names)
     {
-
         $results = [];
 
         foreach (array_chunk($type_names, 1000) as $chunk) {
-
             $itemsQuery = Type::whereIn('typeName', $chunk);
-
             foreach ($itemsQuery->cursor() as $eachItem) {
                 $results[$eachItem->typeID] = $eachItem->typeName;
             }
-            
         }
 
         return $results;
@@ -2090,8 +2142,7 @@ class EsiConnection
     /**
      * Get the name of a group, given an item ID
      *
-     * @param $typeId
-     * @return Group|mixed
+     * @return ?string
      */
     public function getGroupName($typeId)
     {
@@ -2102,10 +2153,8 @@ class EsiConnection
 
         $group = Group::where('groupID', $item->groupID)->first();
 
-        if (!$group)
-            return null;
+        return $group?->groupName;
 
-        return $group->groupName;
     }
 
 
@@ -2127,7 +2176,7 @@ class EsiConnection
             foreach ($itemsQuery->cursor() as $eachItem) {
                 $results[$eachItem->typeID] = $eachItem->group->groupName;
             }
-            
+
         }
 
         return $results;
@@ -2152,15 +2201,12 @@ class EsiConnection
         if ($name_id == 2)
             return "Insurance";
 
-        $cache_key = "universe_names_{$name_id}";
+        $cache_key = "universe_names_$name_id";
 
         if (Cache::has($cache_key))
             return Cache::get($cache_key);
 
         $res = $this->eseye->setBody([$name_id])->invoke('post', '/universe/names/');
-
-        if (!$res)
-            return null;
 
         $data = json_decode($res->raw);
         $name = $data[0]->name;
@@ -2189,14 +2235,14 @@ class EsiConnection
                 $res = $this->eseye->setBody($lookupChunk)->invoke('post', '/universe/names');
                 $res = json_decode($res->raw);
                 $names = array_merge($names, $res);
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 // One of the IDs was invalid - step through them one by one
                 foreach ($lookupChunk as $id) {
                     try {
                         $res = $this->eseye->setBody([$id])->invoke('post', '/universe/names');
                         $res = json_decode($res->raw);
                         $names = array_merge($names, $res);
-                    } catch (Exception $e) {
+                    } catch (Exception) {
                         // Found the invalid one - append it as an object in the proper format
                         $names[] = json_decode(json_encode([
                             'id' => $id,
