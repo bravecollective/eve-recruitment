@@ -30,6 +30,35 @@ class CoreConnection
     }
 
     /**
+     * Get the account IDs for a set of characters
+     *
+     * @param array $userIds The IDs of the users
+     * @return ?int The account ID
+     */
+    public static function getCharactersAccounts($userIds)
+    {
+
+        $output = array_fill_keys($userIds, null);
+
+        # Split requests into groups of 500
+        foreach (array_chunk($userIds, 500) as $subLists) {
+
+            $response = self::generatePOSTRequest(
+                '/api/app/v1/players',
+                json_encode($subLists),
+                "application/json"
+            );
+
+            foreach ($response as $eachAccount) {
+                $output[$eachAccount->characterId] = $eachAccount->id;
+            }
+
+        }
+
+        return $output;
+    }
+
+    /**
      * Get the core groups associated with a userID
      *
      * @param $userId int The ID of the user
@@ -95,6 +124,41 @@ class CoreConnection
         curl_setopt($c, CURLOPT_URL, env('CORE_URL') . $url);
         curl_setopt($c, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+
+        $output = curl_exec($c);
+
+        if (curl_errno($c)) {
+            Log::warning(curl_error($c));
+            return null;
+        }
+
+        curl_close($c);
+
+        return json_decode($output);
+    }
+
+    /**
+     * Generate the cURL request to core. Only used by class methods.
+     *
+     * @param string $url The URL to send the request to, in the form /path/to/endpoint
+     * @param string|null $body The POST request body. Must be pre-encoded
+     * @param string $content_type The format of the POST request body
+     * @return string|array|object|null JSON data returned from Core.
+     */
+    private static function generatePOSTRequest(string $url, $body, $content_type): string|array|object|null
+    {
+        $c = curl_init();
+
+        $headers = [
+            ('Authorization: Bearer ' . base64_encode(env('CORE_APP_ID') . ':' . env('CORE_APP_SECRET'))),
+            "Content-Type: " . $content_type
+        ];
+
+        curl_setopt($c, CURLOPT_URL, env('CORE_URL') . $url);
+        curl_setopt($c, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($c, CURLOPT_POST, true);
+        curl_setopt($c, CURLOPT_POSTFIELDS, $body);
 
         $output = curl_exec($c);
 
