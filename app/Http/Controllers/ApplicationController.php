@@ -670,7 +670,7 @@ class ApplicationController extends Controller
             return redirect('/')->with('error', 'Unauthorized');
 
 
-        $name = ($ad->corp_id == null) ? $ad->group_name : (new EsiConnection(Auth::user()->id))->getCorporationName($ad->corp_id);
+        $name = ($ad->corp_id == null) ? $ad->group_name : (new EsiConnection())->getCorporationName($ad->corp_id);
         $form = FormQuestion::where('recruitment_id', $ad->id)->get();
 
         return view('view_ad', ['id' => $ad->id, 'name' => $name, 'text' => $ad->text, 'questions' => $form]);
