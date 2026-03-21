@@ -111,13 +111,17 @@ class ApplicationController extends Controller
 
         User::updateUsersOnApplicationLoad($char_id);
 
-        if (!$char->has_valid_token)
+        try {
+            $esi = new EsiConnection($char_id);
+        } catch (Exception) {
+            $esi = null;
+        }
+
+        if (!$char->has_valid_token or !isset($esi))
             return view('application', [
                 'character' => $char,
                 'userApplications' => Application::getUserApplicationsForRecruiter($char),
             ]);
-
-        $esi = new EsiConnection($char_id);
 
         $char_info = $esi->getCharacterInfo();
         $corp_history = $esi->getCorpHistory();
