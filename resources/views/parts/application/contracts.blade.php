@@ -46,7 +46,7 @@
                                 <tr>
                                     <td>
                                         <img src="https://image.eveonline.com/Type/{{ $item['id'] }}_32.png" />
-                                        {{ $item['type'] }} x{{ $item['quantity'] }}
+                                        {{ $item['type'] }} x{{ $item['quantity'] }}@if(!$item['is_included']) (requested)@endif
                                     </td>
                                     <td>{{ $item['price'] }} isk</td>
                                 </tr>

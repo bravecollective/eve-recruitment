@@ -1128,6 +1128,7 @@ class EsiConnection
                     'type' => null,
                     'quantity' => $item->getQuantity(),
                     'price' => null,
+                    'is_included' => $item->getIsIncluded(),
                 ];
             }
 
