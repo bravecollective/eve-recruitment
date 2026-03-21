@@ -65,11 +65,17 @@ class Account extends Authenticatable
 
     /**
      * Get an accounts alts
+     * 
+     * @param $include_main bool
      *
      * @return mixed
      */
-    public function alts()
+    public function alts($include_main = false)
     {
-        return User::where('account_id', $this->id)->where('character_id', '!=', $this->main_user_id)->get();
+        if ($include_main) {
+            return User::where('account_id', $this->id)->get();
+        } else {
+            return User::where('account_id', $this->id)->where('character_id', '!=', $this->main_user_id)->get();
+        }
     }
 }
