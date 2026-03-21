@@ -52,9 +52,9 @@ class ApplicationController extends Controller
             return redirect('/')->with('error', 'Unauthorized');
 
         User::updateUsersOnApplicationLoad($application->account->main_user_id);
-        $esi = new EsiConnection($application->account->main_user_id);
 
         try {
+            $esi = new EsiConnection($application->account->main_user_id);
             $sp = $esi->getSkillpoints();
             $isk = $esi->getWalletBalance();
             $titles = $esi->getTitles();
