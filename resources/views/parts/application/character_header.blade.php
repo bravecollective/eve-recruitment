@@ -43,6 +43,11 @@
         Titles: {{ $titles }}
     </div>
 </div>
+<div class="row justify-content-center">
+    <div class="col-xl-6 col-lg-8 col-12 text-center">
+        Roles: {{ implode(', ', $roles) }}
+    </div>
+</div>
 @else
 <div class="row justify-content-center">
     <h4><strong>Invalid ESI Token</strong></h4>

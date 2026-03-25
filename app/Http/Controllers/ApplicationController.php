@@ -58,8 +58,9 @@ class ApplicationController extends Controller
             $sp = $esi->getSkillpoints();
             $isk = $esi->getWalletBalance();
             $titles = $esi->getTitles();
+            $roles = $esi->getRoles();
         } catch(Exception) {
-            $sp = $isk = $titles = null;
+            $sp = $isk = $titles = $roles = null;
         }
 
         $tooltips = [];
@@ -82,6 +83,7 @@ class ApplicationController extends Controller
             'sp' => $sp,
             'isk' => $isk,
             'titles' => $titles,
+            'roles' => $roles,
             'state_tooltip' => $tooltips,
             'userApplications' => Application::getUserApplicationsForRecruiter($application->account->main()),
         ]);
@@ -134,8 +136,9 @@ class ApplicationController extends Controller
             $sp = $esi->getSkillpoints();
             $isk = $esi->getWalletBalance();
             $titles = $esi->getTitles();
+            $roles = $esi->getRoles();
         } catch(Exception) {
-            $sp = $isk = $titles = null;
+            $sp = $isk = $titles = $roles = null;
         }
 
         try {
@@ -156,6 +159,7 @@ class ApplicationController extends Controller
             'deleted_characters' => $deleted_chars,
             'added_characters' => $added_chars,
             'titles' => $titles,
+            'roles' => $roles,
             'login_details' => $login_details,
             'userApplications' => Application::getUserApplicationsForRecruiter($char),
         ]);
