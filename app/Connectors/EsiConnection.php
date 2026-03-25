@@ -574,7 +574,7 @@ class EsiConnection
         if (Cache::has($mailBodyCacheKey . $mailId)) {
             $mail->contents = Cache::get($mailBodyCacheKey . $mailId);
         } else {
-            $mail->contents = $model->getCharactersCharacterIdMailMailId($this->char_id, $mailId)->getBody();
+            $mail->contents = $mail->getBody();
             Cache::add($mailBodyCacheKey . $mailId, $mail->contents, env('CACHE_TIME', 3264));
         }
 
