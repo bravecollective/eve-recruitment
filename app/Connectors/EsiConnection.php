@@ -317,6 +317,39 @@ class EsiConnection
     }
 
     /**
+     * Get a character's corporation roles
+     *
+     * @throws ApiException
+     */
+    public function getRoles(): array
+    {
+        $cache_key = "character_roles_$this->char_id";
+
+        if (Cache::has($cache_key)) {
+            return Cache::get($cache_key);
+        }
+
+        $model = new CharacterApi($this->client, $this->config);
+        $roles = $model->getCharactersCharacterIdRolesWithHttpInfo($this->char_id);
+        // The first entry ($roles[0]) is the global set of roles, we ignore the location-specific roles
+        // because they are so rare and would clutter the UI
+        $rawRoles = $roles[0]->getRoles() ?? [];
+
+        if (in_array('Director', $rawRoles)) {
+            // ESI returns every single role for directors (because they implicitly have them), but that
+            // bloats the application page and makes it hard to read so we remove all the extra roles here
+            $out = ['Director'];
+        } else {
+            // ESI returns the role names like 'Station_Manager', but we want it as 'Station Manager'
+            $out = array_map(fn($r) => str_replace('_', ' ', $r), $rawRoles);
+        }
+
+        Cache::add($cache_key, $out, $this->getCacheExpirationTime($roles));
+
+        return $out;
+    }
+
+    /**
      * Get a character's clone information
      *
      * @throws ApiException
