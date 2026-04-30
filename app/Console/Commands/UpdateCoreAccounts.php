@@ -42,7 +42,9 @@ class UpdateCoreAccounts extends Command
     {
         $users = User::all();
         $accounts = Account::all();
-        $count = 0;
+        $updated = 0;
+        $deleted = 0;
+        $idsToCheck = [];
 
         foreach ($users as $user)
         {
@@ -53,18 +55,36 @@ class UpdateCoreAccounts extends Command
 
         foreach ($users as $user)
         {
-            $user->core_account_id = $mappedIDs[$user->character_id];
-            $user->save();
-            $count++;
+            $coreAccountId = $mappedIDs[$user->character_id];
+
+            if ($coreAccountId === null) {
+                // Neucore returned no player for this character (biomassed/sold/otherwise removed), so delete it.
+                if (Account::where('main_user_id', $user->character_id)->exists()) {
+                    // Skip deleting if the character is a main for an account, as that would break the account.\
+                    echo "Failed to delete character {$user->character_id} because it is the main of an account\n";
+                    continue;
+                }
+                $user->delete();
+                $deleted++;
+            } else {
+                $user->core_account_id = $coreAccountId;
+                $user->save();
+                $updated++;
+            }
         }
 
-        echo "Updated $count characters\n";
+        echo "Updated $updated characters, deleted $deleted characters\n";
         $count = 0;
 
         foreach ($accounts as $account)
         {
-            $user = User::where('account_id', $account->id)->first();
-            $account->core_account_id = $user?->core_account_id;
+            $user = User::where('account_id', $account->id)->whereNotNull('core_account_id')->first();
+            if ($user === null) {
+                // Account has no characters, or all the characters on the account have a NULL core account.
+                continue;
+            }
+
+            $account->core_account_id = $user->core_account_id;
             $account->save();
             $count++;
         }
