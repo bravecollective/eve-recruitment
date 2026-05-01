@@ -114,7 +114,12 @@ class AccountRole extends Model
         foreach ($ads as $ad)
             $ad->corp_name = ($ad->corp_id == null) ? null : (new EsiConnection())->getCorporationName($ad->corp_id);
 
-        return $ads->all();
+        $ads = $ads->all();
+        usort($ads, function ($a, $b) {
+            return strnatcasecmp($a->corp_name ?? $a->group_name, $b->corp_name ?? $b->group_name);
+        });
+
+        return $ads;
     }
 
     /**
@@ -168,10 +173,15 @@ class AccountRole extends Model
         }
 
         // array_unique is needed to avoid returning duplicates when the user has both director and recruiter permissions
-        return array_unique($ads, SORT_REGULAR);
+        $ads = array_values(array_unique($ads, SORT_REGULAR));
+        usort($ads, function ($a, $b) {
+            return strnatcasecmp($a->corp_name, $b->corp_name);
+        });
+
+        return $ads;
     }
 
-    public static function getGroupAdsUsercanView()
+    public static function getGroupAdsUserCanView()
     {
         $account_id = Auth::user()->id;
 
@@ -209,7 +219,12 @@ class AccountRole extends Model
         }
 
         // array_unique is needed to avoid returning duplicates when the user has both director and recruiter permissions
-        return array_unique($ads, SORT_REGULAR);
+        $ads = array_values(array_unique($ads, SORT_REGULAR));
+        usort($ads, function ($a, $b) {
+            return strnatcasecmp($a->group_name, $b->group_name);
+        });
+
+        return $ads;
     }
 
     public static function userCanEditAd($type, $id)

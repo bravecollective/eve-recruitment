@@ -81,7 +81,7 @@ class GroupAdController extends Controller
         if (!Auth::user()->hasRole('group admin') && !Auth::user()->hasRoleLike('%manager'))
             return redirect('/')->with('error', 'Unauthorized');
 
-        $ads = AccountRole::getGroupAdsUsercanView();
+        $ads = AccountRole::getGroupAdsUserCanView();
 
         return view('list_ads', [
             'title' => 'Group',
@@ -99,7 +99,7 @@ class GroupAdController extends Controller
         if (!Auth::user()->hasRole('group admin') && !Auth::user()->hasRoleLike('%manager'))
             return redirect('/')->with('error', 'Unauthorized');
 
-        $ads = AccountRole::getGroupAdsUsercanView();
+        $ads = AccountRole::getGroupAdsUserCanView();
 
         return view('list_ads', [
             'title' => 'Group',
