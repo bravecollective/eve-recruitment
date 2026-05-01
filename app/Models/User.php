@@ -96,7 +96,7 @@ class User extends Model
 
             if (!$dbUser)
                 $dbUser = new User();
-            else if ($dbUser->core_account_id != $account->core_account_id)
+            else if ($dbUser->core_account_id != $account->core_account_id and !in_array($dbUser->account_id, $old_accounts))
                 $old_accounts[] = $dbUser->account_id; // Used to check for orphaned accounts. This char switched accounts
 
             $dbUser->account_id = $account->id;
@@ -125,34 +125,21 @@ class User extends Model
         // Delete potentially orphaned accounts
         foreach ($old_accounts as $old_account_id)
         {
-            $users = User::where('account_id', $old_account_id)->get();
+            $user_count = User::where('account_id', $old_account_id)->count();
 
-            if (count($users) == 0) {
-                $applications = Application::where('account_id', $old_account_id)->get();
-                foreach ($applications as $application) {
-                    $application->account_id = $account->id;
-                    $application->save();
-                }
+            if ($user_count == 0) {
 
-                $form_responses = FormResponse::where('account_id', $old_account_id)->get();
-                foreach ($form_responses as $response) {
-                    $response->account_id = $account->id;
-                    $response->save();
-                }
+                $old_account = Account::where('id', $old_account_id)->first();
+                $old_account->migrate($account->id);
+                $old_account->delete();
 
-                $changelogs = ApplicationChangelog::where('account_id', $old_account_id)->get();
-                foreach ($changelogs as $changelog) {
-                    $changelog->account_id = $account->id;
-                    $changelog->save();
-                }
-
-                Account::where('core_account_id', $old_account_id)->delete();
             }
-            else
-            {
-                $account = Account::where('core_account_id', $old_account_id)->first();
-                $account->main_user_id = 0;
-                $account->save();
+            else {
+
+                $old_account = Account::where('id', $old_account_id)->first();
+                $old_account->main_user_id = 0;
+                $old_account->save();
+
             }
         }
     }

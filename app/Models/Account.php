@@ -78,4 +78,39 @@ class Account extends Authenticatable
             return User::where('account_id', $this->id)->where('character_id', '!=', $this->main_user_id)->get();
         }
     }
+
+    /**
+     * Migrate associated data to a new account
+     * 
+     * @param $new_account_id int
+     */
+    public function migrate($new_account_id)
+    {
+
+        $applications = Application::where('account_id', $this->id)->get();
+        foreach ($applications as $application) {
+            $application->account_id = $new_account_id;
+            $application->save();
+        }
+
+        $changelogs = ApplicationChangelog::where('account_id', $this->id)->get();
+        foreach ($changelogs as $changelog) {
+            $changelog->account_id = $new_account_id;
+            $changelog->save();
+        }
+
+        $form_responses = FormResponse::where('account_id', $this->id)->get();
+        foreach ($form_responses as $response) {
+            $response->account_id = $new_account_id;
+            $response->save();
+        }
+
+        $comments = Comment::where('account_id', $this->id)->get();
+        foreach ($comments as $comment) {
+            $comment->account_id = $new_account_id;
+            $comment->save();
+        }
+
+    }
+
 }
