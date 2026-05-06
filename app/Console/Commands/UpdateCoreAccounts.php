@@ -123,7 +123,7 @@ class UpdateCoreAccounts extends Command
                     else {
                         
                         // We don't have a valid main, keep the account intact so that its data remains accessible
-                        $account->core_account_id = $user->core_account_id;
+                        $account->core_account_id = null;
                         $account->save();
                         $account->verifyMainExists();
                         $accounts_in_archive++;
@@ -179,7 +179,7 @@ class UpdateCoreAccounts extends Command
             else {
 
                 // One Core Account
-                $account->core_account_id = $user->core_account_id;
+                $account->core_account_id = $core_accounts[0];
                 $account->save();
                 $account->verifyMainExists();
                 $accounts_updated++;
