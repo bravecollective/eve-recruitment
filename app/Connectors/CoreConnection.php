@@ -18,6 +18,17 @@ class CoreConnection
     }
 
     /**
+     * Get the characters associated with a core account ID
+     *
+     * @param $accountId int The ID of the core account
+     * @return array|null JSON array of characters, or null if none were found
+     */
+    public static function getCharactersForAccount($accountId)
+    {
+        return self::generateWebRequest('/api/app/v1/player-chars/' . $accountId);
+    }
+
+    /**
      * Get the account ID for a character
      *
      * @param $userId int The ID of the user
@@ -33,7 +44,7 @@ class CoreConnection
      * Get the account IDs for a set of characters
      *
      * @param array $userIds The IDs of the users
-     * @return ?int The account ID
+     * @return array The account IDs
      */
     public static function getCharactersAccounts($userIds)
     {

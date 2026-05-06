@@ -50,9 +50,10 @@ class User extends Model
     public $incrementing = false;
 
     /**
-     * Update account when ESI is viewed
+     * Update account when ESI is viewed, returns false if no Core data could be found and true otherwise
      *
      * @param $char_id
+     * @return bool
      */
     public static function updateUsersOnApplicationLoad($char_id)
     {
@@ -60,7 +61,7 @@ class User extends Model
         $main = null;
 
         if ($core_users == null)
-            return;
+            return false;
 
         foreach ($core_users as $user)
         {
@@ -69,6 +70,8 @@ class User extends Model
         }
 
         self::addUsersToDatabase($core_users, $main);
+
+        return true;
     }
 
     /**

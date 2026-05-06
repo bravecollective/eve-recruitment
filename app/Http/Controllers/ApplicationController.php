@@ -51,7 +51,7 @@ class ApplicationController extends Controller
         if (!AccountRole::canViewApplications($ad))
             return redirect('/')->with('error', 'Unauthorized');
 
-        User::updateUsersOnApplicationLoad($application->account->main_user_id);
+        $sync_success = User::updateUsersOnApplicationLoad($application->account->main_user_id);
 
         try {
             $esi = new EsiConnection($application->account->main_user_id);
@@ -60,7 +60,7 @@ class ApplicationController extends Controller
             $titles = $esi->getTitles();
             $roles = $esi->getRoles();
         } catch(Exception) {
-            $sp = $isk = $titles = $roles = null;
+            $esi = $sp = $isk = $titles = $roles = null;
         }
 
         $tooltips = [];
@@ -75,18 +75,32 @@ class ApplicationController extends Controller
         }
 
         $tooltips = implode("<br>", $tooltips);
-        return view('application', [
-            'alts' => $application->account->alts(),
-            'character' => $application->account->main(),
-            'application' => $application,
-            'states' => Application::$state_names,
-            'sp' => $sp,
-            'isk' => $isk,
-            'titles' => $titles,
-            'roles' => $roles,
-            'state_tooltip' => $tooltips,
-            'userApplications' => Application::getUserApplicationsForRecruiter($application->account->main()),
-        ]);
+
+        if (!isset($esi) or !$sync_success) {
+            return view('application', [
+                'alts' => $application->account->alts(),
+                'character' => $application->account->main(),
+                'application' => $application,
+                'states' => Application::$state_names,
+                'state_tooltip' => $tooltips,
+                'userApplications' => Application::getUserApplicationsForRecruiter($application->account->main()),
+            ]);
+        }
+        else {
+            return view('application', [
+                'alts' => $application->account->alts(),
+                'character' => $application->account->main(),
+                'application' => $application,
+                'states' => Application::$state_names,
+                'sp' => $sp,
+                'isk' => $isk,
+                'titles' => $titles,
+                'roles' => $roles,
+                'state_tooltip' => $tooltips,
+                'userApplications' => Application::getUserApplicationsForRecruiter($application->account->main()),
+            ]);
+        }
+
     }
 
     /**
@@ -111,7 +125,7 @@ class ApplicationController extends Controller
         if (!AccountRole::recruiterCanViewEsi($char_id) && (!Auth::user()->hasRole($char->corporation_name . ' recruiter') && !Auth::user()->hasRole($char->corporation_name . ' director')))
             return redirect('/')->with('error', 'Unauthorized');
 
-        User::updateUsersOnApplicationLoad($char_id);
+        $sync_success = User::updateUsersOnApplicationLoad($char_id);
 
         try {
             $esi = new EsiConnection($char_id);
@@ -119,7 +133,7 @@ class ApplicationController extends Controller
             $esi = null;
         }
 
-        if (!$char->has_valid_token or !isset($esi))
+        if (!$char->has_valid_token or !isset($esi) or !$sync_success)
             return view('application', [
                 'character' => $char,
                 'userApplications' => Application::getUserApplicationsForRecruiter($char),
