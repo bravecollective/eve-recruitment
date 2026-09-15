@@ -40,6 +40,21 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Type whereTypeID($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Type whereTypeName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Type whereVolume($value)
+ * @property int|null $factionID
+ * @property int|null $metaLevel
+ * @property int|null $techLevel
+ * @property int|null $shipTreeGroupID
+ * @property float|null $packagedVolume
+ * @property int|null $isDynamicType
+ * @property int|null $isRepackable
+ * @property-read \App\Models\Group|null $group
+ * @method static \Illuminate\Database\Eloquent\Builder|Type whereFactionID($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Type whereIsDynamicType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Type whereIsRepackable($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Type whereMetaLevel($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Type wherePackagedVolume($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Type whereShipTreeGroupID($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Type whereTechLevel($value)
  * @mixin \Eloquent
  */
 class Type extends Model

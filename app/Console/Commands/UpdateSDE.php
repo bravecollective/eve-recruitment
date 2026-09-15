@@ -8,8 +8,8 @@ use Illuminate\Console\Command;
 class UpdateSDE extends Command
 {
     const SDE_URLS = [
-        "https://www.fuzzwork.co.uk/dump/latest/invTypes.sql.bz2",
-        "https://www.fuzzwork.co.uk/dump/latest/invGroups.sql.bz2",
+        "https://www.fuzzwork.co.uk/dump/latest/mysql_tables/invTypes.sql.gz",
+        "https://www.fuzzwork.co.uk/dump/latest/mysql_tables/invGroups.sql.gz",
     ];
 
     /**
@@ -52,7 +52,7 @@ class UpdateSDE extends Command
 
         foreach (self::SDE_URLS as $url) {
             $compressed_sde = file_get_contents($url, false, $context);
-            $sde = bzdecompress($compressed_sde);
+            $sde = gzdecode($compressed_sde);
             DB::unprepared($sde);
         }
 
